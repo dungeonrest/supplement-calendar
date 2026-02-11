@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>영양제 캘린더</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#ffffff">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="calendar-wrapper">
+
+<header class="calendar-header">
+  <div class="header-left">
+    <span id="monthDisplay" class="month-display"></span>
+    <button id="prevMonth" class="nav-arrow">&lt;</button>
+    <button id="nextMonth" class="nav-arrow">&gt;</button>
+    <span id="todayBtn" class="today-header">오늘</span>
+    <span id="addBtn" class="plus-btn">＋</span>
+    <button id="monthlyCostBtn" class="monthly-cost-btn">￦</button>
+    <button id="themeToggle" class="theme-btn">🌕</button>
+  </div>
+</header>
+
+<div class="day-labels">
+  <div class="day sun">일</div>
+  <div class="day">월</div>
+  <div class="day">화</div>
+  <div class="day">수</div>
+  <div class="day">목</div>
+  <div class="day">금</div>
+  <div class="day sat">토</div>
+</div>
+
+<div id="dates" class="dates-container"></div>
+</div>
+
+<!-- 정보 모달 -->
+<div id="modalOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>영양제 정보</h3>
+      <button id="closeModal" class="close-btn">×</button>
+    </div>
+    <div id="modalBody">
+      <input type="date" id="inputDate" class="my-date input-date"><br>
+      <input type="text" id="inputProduct" placeholder="제품명" class="product-name input-product">
+      <input type="number" id="inputTotal" placeholder="제공량" min="1" class="total-name input-total">
+      <input type="number" id="inputPrice" placeholder="가격" min="0" class="price-name input-price">
+
+      <div class="checkbox-line">
+        <label class="checkbox-item">
+          <input type="checkbox" class="inputFamily" value="도림">
+          <span class="checkbox-label-text">도림</span>
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" class="inputFamily" value="뚜임">
+          <span class="checkbox-label-text">뚜임</span>
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" class="inputFamily" value="진이">
+          <span class="checkbox-label-text">진이</span>
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" class="inputFamily" value="쿤이">
+          <span class="checkbox-label-text">쿤이</span>
+        </label>
+      </div>
+
+      <div class="checkbox-line">
+        <label class="checkbox-item">
+          <input type="checkbox" class="inputTime" value="아침">
+          <span class="checkbox-label-text">아침</span>
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" class="inputTime" value="점심">
+          <span class="checkbox-label-text">점심</span>
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" class="inputTime" value="저녁">
+          <span class="checkbox-label-text">저녁</span>
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" class="inputTime" value="공복">
+          <span class="checkbox-label-text">공복</span>
+        </label>
+      </div>
+
+      <button id="saveInfo" class="save-btn">저장</button>
+      <button id="deleteSupplement" class="del-btn">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- 월별 가격 모달 -->
+<div id="monthlyCostModal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>이번 달 영양제 비용</h3>
+      <button id="closeMonthlyCostModal" class="close-btn">×</button>
+    </div>
+    <div id="monthlyCostContent"></div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+
+<!-- 서비스 워커 등록 -->
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then(() => console.log("Service Worker registered"))
+      .catch((err) => console.log("SW registration failed", err));
+  });
+}
+</script>
+
+</body>
+</html>
