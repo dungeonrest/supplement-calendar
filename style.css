@@ -92,16 +92,17 @@ body {
   gap: 4px;
   cursor: pointer;
 }
-.supplement-dot .dot-symbol {
+
+.dot-symbol {
   width: 6px;
   height: 6px;
   border-radius: 50%;
+  display: inline-block;
 }
-.supplement-dot .dot-text {
-  padding: 2px 6px;
-  border-radius: 4px;
+
+.dot-text {
   font-size: 9px;
-  color: #fff;
+  margin-left: 2px;
 }
 
 .modal-overlay {
