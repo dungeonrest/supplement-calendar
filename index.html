@@ -8,7 +8,6 @@
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#ffffff">
-
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -18,8 +17,8 @@
 <header class="calendar-header">
   <div class="header-left">
     <span id="monthDisplay" class="month-display"></span>
-    <button id="prevMonth" class="nav-arrow">&lt;</button>
-    <button id="nextMonth" class="nav-arrow">&gt;</button>
+    <button id="prevMonth" class="nav-arrow">＜</button>
+    <button id="nextMonth" class="nav-arrow">＞</button>
     <span id="todayBtn" class="today-header">오늘</span>
     <span id="addBtn" class="plus-btn">＋</span>
     <button id="monthlyCostBtn" class="monthly-cost-btn">￦</button>
@@ -41,14 +40,7 @@
   <div id="dates" class="dates-container"></div>
 </div>
 
-<div id="supplementListArea" class="supplement-list-area">
-  <h3 id="supplementListTitle">선택된 날짜 영양제</h3>
-  <div id="supplementListContent"></div>
-</div>
-
-</div>
-
-<!-- 모달들 (변경 없음) -->
+<!-- 모달들 -->
 <div id="modalOverlay" class="modal-overlay hidden">
   <div class="modal">
     <div class="modal-header">
@@ -107,8 +99,8 @@
 
 <div id="monthlyCostModal" class="modal-overlay hidden">
   <div class="modal">
-    <div class="modal-header">
-      <h3>이번 달 영양제 비용</h3>
+    <div class="modal-header cost-header">
+      <span id="monthlyCostTitle" class="cost-title"></span>
       <button id="closeMonthlyCostModal" class="close-btn">×</button>
     </div>
     <div id="monthlyCostContent"></div>

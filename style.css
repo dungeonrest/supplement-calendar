@@ -4,24 +4,18 @@
 :root {
   --bg-color: #ffffff;
   --text-color: #000000;
-  --calendar-line: #e4e4e467;
-  --list-bg: #f9f9f9;
-  --list-border: #ccc;
-  --list-text: #000000;
-  --selected-date-bg: #ffebcd; /* 선택/오늘 배경 */
-  --sun-color: #d20c0c;
-  --sat-color: #2b5cec;
+  --calendar-line: #dad9d96c;
+  --selected-date-bg: #dbdbdb3f;
+  --sun-color: #df2222;
+  --sat-color: #2956df;
 }
 
 body.dark-mode {
-  --bg-color: #121212;
+  --bg-color: #242323;
   --text-color: #ffffff;
-  --list-bg: #1e1e1e;
-  --list-border: #444;
-  --list-text: #ffffff;
-  --selected-date-bg: #444444;
-  --sun-color: #f28b8b;
-  --sat-color: #6592f3;
+  --selected-date-bg: #dbdbdb3f;
+  --sun-color: #df2222;
+  --sat-color: #2956df;
 }
 
 body {
@@ -36,14 +30,16 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 5px;
+  gap: 1px;
   padding: 1px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 3px;
+  font-size: 22px;
+  font-weight: 700;
 }
 
 .nav-arrow,
@@ -51,7 +47,7 @@ body {
 .plus-btn,
 .theme-btn,
 .monthly-cost-btn {
-  font-size: 17px;
+  font-size: 22px;
   background: none;
   border: none;
   color: var(--text-color);
@@ -64,7 +60,7 @@ body {
 .plus-btn:hover,
 .theme-btn:hover,
 .monthly-cost-btn:hover {
-  opacity: 0.8;
+  opacity: 1;
 }
 
 /* 요일 레이블 */
@@ -72,9 +68,9 @@ body {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 15px;
 }
 
 .day.sun { color: var(--sun-color); }
@@ -84,7 +80,7 @@ body {
 .dates-container {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .date {
@@ -94,13 +90,14 @@ body {
   align-items: center;
   padding: 6px 0;
   font-size: 13px;
+  padding-bottom: 100%;
   border-bottom: 1px solid var(--calendar-line); /* 가로선 */
   cursor: pointer;
 }
 
 .date span.number {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .date.sun span.number { color: var(--sun-color); }
@@ -108,12 +105,11 @@ body {
 
 .date.selected {
   background-color: var(--selected-date-bg);
-  border-radius: 6px;
 }
 
 /* 이전/다음달 날짜는 흐리게 표시 */
 .date.inactive {
-  opacity: 0.2;
+  opacity: 0.3;
   pointer-events: none; /* 클릭 안 되게 */
 }
 
@@ -121,172 +117,180 @@ body {
 .date.inactive.sun span.number { color: var(--sun-color); }
 .date.inactive.sat span.number { color: var(--sat-color); }
 
-
-
 /* dot 표시 */
 .supplement-dot {
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  margin-top: 4px;
-}
-
-/* 리스트 영역 */
-.supplement-list-area {
-  padding: 16px;
-  background: var(--list-bg);
-  color: var(--list-text);
-  min-height: 240px;
-}
-
-#supplementListTitle {
-  margin: 0 0 8px 0;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.supplement-list-item {
-  padding: 8px 0;
-  border-bottom: 1px solid var(--list-border);
-}
-
-.supplement-list-item:last-child {
-  border-bottom: none;
-}
-
-.supplement-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.supplement-name {
-  font-weight: 600;
-}
-
-.supplement-times {
-  font-size: 14px;
-  opacity: 0.8;
-}
-
-.supplement-actions {
-  margin-top: 4px;
-  display: flex;
-  gap: 6px;
-}
-
-.supplement-actions button {
-  font-size: 13px;
-  padding: 4px 8px;
-  border: none;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.edit-btn {
-  background: #71a1ff;
-  color: white;
-}
-
-.delete-btn {
-  background: #f28c8c;
-  color: white;
 }
 
 /* 모달 */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.3);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* 낮 모드 모달 오버레이 */
+body:not(.dark-mode) .modal-overlay {
+  background: rgba(0, 0, 0, 0.3); /* 기존 밝은 오버레이 */
+}
+
+/* 밤 모드 모달 오버레이 */
+body.dark-mode .modal-overlay {
+  background: rgba(0, 0, 0, 0.6); /* 더 진한 오버레이 */
+}
+
+
 .hidden { display: none; }
 
 .modal {
   background: var(--bg-color);
-  padding: 16px;
-  border-radius: 10px;
-  width: 252px;
+  padding: 12px;
+  border-radius: 16px;
+
+  /* 테두리 */
+  border: 1px solid rgba(0,0,0,0.12);
+
+  /* 그림자 */
+  box-shadow: 0px 6px 20px rgba(0,0,0,0.16),
+              0px 3px 10px rgba(0,0,0,0.12);
+
+  width: 250px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
 }
 
+body.dark-mode .modal {
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0px 4px 16px rgba(0,0,0,0.50),
+              0px 2px 6px rgba(0,0,0,0.40);
+}
+
+
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-left: 70px;
 }
 
 .modal-header h3 {
   margin: 0;
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .close-btn {
-  font-size: 20px;
+  font-size: 25px;
   background: none;
   border: none;
   color: var(--text-color);
   cursor: pointer;
-  padding: 4px;
+  padding: 0px;
 }
 
-/* 체크박스, 입력 */
 .checkbox-line {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 6px;
+  gap: 7px;
+  margin-top: 5px;
 }
 
 .checkbox-item {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 14px;
+  gap: 3px;
+  font-size: 15px;
 }
 
 .checkbox-item input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: #504c4c;
+  width: 12px;
+  height: 12px;
+  accent-color: #444242;
 }
+
+/* 입력너비 */
+.input-date { width: 210px; height: 20px; }
+.input-product { width: 210px; height: 20px; }
+.input-total { width: 210px; height: 20px; }
+.input-price { width: 210px; height: 20px; }
 
 .modal input {
   margin-top: 8px;
   padding: 8px;
-  border-radius: 20px;
-  font-size: 14px;
-  background: #f3efef;
+  border-radius: 8px;
+  font-size: 15px;
+  background: #eeeded;
   border: none;
   outline: none;
 }
 
 .save-btn {
-  margin-top: 10px;
-  padding: 7px;
-  background: #686565;
+  font-size: 15px;
+  margin-top: 8px;
+  padding: 8px;
+  margin-left: 63px;
+  background: #8a8c99;
   color: white;
   border: none;
   cursor: pointer;
 }
 
 .del-btn {
-  margin-top: 10px;
-  padding: 7px;
-  background: #f28c8c;
+  font-size: 15px;
+  margin-top: 8px;
+  padding: 8px;
+  margin-left: 5px;
+  background: #ee7f7f;
   color: white;
   border: none;
   cursor: pointer;
 }
 
-/* 입력너비 */
-.input-date { width: 220px; }
-.input-product { width: 220px; }
-.input-total { width: 220px; }
-.input-price { width: 220px; }
+/* 날짜별 영양제 카드 */
+.supplement-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 8px;
+  margin-bottom: 8px;
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-size: 14px;
+}
+
+/* dot + 이름 */
+.supplement-dot-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 0px;
+}
+
+.supplement-label {
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+/* 월별 비용 모달 헤더 */
+.cost-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 5px;
+  margin-bottom: 0px;
+}
+
+.cost-title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+#monthlyCostModal .modal {
+  width: 170px;
+  padding: 10px;
+}
+
