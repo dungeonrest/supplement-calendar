@@ -10,7 +10,7 @@ body.dark-mode {
 
 body {
   margin: 0;
-  font-family: 'Sometype Mono';
+  font-family: 'D2Coding ligature';
   background: var(--bg-color);
   color: var(--text-color);
 }
@@ -90,19 +90,26 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
+  line-height: 1;
   cursor: pointer;
 }
 
 .dot-symbol {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  line-height: 1;
   border-radius: 50%;
-  display: inline-block;
 }
 
 .dot-text {
-  font-size: 9px;
+  font-size: 10px;
+  line-height: 1.2;
   margin-left: 2px;
+  white-space: nowrap;
 }
 
 .modal-overlay {

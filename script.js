@@ -99,6 +99,46 @@ themeToggleBtn.addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
 });
 
+// ===== 월별 비용 계산 =====
+monthlyCostBtn.addEventListener("click", () => {
+  const year = dt.getFullYear();
+  const month = dt.getMonth() + 1; // 1 ~ 12
+  const monthStr = `${year}-${String(month).padStart(2, "0")}`;
+
+  let totalCost = 0;
+
+  supplements.forEach(sup => {
+    // 이 보충제 일정 중 해당 달 날짜가 하나라도 있으면
+    const hasThisMonth = sup.schedule.some(d => d.startsWith(monthStr));
+
+    if (hasThisMonth) {
+      // 한 달 비용 = 전체 가격 ÷ 전체 개월
+      const months = Math.ceil(sup.schedule.length / 30); 
+      // (30일을 한 달로 계산, 필요하면 조정 가능)
+
+      const monthlyPrice = sup.price / months;
+      totalCost += monthlyPrice;
+    }
+  });
+
+  // 소수점 문제 방지용 반올림
+  totalCost = Math.round(totalCost);
+
+  // 모달 내용 생성
+  monthlyCostContent.innerHTML = `
+       <p><strong>￦${totalCost.toLocaleString()}</strong></p>
+  `;
+
+  // 모달 열기
+  monthlyCostModal.classList.remove("hidden");
+});
+
+// 모달 닫기
+closeMonthlyCostModal.addEventListener("click", () => {
+  monthlyCostModal.classList.add("hidden");
+});
+
+
 // ===== 달력 렌더 =====
 function renderCalendar() {
   dt.setDate(1);
