@@ -1,11 +1,27 @@
+/* ==========================
+   기본 색상 변수
+   ========================== */
 :root {
   --bg-color: #ffffff;
   --text-color: #000000;
+  --calendar-line: #e4e4e467;
+  --list-bg: #f9f9f9;
+  --list-border: #ccc;
+  --list-text: #000000;
+  --selected-date-bg: #ffebcd; /* 선택/오늘 배경 */
+  --sun-color: #d20c0c;
+  --sat-color: #2b5cec;
 }
 
 body.dark-mode {
   --bg-color: #121212;
   --text-color: #ffffff;
+  --list-bg: #1e1e1e;
+  --list-border: #444;
+  --list-text: #ffffff;
+  --selected-date-bg: #444444;
+  --sun-color: #f28b8b;
+  --sat-color: #6592f3;
 }
 
 body {
@@ -15,18 +31,19 @@ body {
   color: var(--text-color);
 }
 
+/* 헤더 */
 .calendar-header {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 5px;
+  padding: 1px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .nav-arrow,
@@ -34,13 +51,12 @@ body {
 .plus-btn,
 .theme-btn,
 .monthly-cost-btn {
-  font-size: 20px;
-  border: none;
+  font-size: 17px;
   background: none;
+  border: none;
   color: var(--text-color);
   cursor: pointer;
   padding: 4px;
-  margin: 0;
 }
 
 .nav-arrow:hover,
@@ -51,67 +67,133 @@ body {
   opacity: 0.8;
 }
 
+/* 요일 레이블 */
 .day-labels {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
   font-size: 12px;
   font-weight: 700;
-  margin-top: 20px;
-}
-
-.day.sun { color: #d20c0c; }
-.day.sat { color: #2d53c1; }
-
-.dates-container {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
   margin-top: 10px;
 }
 
+.day.sun { color: var(--sun-color); }
+.day.sat { color: var(--sat-color); }
+
+/* 달력 */
+.dates-container {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-top: 2px;
+}
+
 .date {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 6px;
-  padding-bottom: 110px;
+  padding: 6px 0;
   font-size: 13px;
-  border-bottom: 1px solid #e4e4e4;
-  color: var(--text-color);
-}
-
-.date.current.sun { color: #d20c0c !important; }
-.date.current.sat { color: #2d53c1 !important; }
-.date.inactive { opacity: 0.33; }
-.date.inactive.sun { color: #d20c0c !important; }
-.date.inactive.sat { color: #2d53c1 !important; }
-
-.supplement-dot {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  line-height: 1;
+  border-bottom: 1px solid var(--calendar-line); /* 가로선 */
   cursor: pointer;
 }
 
-.dot-symbol {
+.date span.number {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.date.sun span.number { color: var(--sun-color); }
+.date.sat span.number { color: var(--sat-color); }
+
+.date.selected {
+  background-color: var(--selected-date-bg);
+  border-radius: 6px;
+}
+
+/* 이전/다음달 날짜는 흐리게 표시 */
+.date.inactive {
+  opacity: 0.2;
+  pointer-events: none; /* 클릭 안 되게 */
+}
+
+/* 비활성 상태에서도 요일 색 유지 */
+.date.inactive.sun span.number { color: var(--sun-color); }
+.date.inactive.sat span.number { color: var(--sat-color); }
+
+
+
+/* dot 표시 */
+.supplement-dot {
   width: 8px;
   height: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 8px;
-  line-height: 1;
   border-radius: 50%;
+  margin-top: 4px;
 }
 
-.dot-text {
-  font-size: 10px;
-  line-height: 1.2;
-  margin-left: 2px;
-  white-space: nowrap;
+/* 리스트 영역 */
+.supplement-list-area {
+  padding: 16px;
+  background: var(--list-bg);
+  color: var(--list-text);
+  min-height: 240px;
 }
 
+#supplementListTitle {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.supplement-list-item {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--list-border);
+}
+
+.supplement-list-item:last-child {
+  border-bottom: none;
+}
+
+.supplement-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.supplement-name {
+  font-weight: 600;
+}
+
+.supplement-times {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.supplement-actions {
+  margin-top: 4px;
+  display: flex;
+  gap: 6px;
+}
+
+.supplement-actions button {
+  font-size: 13px;
+  padding: 4px 8px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.edit-btn {
+  background: #71a1ff;
+  color: white;
+}
+
+.delete-btn {
+  background: #f28c8c;
+  color: white;
+}
+
+/* 모달 */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -120,16 +202,16 @@ body {
   align-items: center;
   justify-content: center;
 }
+
 .hidden { display: none; }
 
 .modal {
   background: var(--bg-color);
   padding: 16px;
   border-radius: 10px;
-  width: 280px;
+  width: 252px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   box-sizing: border-box;
 }
 
@@ -141,8 +223,8 @@ body {
 
 .modal-header h3 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
 }
 
 .close-btn {
@@ -154,9 +236,9 @@ body {
   padding: 4px;
 }
 
+/* 체크박스, 입력 */
 .checkbox-line {
   display: flex;
-  width: 100%;
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 6px;
@@ -166,15 +248,13 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
-  white-space: nowrap;
   font-size: 14px;
 }
 
 .checkbox-item input[type="checkbox"] {
-  margin: 0;
-  vertical-align: middle;
   width: 18px;
   height: 18px;
+  accent-color: #504c4c;
 }
 
 .modal input {
@@ -182,27 +262,30 @@ body {
   padding: 8px;
   border-radius: 20px;
   font-size: 14px;
-  box-sizing: border-box;
+  background: #f3efef;
+  border: none;
+  outline: none;
 }
 
 .save-btn {
   margin-top: 10px;
   padding: 7px;
-  font-size: 14px;
   background: #686565;
   color: white;
-  cursor: pointer;
-}
-.del-btn {
-  margin-top: 10px;
-  padding: 7px;
-  font-size: 14px;
-  background: #f28c8c;
-  color: white;
+  border: none;
   cursor: pointer;
 }
 
-/* 각 입력란별 너비 지정 */
+.del-btn {
+  margin-top: 10px;
+  padding: 7px;
+  background: #f28c8c;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+/* 입력너비 */
 .input-date { width: 220px; }
 .input-product { width: 220px; }
 .input-total { width: 220px; }

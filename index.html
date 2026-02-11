@@ -37,10 +37,18 @@
   <div class="day sat">토</div>
 </div>
 
-<div id="dates" class="dates-container"></div>
+<div id="dates-wrapper">
+  <div id="dates" class="dates-container"></div>
 </div>
 
-<!-- 정보 모달 -->
+<div id="supplementListArea" class="supplement-list-area">
+  <h3 id="supplementListTitle">선택된 날짜 영양제</h3>
+  <div id="supplementListContent"></div>
+</div>
+
+</div>
+
+<!-- 모달들 (변경 없음) -->
 <div id="modalOverlay" class="modal-overlay hidden">
   <div class="modal">
     <div class="modal-header">
@@ -97,7 +105,6 @@
   </div>
 </div>
 
-<!-- 월별 가격 모달 -->
 <div id="monthlyCostModal" class="modal-overlay hidden">
   <div class="modal">
     <div class="modal-header">
@@ -110,15 +117,15 @@
 
 <script src="script.js"></script>
 
-<!-- 서비스 워커 등록 -->
 <script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker
-      .register("/service-worker.js")
-      .then(() => console.log("Service Worker registered"))
-      .catch((err) => console.log("SW registration failed", err));
-  });
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js')
+    .then(reg => {
+      console.log('Service Worker registered:', reg);
+    })
+    .catch(err => {
+      console.error('Service Worker registration failed:', err);
+    });
 }
 </script>
 
