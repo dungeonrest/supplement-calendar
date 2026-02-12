@@ -31,12 +31,13 @@ let supplements = [];
 let selectedDateForList = "";
 let currentEditId = null;
 
-// dot 색상 리스트
+// 새로운 고대비 팔레트
 const colorList = [
-  "#ff9100","#1E3A8A","#4A148C","#B71C1C","#AD1457",
-  "#004D40","#0D47A1","#283593","#4E342E","#37474F",
-  "#BF360C","#880E4F","#00695C","#4527A0","#0B3D91"
+  "#e6194B", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
+  "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe",
+  "#008080", "#e6beff", "#9A6324", "#800000", "#000075"
 ];
+
 
 // ====================
 // IndexedDB
@@ -106,15 +107,23 @@ themeToggleBtn.addEventListener("click", () => {
 monthlyCostBtn.addEventListener("click", () => {
   const year = dt.getFullYear();
   const month = dt.getMonth() + 1;
-  const monthStr = `${year}-${String(month).padStart(2,"0")}`;
 
   document.getElementById("monthlyCostTitle").innerText = `${year}.${String(month).padStart(2,"0")} 비용`;
 
   let totalCost = 0;
   supplements.forEach(sup => {
-    if (sup.schedule.some(d => d.startsWith(monthStr))) {
-      const months = Math.ceil(sup.schedule.length / 30);
-      totalCost += sup.price / months;
+    if (!sup.schedule || sup.schedule.length === 0) return;
+
+    // 영양제 시작 날짜 (YYYY-MM-DD)
+    const startDate = sup.schedule[0];
+    const [sY, sM] = startDate.split("-").map(x => parseInt(x));
+
+    const monthsCount = Math.ceil(sup.schedule.length / 30);
+    const monthlyPart = sup.price / monthsCount;
+
+    // 입력한 월과 현재 월이 같을 때만 비용 포함
+    if (sY === year && sM === month) {
+      totalCost += monthlyPart;
     }
   });
 
@@ -219,6 +228,15 @@ function renderCalendar() {
       renderCalendar();
     });
 
+// ⭕ 날짜셀 안에 스크롤 가능한 리스트 영역 만들기
+let listArea = div.querySelector(".supplement-list");
+if (!listArea) {
+  listArea = document.createElement("div");
+  listArea.classList.add("supplement-list");
+  div.appendChild(listArea);
+}
+
+// 기존 supplements 루프
 supplements.forEach(sup => {
   if (sup.schedule.includes(fullDate)) {
 
@@ -233,15 +251,15 @@ supplements.forEach(sup => {
     label.classList.add("supplement-label");
     label.innerText = sup.productName;
 
-    // dot 클릭하면 그 영양제 정보만 모달로 띄우기
     dot.addEventListener("click", (ev) => {
-      ev.stopPropagation(); // 날짜셀 클릭 이벤트 막기
+      ev.stopPropagation();
       openSingleSupplementModal(sup);
     });
 
     itemWrapper.appendChild(dot);
     itemWrapper.appendChild(label);
-    div.appendChild(itemWrapper);
+
+    listArea.appendChild(itemWrapper);
   }
 });
 
