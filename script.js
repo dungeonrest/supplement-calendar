@@ -62,21 +62,21 @@ let selectedDateForList = "";
 let currentEditId = null;
 
 const colorList = [
-  "#E63946", // 강렬한 레드
-  "#0077B6", // 선명한 블루
-  "#F77F00", // 따뜻한 오렌지
-  "#023047", // 딥 네이비
-  "#2A9D8F", // 청록
-  "#D62828", // 진한 레드
-  "#007F5F", // 다크 그린
-  "#9D4EDD", // 바이올렛
-  "#DC2F02", // 브릭 레드
-  "#1D3557", // 딥 블루
-  "#E76F51", // 테라코타
-  "#588157", // 올리브
-  "#6A4C93", // 퍼플
-  "#FF7F11", // 브라이트 오렌지
-  "#0A9396"  // 틸
+  "#FF6B6B", // Coral Red
+  "#4ECDC4", // Turquoise
+  "#FFD93D", // Vibrant Yellow
+  "#1A535C", // Deep Teal
+  "#FF9F1C", // Bright Orange
+  "#2EC4B6", // Cyan Teal
+  "#E84855", // Raspberry Red
+  "#FFB5A7", // Soft Peach
+  "#06D6A0", // Mint Green
+  "#118AB2", // Ocean Blue
+  "#F4D35E", // Mustard Yellow
+  "#8E44AD", // Medium Purple
+  "#E74C3C", // Tomato Red
+  "#3498DB", // Sky Blue
+  "#16A085"  // Sea Green
 ];
 
 
