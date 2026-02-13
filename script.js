@@ -23,6 +23,20 @@ const monthlyCostModal = document.getElementById("monthlyCostModal");
 const monthlyCostContent = document.getElementById("monthlyCostContent");
 const closeMonthlyCostModal = document.getElementById("closeMonthlyCostModal");
 
+function openSupplementModal(sup) {
+  currentEditId = sup.id;
+
+  modalOverlay.classList.remove("hidden");
+
+  inputDate.value = sup.schedule[0] || "";
+  inputProduct.value = sup.productName;
+  inputTotal.value = sup.totalCapsules;
+  inputPrice.value = sup.price;
+
+  for (let cb of inputFamily) cb.checked = sup.family.includes(cb.value);
+  for (let tb of inputTime) tb.checked = sup.times.includes(tb.value);
+}
+
 // ====================
 // 상태
 // ====================
@@ -31,13 +45,11 @@ let supplements = [];
 let selectedDateForList = "";
 let currentEditId = null;
 
-// 새로운 고대비 팔레트
 const colorList = [
   "#e6194B", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
   "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe",
   "#008080", "#e6beff", "#9A6324", "#800000", "#000075"
 ];
-
 
 // ====================
 // IndexedDB
@@ -114,14 +126,11 @@ monthlyCostBtn.addEventListener("click", () => {
   supplements.forEach(sup => {
     if (!sup.schedule || sup.schedule.length === 0) return;
 
-    // 영양제 시작 날짜 (YYYY-MM-DD)
     const startDate = sup.schedule[0];
     const [sY, sM] = startDate.split("-").map(x => parseInt(x));
-
     const monthsCount = Math.ceil(sup.schedule.length / 30);
     const monthlyPart = sup.price / monthsCount;
 
-    // 입력한 월과 현재 월이 같을 때만 비용 포함
     if (sY === year && sM === month) {
       totalCost += monthlyPart;
     }
@@ -130,7 +139,6 @@ monthlyCostBtn.addEventListener("click", () => {
   monthlyCostContent.innerHTML = `<p><strong>￦${Math.round(totalCost).toLocaleString()}</strong></p>`;
   monthlyCostModal.classList.remove("hidden");
 });
-
 
 closeMonthlyCostModal.addEventListener("click", () => {
   monthlyCostModal.classList.add("hidden");
@@ -150,23 +158,16 @@ addBtn.addEventListener("click", () => {
   for (let tb of inputTime) tb.checked = false;
 });
 
-// ⭕️ 모달 닫기 (X 버튼)
 closeModalBtn.addEventListener("click", () => {
   modalOverlay.classList.add("hidden");
 });
 
-// ⭕️ 모달 내 삭제 버튼 (선택된 영양제 삭제)
 deleteSupplementBtnModal.addEventListener("click", async () => {
   if (currentEditId) {
-    // DB 삭제
     await deleteSupplementFromDB(currentEditId);
-    // 배열에서도 삭제
     supplements = supplements.filter(s => s.id !== currentEditId);
-    // 모달 닫기
     modalOverlay.classList.add("hidden");
-    // 달력 + 리스트 갱신
     renderCalendar();
-    updateSupplementList();
   } else {
     alert("삭제할 영양제가 선택되지 않았습니다.");
   }
@@ -179,7 +180,6 @@ function renderCalendar() {
   dt.setDate(1);
   const year = dt.getFullYear();
   const month = dt.getMonth();
-
   monthDisplay.innerText = `${year}. ${String(month+1).padStart(2,"0")}`;
 
   const firstDay = new Date(year, month, 1).getDay();
@@ -187,16 +187,12 @@ function renderCalendar() {
 
   datesContainer.innerHTML = "";
 
-  // ==================================================
-  // 이전 달 날짜
-  // ==================================================
   const prevLastDate = new Date(year, month, 0).getDate();
   for (let x = firstDay; x > 0; x--) {
     const dayNum = prevLastDate - x + 1;
     const div = document.createElement("div");
     div.classList.add("date", "inactive");
 
-    // 요일 계산
     const dow = new Date(year, month-1, dayNum).getDay();
     if (dow === 0) div.classList.add("sun");
     if (dow === 6) div.classList.add("sat");
@@ -205,9 +201,6 @@ function renderCalendar() {
     datesContainer.appendChild(div);
   }
 
-  // ==================================================
-  // 현재 달 날짜
-  // ==================================================
   for (let i = 1; i <= lastDate; i++) {
     const div = document.createElement("div");
     div.classList.add("date");
@@ -217,7 +210,7 @@ function renderCalendar() {
     if (dayOfWeek === 6) div.classList.add("sat");
 
     div.innerHTML = `<span class="number">${i}</span>`;
-    const fullDate = `${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"00")}`;
+    const fullDate = `${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
 
     if (fullDate === selectedDateForList) {
       div.classList.add("selected");
@@ -228,54 +221,73 @@ function renderCalendar() {
       renderCalendar();
     });
 
-// ⭕ 날짜셀 안에 스크롤 가능한 리스트 영역 만들기
-let listArea = div.querySelector(".supplement-list");
-if (!listArea) {
-  listArea = document.createElement("div");
-  listArea.classList.add("supplement-list");
-  div.appendChild(listArea);
+    let listArea = div.querySelector(".supplement-list");
+    if (!listArea) {
+      listArea = document.createElement("div");
+      listArea.classList.add("supplement-list");
+      div.appendChild(listArea);
+    }
+
+    supplements.forEach(sup => {
+      if (sup.schedule.includes(fullDate)) {
+
+        const bar = document.createElement("div");
+bar.classList.add("supplement-bar");
+bar.style.backgroundColor = sup.circleColor;
+
+// ============ 라벨 표시 조건 ============
+
+// 현재 날짜 fullDate
+const currDateObj = new Date(fullDate);
+
+// 이번 주 시작/끝 계산 (일요일 기준)
+const startOfWeek = new Date(currDateObj);
+startOfWeek.setDate(currDateObj.getDate() - currDateObj.getDay());
+
+const endOfWeek = new Date(startOfWeek);
+endOfWeek.setDate(startOfWeek.getDate() + 6);
+
+// 이번 주에 해당하는 sup.schedule 날짜들만 필터
+const weekScheds = sup.schedule
+  .map(d => new Date(d))
+  .filter(d => d >= startOfWeek && d <= endOfWeek);
+
+// 이번 주 일정 중 가장 빠른 날짜 문자열
+let firstInWeek = null;
+if (weekScheds.length > 0) {
+  weekScheds.sort((a,b) => a - b);
+  firstInWeek = weekScheds[0].toISOString().slice(0,10);
 }
 
-// 기존 supplements 루프
-supplements.forEach(sup => {
-  if (sup.schedule.includes(fullDate)) {
+// 만약 this fullDate가 해당 주에서 최초 등장 날짜라면
+if (firstInWeek === fullDate) {
+  const labelInBar = document.createElement("span");
+  labelInBar.classList.add("supplement-bar-label");
+  labelInBar.innerText = sup.productName;
+  bar.appendChild(labelInBar);
+}
 
-    const itemWrapper = document.createElement("div");
-    itemWrapper.classList.add("supplement-dot-wrapper");
-
-    const dot = document.createElement("div");
-    dot.classList.add("supplement-dot");
-    dot.style.background = sup.circleColor;
-
-    const label = document.createElement("span");
-    label.classList.add("supplement-label");
-    label.innerText = sup.productName;
-
-    dot.addEventListener("click", (ev) => {
-      ev.stopPropagation();
-      openSingleSupplementModal(sup);
-    });
-
-    itemWrapper.appendChild(dot);
-    itemWrapper.appendChild(label);
-
-    listArea.appendChild(itemWrapper);
-  }
+// 클릭 이벤트 유지
+bar.addEventListener("click", (e) => {
+  e.stopPropagation();
+  openSupplementModal(sup);
 });
+
+// 날짜셀에 추가
+listArea.appendChild(bar);
+
+      }
+    });
 
     datesContainer.appendChild(div);
   }
 
-  // ==================================================
-  // 다음 달 날짜
-  // ==================================================
   const totalCells = firstDay + lastDate;
   const nextSlots = 42 - totalCells;
   for (let j = 1; j <= nextSlots; j++) {
     const div = document.createElement("div");
     div.classList.add("date", "inactive");
 
-    // 요일 계산
     const dowNext = new Date(year, month+1, j).getDay();
     if (dowNext === 0) div.classList.add("sun");
     if (dowNext === 6) div.classList.add("sat");
@@ -284,7 +296,6 @@ supplements.forEach(sup => {
     datesContainer.appendChild(div);
   }
 }
-
 
 // ====================
 // 저장
@@ -306,39 +317,57 @@ saveInfoBtn.addEventListener("click", async () => {
   const totalDays = Math.ceil(totalCaps / daily);
 
   let schedule = [];
-  const sDate = new Date(start);
-  for (let k=0; k<totalDays; k++){
-    const d = new Date(sDate);
-    d.setDate(sDate.getDate()+k);
+  let d = new Date(start);
+  for (let k = 0; k < totalDays; k++){
     schedule.push(d.toISOString().slice(0,10));
+    d = new Date(d);
+    d.setDate(d.getDate()+1);
   }
 
-  if (currentEditId) {
-    const found = supplements.find(s => s.id===currentEditId);
-    Object.assign(found,{
-      productName:product,
-      totalCapsules:totalCaps,
-      price,family,times,schedule
-    });
-  } else {
-    supplements.push({
-      id:Date.now(),
-      productName:product,
-      totalCapsules:totalCaps,
-      price,family,times,schedule,
-      circleColor: colorList[supplements.length % colorList.length]
-    });
+ if (currentEditId) {
+  const found = supplements.find(s => s.id === currentEditId);
+  Object.assign(found, {
+    productName: product,
+    totalCapsules: totalCaps,
+    price,
+    family,
+    times,
+    schedule
+  });
+} else {
+  // **새 색상 할당 방식**
+  let assignedColor;
+
+  // 1) 이미 사용 중인 색 불러오기
+  const usedColors = supplements.map(s => s.circleColor);
+
+  // 2) 아직 사용 안 된 색 찾기
+  assignedColor = colorList.find(c => !usedColors.includes(c));
+
+  // 3) 만약 전부 사용 중이면 순환
+  if (!assignedColor) {
+    assignedColor = colorList[supplements.length % colorList.length];
   }
+
+  supplements.push({
+    id: Date.now(),
+    productName: product,
+    totalCapsules: totalCaps,
+    price,
+    family,
+    times,
+    schedule,
+    circleColor: assignedColor
+  });
+}
+
 
   await saveAllSupplements();
   modalOverlay.classList.add("hidden");
-  selectedDateForList = start; // 저장한 날짜로 선택 유지
+  selectedDateForList = start;
   renderCalendar();
 });
 
-// ====================
-// 나머지 DB 저장/로드 및 버튼
-// ====================
 async function saveAllSupplements() { for (let sup of supplements) await saveSupplementToDB(sup); }
 
 async function loadSupplements() {
@@ -365,10 +394,6 @@ todayBtn.addEventListener("click", () => {
   selectedDateForList = new Date().toISOString().slice(0,10);
   dt = new Date();
   renderCalendar();
-  
 });
 
-
-// 초기 실행
 loadSupplements();
-renderCalendar();
