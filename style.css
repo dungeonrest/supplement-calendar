@@ -172,6 +172,9 @@ body {
 .date.sun span.number { color: var(--sun-color); }
 .date.sat span.number { color: var(--sat-color); }
 
+/* 공휴일(한국 빨간날) */
+.date.holiday span.number { color: var(--sun-color); }
+
 /* 이전/다음달 날짜는 흐리게 표시 */
 .date.inactive {
   opacity: 0.3;
@@ -292,7 +295,7 @@ body.dark-mode .modal {
   margin-top: 8px;
   padding: 8px;
   margin-left: 63px;
-  background: #8a8c99;
+  background: #0077B6;
   color: white;
   border: none;
   cursor: pointer;
@@ -303,7 +306,7 @@ body.dark-mode .modal {
   margin-top: 8px;
   padding: 8px;
   margin-left: 5px;
-  background: #ee7f7f;
+  background: #E63946;
   color: white;
   border: none;
   cursor: pointer;
@@ -326,5 +329,15 @@ body.dark-mode .modal {
 #monthlyCostModal .modal {
   width: 170px;
   padding: 10px;
+}
+
+.monthly-sup-list {
+  margin-left: 15px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.monthly-sup-list .sup-name {
+  margin: 2px 0;
 }
 

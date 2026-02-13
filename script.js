@@ -1,3 +1,18 @@
+// 공휴일 리스트 (예: 2026년)
+const koreaHolidays2026 = [
+  "2026-01-01",
+  "2026-02-16","2026-02-17","2026-02-18",
+  "2026-03-01", "20260-03-02",
+  "2026-05-05",
+  "2026-05-24","2026-05-25",
+  "2026-06-03","2026-06-06",
+  "2026-07-17",
+  "2026-08-15","2026-08-17",
+  "2026-09-24","2026-09-25","2026-09-26","2026-09-27",
+  "2026-10-03","2026-10-05","2026-10-09",
+  "2026-12-25"
+];
+
 // ====================
 // DOM 요소
 // ====================
@@ -23,6 +38,7 @@ const monthlyCostModal = document.getElementById("monthlyCostModal");
 const monthlyCostContent = document.getElementById("monthlyCostContent");
 const closeMonthlyCostModal = document.getElementById("closeMonthlyCostModal");
 
+
 function openSupplementModal(sup) {
   currentEditId = sup.id;
 
@@ -46,10 +62,23 @@ let selectedDateForList = "";
 let currentEditId = null;
 
 const colorList = [
-  "#e6194B", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
-  "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe",
-  "#008080", "#e6beff", "#9A6324", "#800000", "#000075"
+  "#E63946", // 강렬한 레드
+  "#0077B6", // 선명한 블루
+  "#F77F00", // 따뜻한 오렌지
+  "#023047", // 딥 네이비
+  "#2A9D8F", // 청록
+  "#D62828", // 진한 레드
+  "#007F5F", // 다크 그린
+  "#9D4EDD", // 바이올렛
+  "#DC2F02", // 브릭 레드
+  "#1D3557", // 딥 블루
+  "#E76F51", // 테라코타
+  "#588157", // 올리브
+  "#6A4C93", // 퍼플
+  "#FF7F11", // 브라이트 오렌지
+  "#0A9396"  // 틸
 ];
+
 
 // ====================
 // IndexedDB
@@ -123,20 +152,39 @@ monthlyCostBtn.addEventListener("click", () => {
   document.getElementById("monthlyCostTitle").innerText = `${year}.${String(month).padStart(2,"0")} 비용`;
 
   let totalCost = 0;
+  let costHtml = "";
+  const supNamesThisMonth = [];
+
+  // 해당 월(입력월)에 입력된 영양제만 선택
   supplements.forEach(sup => {
-    if (!sup.schedule || sup.schedule.length === 0) return;
+    const supInputDate = sup.schedule?.[0] ?? ""; // 일정 첫 날짜 (입력 날짜)
+    const [y, m] = supInputDate.split("-").map(x => parseInt(x));
 
-    const startDate = sup.schedule[0];
-    const [sY, sM] = startDate.split("-").map(x => parseInt(x));
-    const monthsCount = Math.ceil(sup.schedule.length / 30);
-    const monthlyPart = sup.price / monthsCount;
+    if (y === year && m === month) {
+      supNamesThisMonth.push(sup.productName);
 
-    if (sY === year && sM === month) {
+      // 1달 비용 = price ÷ 전체개월수 (기존 로직 그대로)
+      const totalDays = sup.schedule.length;
+      const monthsCount = Math.ceil(totalDays / 30);
+      const monthlyPart = sup.price / monthsCount;
       totalCost += monthlyPart;
     }
   });
 
-  monthlyCostContent.innerHTML = `<p><strong>￦${Math.round(totalCost).toLocaleString()}</strong></p>`;
+  // 이름 리스트 그리기
+  if (supNamesThisMonth.length > 0) {
+    costHtml += "<div class='monthly-sup-list'>";
+    supNamesThisMonth.forEach(name => {
+      costHtml += `<div class='sup-name'>${name}</div>`;
+    });
+    costHtml += "</div>";
+  } else {
+    costHtml += "<div class='sup-name none'></div>";
+  }
+
+  costHtml += `<p><strong>￦ ${Math.round(totalCost).toLocaleString()}</strong></p>`;
+
+  monthlyCostContent.innerHTML = costHtml;
   monthlyCostModal.classList.remove("hidden");
 });
 
@@ -180,6 +228,7 @@ function renderCalendar() {
   dt.setDate(1);
   const year = dt.getFullYear();
   const month = dt.getMonth();
+
   monthDisplay.innerText = `${year}. ${String(month+1).padStart(2,"0")}`;
 
   const firstDay = new Date(year, month, 1).getDay();
@@ -197,6 +246,11 @@ function renderCalendar() {
     if (dow === 0) div.classList.add("sun");
     if (dow === 6) div.classList.add("sat");
 
+    const fullDatePrev = `${year}-${String(month).padStart(2,"0")}-${String(dayNum).padStart(2,"0")}`;
+    if (koreaHolidays2026.includes(fullDatePrev)) {
+      div.classList.add("holiday");
+    }
+
     div.innerHTML = `<span class="number">${dayNum}</span>`;
     datesContainer.appendChild(div);
   }
@@ -209,12 +263,18 @@ function renderCalendar() {
     if (dayOfWeek === 0) div.classList.add("sun");
     if (dayOfWeek === 6) div.classList.add("sat");
 
-    div.innerHTML = `<span class="number">${i}</span>`;
     const fullDate = `${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
+    
+    if (koreaHolidays2026.includes(fullDate)) {
+      div.classList.add("holiday");
+    }
 
+    div.innerHTML = `<span class="number">${i}</span>`;
+    
     if (fullDate === selectedDateForList) {
       div.classList.add("selected");
     }
+
 
     div.addEventListener("click", () => {
       selectedDateForList = fullDate;
@@ -291,6 +351,11 @@ listArea.appendChild(bar);
     const dowNext = new Date(year, month+1, j).getDay();
     if (dowNext === 0) div.classList.add("sun");
     if (dowNext === 6) div.classList.add("sat");
+
+    const fullDateNext = `${year}-${String(month+2).padStart(2,"0")}-${String(j).padStart(2,"00")}`;
+    if (koreaHolidays2026.includes(fullDateNext)) {
+      div.classList.add("holiday");
+    }
 
     div.innerHTML = `<span class="number">${j}</span>`;
     datesContainer.appendChild(div);
