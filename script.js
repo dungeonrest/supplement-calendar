@@ -287,6 +287,11 @@ function renderCalendar() {
     div.addEventListener("click", () => {
       selectedDateForList = fullDate;
       renderCalendar();
+
+    const hasSupps = supplements.some(sup => sup.schedule.includes(fullDate));
+    if (hasSupps) {
+      openTakenCheckUI(fullDate);
+      }
     });
 
     let listArea = div.querySelector(".supplement-list");
@@ -467,3 +472,95 @@ todayBtn.addEventListener("click", () => {
 });
 
 loadSupplements();
+
+function openTakenCheckUI(date) {
+  const modal = document.getElementById("takenCheckModal");
+  const title = document.getElementById("takenCheckTitle");
+  const body = document.getElementById("takenCheckBody");
+
+  title.innerText = `${date}`;
+  body.innerHTML = ""; // 기존 내용 초기화
+
+  // 해당 날짜 영양제들
+  const matchedSupps = supplements.filter(s => s.schedule.includes(date));
+
+  if (matchedSupps.length === 0) {
+    body.innerHTML = "<p>해당 날짜의 영양제가 없습니다.</p>";
+  } else {
+    matchedSupps.forEach(sup => {
+      // 섹션 구분
+      const section = document.createElement("div");
+      section.classList.add("taken-sup-section");
+
+      // 영양제 제목
+      const titleEl = document.createElement("div");
+      titleEl.classList.add("taken-sup-title");
+      titleEl.innerText = sup.productName;
+      section.appendChild(titleEl);
+
+      // 테이블
+      const table = document.createElement("table");
+      table.classList.add("taken-table");
+
+      // 헤더: 가족명 열
+      const headerRow = document.createElement("tr");
+      const thTime = document.createElement("th");
+      thTime.innerText = "시간";
+      headerRow.appendChild(thTime);
+
+      sup.family.forEach(member => {
+        const th = document.createElement("th");
+        th.innerText = member;
+        headerRow.appendChild(th);
+      });
+      table.appendChild(headerRow);
+
+      const times = sup.times || [];
+
+      // 날짜 기준 기존 저장 상태
+      if (!sup.takenStatus) sup.takenStatus = {};
+      if (!sup.takenStatus[date]) sup.takenStatus[date] = {};
+
+      // 각 시간대 행 만들기
+      times.forEach(time => {
+        const row = document.createElement("tr");
+
+        const tdTime = document.createElement("td");
+        tdTime.innerText = time;
+        row.appendChild(tdTime);
+
+        sup.family.forEach(member => {
+          const td = document.createElement("td");
+          const chk = document.createElement("input");
+          chk.type = "checkbox";
+
+          // 초기 체크 상태 불러오기
+          chk.checked = sup.takenStatus[date][`${time}_${member}`] || false;
+
+          chk.addEventListener("change", async () => {
+            sup.takenStatus[date][`${time}_${member}`] = chk.checked;
+            await saveAllSupplements();
+          });
+
+          td.appendChild(chk);
+          row.appendChild(td);
+        });
+
+        table.appendChild(row);
+      });
+
+      section.appendChild(table);
+      body.appendChild(section);
+    });
+  }
+
+  modal.classList.remove("hidden");
+}
+
+// ❌ 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
+document.getElementById("closeTakenCheckBtn")
+  .addEventListener("click", async () => {
+    // IndexedDB에 자동 저장
+    await saveAllSupplements();
+    document.getElementById("takenCheckModal").classList.add("hidden");
+  });

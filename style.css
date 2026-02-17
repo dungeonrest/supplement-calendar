@@ -358,3 +358,70 @@ body.dark-mode .modal {
   margin: 2px 0;
 }
 
+/* ==== 복용 체크 모달 스타일 ==== */
+.taken-modal {
+  width: 300px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.taken-sup-section {
+  margin-bottom: 10px;
+  padding-bottom: 1px;
+}
+
+.taken-sup-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 1px;
+}
+
+.taken-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.taken-table th,
+.taken-table td {
+  text-align: center;
+  padding: 4px 2px;
+  border: 0px solid #ccc;
+}
+
+.taken-table th {
+  font-weight: 600;
+  background: #f3f3f3;
+}
+
+body.dark-mode .taken-table th {
+  background-color: #444444;
+  color: #ffffff;
+}
+
+.taken-check-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+input[type="checkbox"] {
+  accent-color: #444242;
+}
+
+/* 복용 체크 모달 헤더 텍스트 가운데 정렬 */
+#takenCheckModal .modal-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding-left: 0%;
+}
+
+/* 닫기 버튼은 오른쪽에 유지 */
+#takenCheckModal .modal-header .close-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+}
