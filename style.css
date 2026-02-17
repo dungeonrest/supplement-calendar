@@ -97,6 +97,22 @@ body {
   cursor: pointer;
 }
 
+/* === 오늘 날짜 체크 아이콘 겹쳐 표시 === */
+.date.today-date > span.number {
+  position: relative;
+  font-weight: 700;
+}
+
+.date.today-date > span.number::after {
+  content: "ˇ";
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 27px;
+  color: #f13333;
+}
+
 /* ====================
    날짜셀 고정 높이 + 스크롤 가능한 리스트
    ==================== */
@@ -278,6 +294,7 @@ body.dark-mode .modal {
 .input-date { width: 210px; height: 20px; }
 .input-product { width: 210px; height: 20px; }
 .input-total { width: 210px; height: 20px; }
+.input-dose { width: 210px; height: 20px; }
 .input-price { width: 210px; height: 20px; }
 
 .modal input {

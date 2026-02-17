@@ -47,6 +47,7 @@ function openSupplementModal(sup) {
   inputDate.value = sup.schedule[0] || "";
   inputProduct.value = sup.productName;
   inputTotal.value = sup.totalCapsules;
+  inputDose.value = sup.dose ?? "";
   inputPrice.value = sup.price;
 
   for (let cb of inputFamily) cb.checked = sup.family.includes(cb.value);
@@ -201,6 +202,7 @@ addBtn.addEventListener("click", () => {
   inputDate.valueAsDate = new Date(selectedDateForList ? selectedDateForList : new Date());
   inputProduct.value = "";
   inputTotal.value = "";
+  inputDose.value = ""; 
   inputPrice.value = "";
   for (let cb of inputFamily) cb.checked = false;
   for (let tb of inputTime) tb.checked = false;
@@ -236,6 +238,8 @@ function renderCalendar() {
 
   datesContainer.innerHTML = "";
 
+  const todayStr = new Date().toISOString().slice(0,10); // ★ 오늘 날짜 문자열
+
   const prevLastDate = new Date(year, month, 0).getDate();
   for (let x = firstDay; x > 0; x--) {
     const dayNum = prevLastDate - x + 1;
@@ -250,6 +254,7 @@ function renderCalendar() {
     if (koreaHolidays2026.includes(fullDatePrev)) {
       div.classList.add("holiday");
     }
+    if (fullDatePrev === todayStr) div.classList.add("today-date"); // ★ 오늘 표시
 
     div.innerHTML = `<span class="number">${dayNum}</span>`;
     datesContainer.appendChild(div);
@@ -267,6 +272,9 @@ function renderCalendar() {
     
     if (koreaHolidays2026.includes(fullDate)) {
       div.classList.add("holiday");
+    }
+   if (fullDate === todayStr) {
+      div.classList.add("today-date"); // ★ 오늘 표시
     }
 
     div.innerHTML = `<span class="number">${i}</span>`;
@@ -356,6 +364,7 @@ listArea.appendChild(bar);
     if (koreaHolidays2026.includes(fullDateNext)) {
       div.classList.add("holiday");
     }
+    if (fullDateNext === todayStr) div.classList.add("today-date"); // ★ 오늘 표시
 
     div.innerHTML = `<span class="number">${j}</span>`;
     datesContainer.appendChild(div);
@@ -369,17 +378,18 @@ saveInfoBtn.addEventListener("click", async () => {
   const start = inputDate.value;
   const product = inputProduct.value.trim();
   const totalCaps = parseInt(inputTotal.value);
+  const dose = parseInt(inputDose.value);
   const price = parseInt(inputPrice.value);
   const family = [...inputFamily].filter(cb => cb.checked).map(cb => cb.value);
   const times = [...inputTime].filter(tb => tb.checked).map(tb => tb.value);
 
-  if (!start || !product || !totalCaps || family.length === 0 || times.length === 0) {
+  if (!start || !product || !totalCaps || !dose || !price || family.length === 0) {
     alert("모든 정보를 입력해주세요.");
     return;
   }
 
-  const daily = family.length * times.length;
-  const totalDays = Math.ceil(totalCaps / daily);
+  const totalPerDay = dose * family.length;
+  const totalDays = Math.ceil(totalCaps / totalPerDay);
 
   let schedule = [];
   let d = new Date(start);
@@ -394,22 +404,16 @@ saveInfoBtn.addEventListener("click", async () => {
   Object.assign(found, {
     productName: product,
     totalCapsules: totalCaps,
+    dose,
     price,
     family,
     times,
     schedule
   });
 } else {
-  // **새 색상 할당 방식**
   let assignedColor;
-
-  // 1) 이미 사용 중인 색 불러오기
   const usedColors = supplements.map(s => s.circleColor);
-
-  // 2) 아직 사용 안 된 색 찾기
   assignedColor = colorList.find(c => !usedColors.includes(c));
-
-  // 3) 만약 전부 사용 중이면 순환
   if (!assignedColor) {
     assignedColor = colorList[supplements.length % colorList.length];
   }
@@ -418,6 +422,7 @@ saveInfoBtn.addEventListener("click", async () => {
     id: Date.now(),
     productName: product,
     totalCapsules: totalCaps,
+    dose,
     price,
     family,
     times,
@@ -426,12 +431,12 @@ saveInfoBtn.addEventListener("click", async () => {
   });
 }
 
-
   await saveAllSupplements();
   modalOverlay.classList.add("hidden");
   selectedDateForList = start;
   renderCalendar();
 });
+
 
 async function saveAllSupplements() { for (let sup of supplements) await saveSupplementToDB(sup); }
 
