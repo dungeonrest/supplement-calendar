@@ -564,3 +564,113 @@ document.getElementById("closeTakenCheckBtn")
     await saveAllSupplements();
     document.getElementById("takenCheckModal").classList.add("hidden");
   });
+
+  // ===== 통계 모달 요소
+const statsBtn = document.getElementById("statsBtn");
+const statsModal = document.getElementById("statsModal");
+const closeStatsModal = document.getElementById("closeStatsModal");
+const statsContent = document.getElementById("statsContent");
+const familyBtns = document.querySelectorAll(".family-btn");
+const periodStart = document.getElementById("periodStart");
+const periodEnd = document.getElementById("periodEnd");
+
+// 통계 모달 열기
+statsBtn.addEventListener("click", () => {
+  statsModal.classList.remove("hidden");
+  // 기본 기간: 올해
+  const year = new Date().getFullYear();
+  periodStart.value = `${String(year)}-01`;
+  periodEnd.value = `${String(year)}-12`;
+});
+
+// 닫기
+closeStatsModal.addEventListener("click", () => {
+  statsModal.classList.add("hidden");
+
+  // 기간 초기화
+  periodStart.value = "";
+  periodEnd.value = "";
+
+  // 버튼 활성 초기화
+  familyBtns.forEach(b => b.classList.remove("selected"));
+
+  // 통계 내용 초기화
+  statsContent.innerHTML = "";
+});
+
+// 가족 버튼 누르면 통계 갱신
+familyBtns.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const name = btn.dataset.name;
+
+    // 모든 버튼에서 selected 제거
+    familyBtns.forEach(b => b.classList.remove("selected"));
+
+    // 현재 버튼에 selected 추가
+    btn.classList.add("selected");
+
+    // 통계 표시
+    showStatsForFamily(name);
+  });
+});
+
+// 통계 계산
+function showStatsForFamily(name) {
+  const start = periodStart.value;
+  const end = periodEnd.value;
+
+  if (!start || !end) {
+    statsContent.innerHTML = "<p>기간을 먼저 선택하세요.</p>";
+    return;
+  }
+
+  // 시작 월 첫 날
+  const startArr = start.split("-");
+  const startDate = new Date(parseInt(startArr[0]), parseInt(startArr[1]) - 1, 1);
+
+  // 종료 월 마지막 날
+  const endArr = end.split("-");
+  const endDate = new Date(parseInt(endArr[0]), parseInt(endArr[1]) - 1, 1);
+  endDate.setMonth(endDate.getMonth() + 1);
+  endDate.setDate(0);
+
+  const result = {};
+
+  supplements.forEach(sup => {
+    if (!sup.family.includes(name)) return;
+
+    // sup.takenStatus: 날짜별 체크 상태 객체
+    if (!sup.takenStatus) return;
+
+    for (let dateStr in sup.takenStatus) {
+      const d = new Date(dateStr);
+      if (d < startDate || d > endDate) continue;
+
+      const dayStatus = sup.takenStatus[dateStr];
+
+      for (const key in dayStatus) {
+        // key: "아침_도림", "저녁_뚜임" 식
+        const [time, member] = key.split("_");
+        if (member !== name) continue;
+
+        if (dayStatus[key]) {
+          result[sup.productName] = (result[sup.productName] || 0) + sup.dose;
+        }
+      }
+    }
+  });
+
+  let html = `<h4></h4>`;
+
+  if (Object.keys(result).length === 0) {
+    html += "<p>해당 기간 복용 데이터 없음.</p>";
+  } else {
+    html += "<ul>";
+    for (const key in result) {
+      html += `<li>${key}: ${result[key]}회</li>`;
+    }
+    html += "</ul>";
+  }
+
+  statsContent.innerHTML = html;
+}

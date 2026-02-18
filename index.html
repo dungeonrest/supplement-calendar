@@ -22,6 +22,7 @@
     <span id="todayBtn" class="today-header">오늘</span>
     <span id="addBtn" class="plus-btn">＋</span>
     <button id="monthlyCostBtn" class="monthly-cost-btn">￦</button>
+    <button id="statsBtn" class="stats-btn">≡</button>
     <button id="themeToggle" class="theme-btn">🌕</button>
   </div>
 </header>
@@ -117,6 +118,33 @@
     </div>
     <div id="takenCheckBody"></div>
 
+  </div>
+</div>
+
+<!-- 통계 모달 -->
+<div id="statsModal" class="modal-overlay hidden">
+  <div class="modal stats-modal">
+    <div class="modal-header">
+      <h3>통계</h3>
+      <button id="closeStatsModal" class="close-btn">×</button>
+    </div>
+
+    <div id="statsFilters">
+      <div class="family-buttons">
+        <button class="family-btn" data-name="도림">도림</button>
+        <button class="family-btn" data-name="뚜임">뚜임</button>
+        <button class="family-btn" data-name="진이">진이</button>
+        <button class="family-btn" data-name="쿤이">쿤이</button>
+      </div>
+
+      <!-- 기간 선택: 월 선택 UI -->
+      <div class="period-select">
+        <input type="month" id="periodStart" />
+        <input type="month" id="periodEnd" />
+      </div>
+    </div>
+
+    <div id="statsContent"></div>
   </div>
 </div>
 

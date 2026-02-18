@@ -35,8 +35,8 @@ body {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 3px;
-  font-size: 22px;
+  gap: 1px;
+  font-size: 20px;
   font-weight: 700;
 }
 
@@ -45,7 +45,7 @@ body {
 .plus-btn,
 .theme-btn,
 .monthly-cost-btn {
-  font-size: 22px;
+  font-size: 20px;
   background: none;
   border: none;
   color: var(--text-color);
@@ -425,3 +425,62 @@ input[type="checkbox"] {
   top: 50%;
   transform: translateY(-50%);
 }
+
+.stats-modal .modal-header h3 {
+  margin-left: 20px;
+}
+
+.stats-btn {
+  font-size: 22px;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.stats-btn:hover {
+  opacity: 0.8;
+}
+
+.stats-modal {
+  width: 240px;
+}
+
+.family-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 5px;
+}
+
+.family-btn {
+  padding: 5px 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.period-select {
+  margin-top: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+
+#statsContent {
+  margin-top: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  padding-left: 10%;
+}
+
+/* 선택된 버튼 - 낮/밤 모드 별로 */
+body:not(.dark-mode) .family-btn.selected {
+  background-color: #0077B6; /* 낮 모드 선택 배경 */
+  color: white;
+  border-radius: 4px;
+}
+
+body.dark-mode .family-btn.selected {
+  background-color: #4ECDC4; /* 밤 모드 선택 배경 */
+  color: #242323;
+  border-radius: 4px;
+}
+
