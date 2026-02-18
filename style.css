@@ -492,13 +492,13 @@ body.dark-mode .family-btn.selected {
 /* 텍스트 그림자만 적용 */
 .fab-add-btn {
   position: fixed;
-  bottom: 5px;
-  right: 5px;
+  bottom: 10px;
+  right: 10px;
 
   background: none;
   border: none;
 
-  font-size: 36px;
+  font-size: 40px;
   color: var(--text-color);
   cursor: pointer;
   z-index: 1000;
