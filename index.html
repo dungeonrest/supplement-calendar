@@ -17,12 +17,12 @@
 <header class="calendar-header">
   <div class="header-left">
     <span id="monthDisplay" class="month-display"></span>
-    <button id="prevMonth" class="nav-arrow">＜</button>
-    <button id="nextMonth" class="nav-arrow">＞</button>
+    <button id="prevMonth" class="nav-arrow no-double-tap-zoom">＜</button>
+    <button id="nextMonth" class="nav-arrow no-double-tap-zoom">＞</button>
     <span id="todayBtn" class="today-header">오늘</span>
     <span id="addBtn" class="plus-btn">＋</span>
-    <button id="monthlyCostBtn" class="monthly-cost-btn">￦</button>
-    <button id="statsBtn" class="stats-btn">≡</button>
+    <button id="monthlyCostBtn" class="monthly-cost-btn">₩</button>
+    <button id="statsBtn" class="stats-btn">σ</button>
     <button id="themeToggle" class="theme-btn">🌕</button>
   </div>
 </header>
@@ -147,6 +147,9 @@
     <div id="statsContent"></div>
   </div>
 </div>
+
+<!-- Floating Add Button -->
+<button id="fabAddBtn" class="fab-add-btn">＋</button>
 
 <script src="script.js"></script>
 

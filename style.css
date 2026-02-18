@@ -23,20 +23,25 @@ body {
   color: var(--text-color);
 }
 
+/* 더블탭 확대 억제 */
+.no-double-tap-zoom {
+  touch-action: manipulation;
+}
+
 /* 헤더 */
 .calendar-header {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 1px;
-  padding: 1px;
+  padding-bottom: 10px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 1px;
-  font-size: 20px;
+  gap: 5px;
+  font-size: 21px;
   font-weight: 700;
 }
 
@@ -45,12 +50,12 @@ body {
 .plus-btn,
 .theme-btn,
 .monthly-cost-btn {
-  font-size: 20px;
+  font-size: 21px;
   background: none;
   border: none;
   color: var(--text-color);
   cursor: pointer;
-  padding: 4px;
+  padding: 5px;
 }
 
 .nav-arrow:hover,
@@ -482,5 +487,59 @@ body.dark-mode .family-btn.selected {
   background-color: #4ECDC4; /* 밤 모드 선택 배경 */
   color: #242323;
   border-radius: 4px;
+}
+
+/* 텍스트 그림자만 적용 */
+.fab-add-btn {
+  position: fixed;
+  bottom: 0px;
+  right: 2px;
+
+  background: none;
+  border: none;
+
+  font-size: 36px;
+  color: var(--text-color);
+  cursor: pointer;
+  z-index: 1000;
+
+  text-shadow: 2px 2px 4px rgba(56, 56, 56, 0.4);
+}
+
+/* 1) 포커스 아웃라인 제거 */
+.fab-add-btn:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* 2) -webkit- 터치/클릭 하이라이트 제거 */
+.fab-add-btn, .fab-add-btn * {
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* 3) 모바일에서 선택시 생기는 배경 하이라이트 제거 */
+.fab-add-btn {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.fab-add-btn:active {
+  transform: scale(0.9);
+}
+
+/* 다크 모드 그림자 */
+body.dark-mode .fab-add-btn {
+  text-shadow: 2px 2px 4px rgba(129, 126, 126, 0.6);
+}
+
+/* 눌렀을 때 약간 작아지는 효과 */
+.fab-add-btn:active {
+  transform: scale(0.9);
+}
+
+.plus-btn {
+  display: none;
 }
 

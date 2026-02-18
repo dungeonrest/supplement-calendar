@@ -208,6 +208,13 @@ addBtn.addEventListener("click", () => {
   for (let tb of inputTime) tb.checked = false;
 });
 
+const fabAddBtn = document.getElementById("fabAddBtn");
+
+fabAddBtn.addEventListener("click", () => {
+  // 기존 + 버튼 기능 그대로 실행
+  addBtn.click();
+});
+
 closeModalBtn.addEventListener("click", () => {
   modalOverlay.classList.add("hidden");
 });
