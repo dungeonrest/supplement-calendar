@@ -525,6 +525,12 @@ function openTakenCheckUI(date) {
       titleEl.innerText = sup.productName;
       section.appendChild(titleEl);
 
+      // ===== 연장 버튼 추가 =====
+      const extendBtn = document.createElement("button");
+      extendBtn.classList.add("extend-btn");
+      extendBtn.innerText = "📅 연장";
+      titleEl.appendChild(extendBtn);
+
       // 테이블
       const table = document.createElement("table");
       table.classList.add("taken-table");
@@ -578,6 +584,40 @@ function openTakenCheckUI(date) {
 
       section.appendChild(table);
       body.appendChild(section);
+
+extendBtn.addEventListener("click", async () => {
+  const baseDate = date; // 모달 열린 날짜
+
+  // ← 변경된 계산 함수
+  const leftUnTakenSlots = calculateLeftUnTakenSlotsBefore(sup, baseDate);
+
+  // 예상 추가 일수
+  const additionalDays = calculateAdditionalDays(sup, baseDate, leftUnTakenSlots);
+
+  // 메시지 텍스트를 변경
+  let confirmMsg = 
+    `📌 기준 날짜: ${baseDate}\n` +
+    `미복용 체크 슬롯: ${leftUnTakenSlots}\n` +
+    `예상 추가 일정: ${additionalDays}일\n\n`;
+
+  // 추가 일수가 0이면 취소 메시지
+  if (additionalDays === 0) {
+    alert("📍 연장할 일정이 없습니다.");
+    return;
+  }
+
+  confirmMsg += "이대로 연장할까요?";
+
+  if (confirm(confirmMsg)) {
+    extendScheduleFromDate(sup, baseDate, additionalDays);
+
+    await saveAllSupplements();
+    renderCalendar();
+
+    alert("📅 일정이 연장되었습니다!");
+  }
+});
+
     });
   }
 
@@ -705,7 +745,7 @@ function showStatsForFamily(name) {
   let html = "";
 
   if (Object.keys(stats).length === 0) {
-    html += "<p>해당 기간 복용 데이터 없음</p>";
+    html += "<p></p>";
   } else {
     html += "<ul>";
     for (const key in stats) {
@@ -716,4 +756,66 @@ function showStatsForFamily(name) {
   }
 
   statsContent.innerHTML = html;
+}
+
+// ================================
+// 1) 기준 날짜 이전의 미복용 체크 슬롯 계산
+function calculateLeftUnTakenSlotsBefore(sup, baseDate) {
+  const takenStatus = sup.takenStatus || {};
+  let totalSlotsBefore = 0;
+  let takenSlotsBefore = 0;
+
+  sup.schedule.forEach(dateStr => {
+    // 기준 날짜 이전만 계산
+    if (dateStr < baseDate) {
+      // 해당 날짜의 총 체크 슬롯 수
+      totalSlotsBefore += sup.family.length * sup.times.length;
+
+      // 이미 체크된 것만 카운트
+      const dayStatus = takenStatus[dateStr] || {};
+      for (const key in dayStatus) {
+        if (dayStatus[key]) takenSlotsBefore++;
+      }
+    }
+  });
+
+  // 미복용 = 전체 slots – 체크된 slots
+  return totalSlotsBefore - takenSlotsBefore;
+}
+
+// ================================
+// 2) 연장할 날짜 수 계산
+function calculateAdditionalDays(sup, baseDate, leftSlots) {
+  const perDaySlots = sup.family.length * sup.times.length;
+
+  // 미복용 슬롯이 없다면 추가 안 함
+  if (leftSlots <= 0) return 0;
+
+  return Math.ceil(leftSlots / perDaySlots);
+}
+
+// ================================
+// 3) 기준 날짜 이후의 일정 재생성
+function extendScheduleFromDate(sup, baseDate, additionalDays) {
+  // 기준날짜 이전까지는 그대로 유지
+  const beforeDates = sup.schedule.filter(d => d < baseDate);
+
+  // 기준 날짜 포함 이후의 기존 schedule 유지
+  const afterDates = sup.schedule.filter(d => d >= baseDate);
+
+  // 연장을 추가할 날짜 (기준날 이후 가장 마지막 날부터)
+  let lastDateStr = afterDates.length > 0
+    ? afterDates[afterDates.length - 1]
+    : baseDate;
+
+  let d = new Date(lastDateStr);
+  d.setDate(d.getDate() + 1);
+
+  const newDates = [];
+  for (let i = 0; i < additionalDays; i++) {
+    newDates.push(d.toISOString().slice(0,10));
+    d.setDate(d.getDate() + 1);
+  }
+
+  sup.schedule = beforeDates.concat(afterDates, newDates);
 }
