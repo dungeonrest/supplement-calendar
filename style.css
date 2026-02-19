@@ -149,6 +149,11 @@ body {
   border-radius: 3px;
 }
 
+/* 미복용 막대바 */
+.supplement-bar.not-taken {
+  opacity: 0.4;
+}
+
 /* 막대바 내부 텍스트 라벨 */
 .supplement-bar-label {
   display: block;

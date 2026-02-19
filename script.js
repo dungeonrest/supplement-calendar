@@ -315,7 +315,27 @@ function renderCalendar() {
 bar.classList.add("supplement-bar");
 bar.style.backgroundColor = sup.circleColor;
 
-// ============ 라벨 표시 조건 ============
+// 복용 여부 판단
+// takenStatus가 없는 경우는 아직 체크 없음 → 미복용
+const dayTakenStatus = sup.takenStatus?.[fullDate] || {};
+
+// sup.times 배열에 있는 시간 중
+// 하나라도 체크됐으면 복용된 것으로 간주
+let isTaken = false;
+for (let time of sup.times) {
+  for (let member of sup.family) {
+    if (dayTakenStatus[`${time}_${member}`]) {
+      isTaken = true;
+      break;
+    }
+  }
+  if (isTaken) break;
+}
+
+// 복용 안 된 경우 클래스 추가
+if (!isTaken) {
+  bar.classList.add("not-taken");
+}
 
 // 현재 날짜 fullDate
 const currDateObj = new Date(fullDate);
@@ -570,6 +590,7 @@ document.getElementById("closeTakenCheckBtn")
     // IndexedDB에 자동 저장
     await saveAllSupplements();
     document.getElementById("takenCheckModal").classList.add("hidden");
+    renderCalendar();
   });
 
   // ===== 통계 모달 요소
@@ -631,22 +652,21 @@ function showStatsForFamily(name) {
     return;
   }
 
-  // 시작 월 첫 날
   const startArr = start.split("-");
   const startDate = new Date(parseInt(startArr[0]), parseInt(startArr[1]) - 1, 1);
 
-  // 종료 월 마지막 날
   const endArr = end.split("-");
   const endDate = new Date(parseInt(endArr[0]), parseInt(endArr[1]) - 1, 1);
   endDate.setMonth(endDate.getMonth() + 1);
   endDate.setDate(0);
 
-  const result = {};
+  const stats = {};
 
   supplements.forEach(sup => {
+    // 해당 가족이 포함되지 않으면 skip
     if (!sup.family.includes(name)) return;
 
-    // sup.takenStatus: 날짜별 체크 상태 객체
+    // 복용 체크 내용 없으면 skip
     if (!sup.takenStatus) return;
 
     for (let dateStr in sup.takenStatus) {
@@ -656,25 +676,41 @@ function showStatsForFamily(name) {
       const dayStatus = sup.takenStatus[dateStr];
 
       for (const key in dayStatus) {
-        // key: "아침_도림", "저녁_뚜임" 식
-        const [time, member] = key.split("_");
-        if (member !== name) continue;
+        // key 예: "아침_도림", "점심_뚜임"
+        if (!dayStatus[key]) continue;
 
-        if (dayStatus[key]) {
-          result[sup.productName] = (result[sup.productName] || 0) + sup.dose;
+        const [timeName, memberName] = key.split("_");
+
+        // 이 체크가 지금 보고 있는 가족(name)인지 확인
+        if (memberName !== name) continue;
+
+        // 1회 복용량 계산
+        const timesCount = sup.times.length;
+        let oneDosePerTime = 0;
+        if (timesCount > 0) {
+          oneDosePerTime = Math.floor(sup.dose / timesCount);
         }
+
+        // 초기화
+        if (!stats[sup.productName]) {
+          stats[sup.productName] = { capsules: 0 };
+        }
+
+        // 체크된 시간만큼만 누적
+        stats[sup.productName].capsules += oneDosePerTime;
       }
     }
   });
 
-  let html = `<h4></h4>`;
+  let html = "";
 
-  if (Object.keys(result).length === 0) {
-    html += "<p>해당 기간 복용 데이터 없음.</p>";
+  if (Object.keys(stats).length === 0) {
+    html += "<p>해당 기간 복용 데이터 없음</p>";
   } else {
     html += "<ul>";
-    for (const key in result) {
-      html += `<li>${key}: ${result[key]}회</li>`;
+    for (const key in stats) {
+      const info = stats[key];
+      html += `<li>${key}: ${info.capsules.toLocaleString()}회</li>`;
     }
     html += "</ul>";
   }
