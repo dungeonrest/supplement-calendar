@@ -528,7 +528,7 @@ function openTakenCheckUI(date) {
       // ===== 연장 버튼 추가 =====
       const extendBtn = document.createElement("button");
       extendBtn.classList.add("extend-btn");
-      extendBtn.innerText = "연장";
+      extendBtn.innerText = "🔁";
       titleEl.appendChild(extendBtn);
 
       // 테이블

@@ -370,7 +370,7 @@ body.dark-mode .modal {
 
 /* ==== 복용 체크 모달 스타일 ==== */
 .taken-modal {
-  width: 300px;
+  width: 280px;
   max-height: 80vh;
   overflow-y: auto;
 }
@@ -381,9 +381,12 @@ body.dark-mode .modal {
 }
 
 .taken-sup-title {
-  font-size: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-weight: 700;
-  margin-bottom: 1px;
+  font-size: 14px;
+  margin-bottom: 3px;
 }
 
 .taken-table {
@@ -396,7 +399,8 @@ body.dark-mode .modal {
 .taken-table td {
   text-align: center;
   padding: 4px 2px;
-  border: 0px solid #ccc;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .taken-table th {
@@ -436,16 +440,19 @@ input[type="checkbox"] {
   transform: translateY(-50%);
 }
 
+/* --- 첫 영양제 구간과 헤더 사이 여백 --- */
+#takenCheckBody .taken-sup-section:first-child {
+  margin-top: 16px;
+}
+
 /* 연장 버튼 꾸미기 */
-.extend-btn {
+.taken-sup-title .extend-btn {
   font-size: 12px;
-  padding: 2px 4px;
-  margin-left: 217px;
-  cursor: pointer;
-  background: #0077b6;
-  color: white;
+  padding: 0;
+  background: none;
+  color: var(--text-color);
   border: none;
-  border-radius: 4px;
+  cursor: pointer;
 }
 
 .stats-modal .modal-header h3 {
