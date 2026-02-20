@@ -41,6 +41,22 @@
   <div id="dates" class="dates-container"></div>
 </div>
 
+<!-- 하단 작은 백업/복원 링크 -->
+<div id="footerBackupArea" class="footer-backup-area">
+  <span id="footerBackupYear">© <span id="footerYear"></span></span>
+  <span id="footerBackupLink" class="footer-backup-link">백업/복원</span>
+</div>
+
+<!-- 숨겨진 백업/복원 메뉴 -->
+<div id="backupMenuModal" class="modal-overlay hidden">
+  <div class="modal backup-menu-modal">
+    <button id="exportBtn" class="menu-btn">백업</button>
+    <button id="triggerImportBtn" class="menu-btn">복원</button>
+    <button id="closeBackupMenu" class="menu-btn cancel-btn">닫기</button>
+    <input type="file" id="importFileInput" accept=".json" style="display:none;" />
+  </div>
+</div>
+
 <!-- 모달들 -->
 <div id="modalOverlay" class="modal-overlay hidden">
   <div class="modal">

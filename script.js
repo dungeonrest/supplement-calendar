@@ -528,7 +528,7 @@ function openTakenCheckUI(date) {
       // ===== 연장 버튼 추가 =====
       const extendBtn = document.createElement("button");
       extendBtn.classList.add("extend-btn");
-      extendBtn.innerText = "📅 연장";
+      extendBtn.innerText = "연장";
       titleEl.appendChild(extendBtn);
 
       // 테이블
@@ -596,8 +596,8 @@ extendBtn.addEventListener("click", async () => {
 
   // 메시지 텍스트를 변경
   let confirmMsg = 
-    `📌 기준 날짜: ${baseDate}\n` +
-    `미복용 체크 슬롯: ${leftUnTakenSlots}\n` +
+    `${baseDate}\n\n` +
+    `미복용 체크 슬롯: ${leftUnTakenSlots}개\n` +
     `예상 추가 일정: ${additionalDays}일\n\n`;
 
   // 추가 일수가 0이면 취소 메시지
@@ -819,3 +819,97 @@ function extendScheduleFromDate(sup, baseDate, additionalDays) {
 
   sup.schedule = beforeDates.concat(afterDates, newDates);
 }
+
+// ===== 하단 백업/복원 안내 =====
+const footerYear = document.getElementById("footerYear");
+const footerBackupLink = document.getElementById("footerBackupLink");
+const backupMenuModal = document.getElementById("backupMenuModal");
+const exportBtn = document.getElementById("exportBtn");
+const triggerImportBtn = document.getElementById("triggerImportBtn");
+const closeBackupMenu = document.getElementById("closeBackupMenu");
+const importFileInput = document.getElementById("importFileInput");
+
+// 현재 연도 표시
+footerYear.innerText = new Date().getFullYear();
+
+// 백업/복원 메뉴 열기
+footerBackupLink.addEventListener("click", () => {
+  backupMenuModal.classList.remove("hidden");
+});
+
+// 취소/닫기
+closeBackupMenu.addEventListener("click", () => {
+  backupMenuModal.classList.add("hidden");
+});
+
+// ====================
+// 백업 동작
+exportBtn.addEventListener("click", () => {
+  if (supplements.length === 0) {
+    alert("백업할 데이터가 없습니다.");
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify(supplements, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `supplements-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+
+  URL.revokeObjectURL(url);
+  backupMenuModal.classList.add("hidden");
+});
+
+// ====================
+// 복원 트리거
+triggerImportBtn.addEventListener("click", () => {
+  importFileInput.click();
+});
+
+// 복원 파일 선택
+importFileInput.addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const text = await file.text();
+
+  try {
+    const data = JSON.parse(text);
+
+    if (!Array.isArray(data)) {
+      alert("올바른 백업 파일이 아닙니다.");
+      return;
+    }
+
+    if (!confirm("기존 기록이 삭제되고 백업 내용으로 덮어씌워집니다. 계속할까요?")) {
+      return;
+    }
+
+    // ===== IndexedDB 전체 삭제 =====
+    await new Promise((resolve, reject) => {
+      const deleteReq = indexedDB.deleteDatabase(DB_NAME);
+      deleteReq.onsuccess = () => resolve();
+      deleteReq.onerror = () => reject(deleteReq.error);
+    });
+
+    // ===== 메모리에 백업 데이터 적용 =====
+    supplements = data;
+
+    // ===== DB 재생성 및 저장 =====
+    await openDatabase();
+    await saveAllSupplements();
+
+    backupMenuModal.classList.add("hidden");
+    selectedDateForList = new Date().toISOString().slice(0,10);
+    renderCalendar();
+
+    alert("백업 데이터를 불러왔습니다!");
+  } catch (err) {
+    alert("파일 읽기 중 오류가 발생했습니다.");
+    console.error(err);
+  }
+
+  e.target.value = "";
+});

@@ -439,8 +439,8 @@ input[type="checkbox"] {
 /* 연장 버튼 꾸미기 */
 .extend-btn {
   font-size: 12px;
-  padding: 4px 6px;
-  margin-left: 8px;
+  padding: 2px 4px;
+  margin-left: 217px;
   cursor: pointer;
   background: #0077b6;
   color: white;
@@ -560,3 +560,41 @@ body.dark-mode .fab-add-btn {
   display: none;
 }
 
+/* ===== 하단 백업/복원 링크 ===== */
+.footer-backup-area {
+  text-align: center;
+  font-size: 12px;
+  padding: 8px 0;
+  color: var(--text-color);
+  opacity: 0.7;
+}
+
+.footer-backup-link {
+  margin-left: 6px;
+  text-decoration: underline;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+/* 백업/복원 메뉴 모달 */
+.backup-menu-modal {
+  width: 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 11px;
+}
+
+.menu-btn {
+  font-size: 14px;
+  padding: 6px;
+  background: #0077b6;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.cancel-btn {
+  background: #555;
+}
