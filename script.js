@@ -887,12 +887,23 @@ importFileInput.addEventListener("change", async (e) => {
       return;
     }
 
-    // ===== IndexedDB 전체 삭제 =====
-    await new Promise((resolve, reject) => {
-      const deleteReq = indexedDB.deleteDatabase(DB_NAME);
-      deleteReq.onsuccess = () => resolve();
-      deleteReq.onerror = () => reject(deleteReq.error);
-    });
+    // ==== IndexedDB 완전 삭제 함수 ====
+function deleteDatabaseAsync() {
+  return new Promise((resolve, reject) => {
+    const deleteReq = indexedDB.deleteDatabase(DB_NAME);
+
+    deleteReq.onblocked = () => {
+      console.warn("IndexedDB 삭제가 차단됨 — 창을 닫고 다시 시도하세요.");
+    };
+
+    deleteReq.onerror = () => reject(deleteReq.error);
+
+    deleteReq.onsuccess = () => {
+      console.log("IndexedDB 삭제 완료!");
+      resolve();
+    };
+  });
+}
 
     // ===== 메모리에 백업 데이터 적용 =====
     supplements = data;
