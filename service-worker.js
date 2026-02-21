@@ -1,58 +1,73 @@
-// ===== 자동 버전 캐시 적용 =====
-const CACHE_NAME = "supplement-calendar-cache-" + new Date().getTime();
+// ===== 버전 관리 캐시 이름
+const CACHE_VERSION = "v1";
+const CACHE_NAME = `supplement-calendar-cache-${CACHE_VERSION}`;
 
-const urlsToCache = [
+// ===== 설치 시 반드시 캐싱할 필수 리소스
+const ASSETS_TO_PRECACHE = [
   "./",
   "./index.html",
   "./style.css",
   "./script.js",
   "./manifest.json",
   "./icons/192.png",
-  "./icons/512.png"
+  "./icons/512.png",
+  "./offline.html"
 ];
 
-// 설치 시 필요한 파일 캐싱
+// — 설치 (install) 이벤트 —
+// 핵심 리소스를 미리 캐싱
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+      .then(cache => cache.addAll(ASSETS_TO_PRECACHE))
       .then(() => self.skipWaiting())
   );
 });
 
-// 활성화 시 이전 캐시 제거
+// — 활성화 (activate) 이벤트 —
+// 이전 캐시를 제거하고 새로운 버전 적용
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
+    caches.keys().then((keys) => {
+      return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
         })
-      )
-    )
+      );
+    })
   );
   self.clients.claim();
 });
 
-// fetch 이벤트 - 네트워크 우선, 캐시 fallback
+// — fetch 이벤트 —
+// 캐시 우선 (Cache First) → 네트워크 갱신
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // 유효한 응답이면 캐시에 저장
-        if (response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        // 네트워크 실패 시 캐시에서 가져오기
-        return caches.match(event.request);
-      })
+    caches.match(event.request).then((cachedResponse) => {
+      // 1) 캐시가 있으면 즉시 반환
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
+      // 2) 캐시 없으면 네트워크 요청
+      return fetch(event.request)
+        .then((networkResponse) => {
+          // 네트워크 응답이 유효하면 캐시에 추가
+          if (networkResponse && networkResponse.status === 200) {
+            const responseClone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // 네트워크도 실패 시 (OFFLINE)
+          // 만약 원하는 오프라인 전용 페이지가 있다면 여기서 리턴
+          return caches.match("./offline.html");
+        });
+    })
   );
 });

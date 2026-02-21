@@ -13,6 +13,14 @@ const koreaHolidays2026 = [
   "2026-12-25"
 ];
 
+function disableBackgroundScroll() {
+  document.body.classList.add("modal-open");
+}
+
+function enableBackgroundScroll() {
+  document.body.classList.remove("modal-open");
+}
+
 // ====================
 // DOM 요소
 // ====================

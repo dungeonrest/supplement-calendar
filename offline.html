@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>오프라인입니다</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 20px; }
+    h1 { font-size: 22px; margin-top: 40px; }
+    p { font-size: 16px; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>📴 오프라인 상태입니다</h1>
+  <p>인터넷 연결이 없거나 리소스를 불러올 수 없습니다.</p>
+  <p>잠시 후 연결이 복구되면 자동으로 다시 로딩됩니다.</p>
+
+  <script>
+    window.addEventListener("online", () => {
+      location.reload(); // 온라인 되면 앱을 다시 불러오기
+    });
+  </script>
+</body>
+</html>

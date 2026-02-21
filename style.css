@@ -605,3 +605,15 @@ body.dark-mode .fab-add-btn {
 .cancel-btn {
   background: #555;
 }
+
+/* 모달 오픈 시 배경 스크롤 잠금 */
+body.modal-open {
+  overflow: hidden !important;
+  touch-action: none !important;
+}
+
+/* 모달 내부(스크롤 영역) */
+.modal {
+  max-height: 80vh;
+  overflow-y: auto;
+}
