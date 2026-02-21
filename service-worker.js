@@ -1,18 +1,18 @@
 // ===== 버전 관리 캐시 이름
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3";
 const CACHE_NAME = `supplement-calendar-cache-${CACHE_VERSION}`;
 
 // ===== 설치 시 반드시 캐싱할 필수 리소스
 const ASSETS_TO_PRECACHE = [
   "./",
-  "./index.html",
-  "./style.css",
-  "./script.js",
-  "./manifest.json",
-  "./icons/192.png",
-  "./icons/512.png",
-  "./offline.html"
-];
+  "index.html",
+  "offline.html",
+  "style.css",
+  "script.js",
+  ".manifest.json",
+  "icons/192.png",
+  "icons/512.png"
+  ];
 
 // — 설치 (install) 이벤트 —
 // 핵심 리소스를 미리 캐싱
@@ -42,32 +42,27 @@ self.addEventListener("activate", (event) => {
 });
 
 // — fetch 이벤트 —
-// 캐시 우선 (Cache First) → 네트워크 갱신
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      // 1) 캐시가 있으면 즉시 반환
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+    caches.match(event.request)
+      .then((cached) => {
+        if (cached) return cached;
 
-      // 2) 캐시 없으면 네트워크 요청
-      return fetch(event.request)
-        .then((networkResponse) => {
-          // 네트워크 응답이 유효하면 캐시에 추가
-          if (networkResponse && networkResponse.status === 200) {
-            const responseClone = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
+        return fetch(event.request)
+          .then((response) => {
+            if (!response || response.status !== 200) {
+              return caches.match("./offline.html");
+            }
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
               cache.put(event.request, responseClone);
             });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          // 네트워크도 실패 시 (OFFLINE)
-          // 만약 원하는 오프라인 전용 페이지가 있다면 여기서 리턴
-          return caches.match("./offline.html");
-        });
-    })
+            return response;
+          })
+          .catch(() => {
+            // 네트워크도 실패하면 offline.html 리턴
+            return caches.match("./offline.html");
+          });
+      })
   );
 });

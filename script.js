@@ -21,6 +21,14 @@ function enableBackgroundScroll() {
   document.body.classList.remove("modal-open");
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+  // 저장된 dark-mode 값 불러오기
+  const saved = localStorage.getItem("darkMode") === "true";
+  if (saved) {
+    document.body.classList.add("dark-mode");
+  }
+});
+
 // ====================
 // DOM 요소
 // ====================
@@ -51,6 +59,7 @@ function openSupplementModal(sup) {
   currentEditId = sup.id;
 
   modalOverlay.classList.remove("hidden");
+  document.body.classList.add("modal-open");
 
   inputDate.value = sup.schedule[0] || "";
   inputProduct.value = sup.productName;
@@ -137,7 +146,11 @@ function saveSupplementToDB(sup) {
     const store = tx.objectStore(STORE_NAME);
     const req = store.put(sup);
     req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
+       req.onerror = (event) => {
+      console.error("[DB 저장 에러]", event.target.error);
+      alert("💾 저장 중 오류가 발생했습니다. 콘솔을 확인하세요.");
+      reject(event.target.error);
+    };
   });
 }
 
@@ -157,6 +170,7 @@ function deleteSupplementFromDB(id) {
 // ====================
 themeToggleBtn.addEventListener("click", () => {
   document.body.classList.toggle("dark-mode");
+  localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
 });
 
 // ====================
@@ -203,10 +217,12 @@ monthlyCostBtn.addEventListener("click", () => {
 
   monthlyCostContent.innerHTML = costHtml;
   monthlyCostModal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
 });
 
 closeMonthlyCostModal.addEventListener("click", () => {
   monthlyCostModal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
 });
 
 // ====================
@@ -215,6 +231,7 @@ closeMonthlyCostModal.addEventListener("click", () => {
 addBtn.addEventListener("click", () => {
   currentEditId = null;
   modalOverlay.classList.remove("hidden");
+  document.body.classList.add("modal-open");
   inputDate.valueAsDate = new Date(selectedDateForList ? selectedDateForList : new Date());
   inputProduct.value = "";
   inputTotal.value = "";
@@ -233,7 +250,10 @@ fabAddBtn.addEventListener("click", () => {
 
 closeModalBtn.addEventListener("click", () => {
   modalOverlay.classList.add("hidden");
+  document.body.classList.remove("modal-open");
 });
+
+document.body.classList.remove("modal-open");
 
 deleteSupplementBtnModal.addEventListener("click", async () => {
   if (currentEditId) {
@@ -524,6 +544,8 @@ function openTakenCheckUI(date) {
   title.innerText = `${date}`;
   body.innerHTML = ""; // 기존 내용 초기화
 
+  document.body.classList.add("modal-open");
+
   // 해당 날짜 영양제들
   const matchedSupps = supplements.filter(s => s.schedule.includes(date));
 
@@ -646,6 +668,7 @@ document.getElementById("closeTakenCheckBtn")
     // IndexedDB에 자동 저장
     await saveAllSupplements();
     document.getElementById("takenCheckModal").classList.add("hidden");
+    document.body.classList.remove("modal-open");
     renderCalendar();
   });
 
@@ -661,6 +684,7 @@ const periodEnd = document.getElementById("periodEnd");
 // 통계 모달 열기
 statsBtn.addEventListener("click", () => {
   statsModal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
   // 기본 기간: 올해
   const year = new Date().getFullYear();
   periodStart.value = `${String(year)}-01`;
@@ -670,6 +694,7 @@ statsBtn.addEventListener("click", () => {
 // 닫기
 closeStatsModal.addEventListener("click", () => {
   statsModal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
 
   // 기간 초기화
   periodStart.value = "";

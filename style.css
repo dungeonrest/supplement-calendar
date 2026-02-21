@@ -617,3 +617,15 @@ body.modal-open {
   max-height: 80vh;
   overflow-y: auto;
 }
+
+/* 전체 스크롤바 숨기기 - 모든 스크롤바 숨김 */
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* 파이어폭스 */
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
