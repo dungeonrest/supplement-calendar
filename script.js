@@ -80,6 +80,14 @@ const colorList = [
   "#16A085"  // Sea Green
 ];
 
+// ====================
+// 한국 시간 기준 오늘 날짜 문자열 (YYYY-MM-DD)
+function getTodayKST() {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const kst = new Date(utc + (9 * 60 * 60000));
+  return kst.toISOString().slice(0,10);
+}
 
 // ====================
 // IndexedDB
@@ -245,7 +253,7 @@ function renderCalendar() {
 
   datesContainer.innerHTML = "";
 
-  const todayStr = new Date().toISOString().slice(0,10); // ★ 오늘 날짜 문자열
+  const todayStr = getTodayKST();
 
   const prevLastDate = new Date(year, month, 0).getDate();
   for (let x = firstDay; x > 0; x--) {
@@ -474,7 +482,7 @@ async function saveAllSupplements() { for (let sup of supplements) await saveSup
 
 async function loadSupplements() {
   supplements = await getAllSupplements();
-  selectedDateForList = new Date().toISOString().slice(0,10);
+  selectedDateForList = getTodayKST();
   renderCalendar();
 }
 
