@@ -1,5 +1,5 @@
 // ===== 버전 관리 캐시 이름
-const CACHE_VERSION = "v5";
+const CACHE_VERSION = "v1";
 const CACHE_NAME = `supplement-calendar-cache-${CACHE_VERSION}`;
 
 // ===== 설치 시 반드시 캐싱할 필수 리소스
@@ -9,7 +9,7 @@ const ASSETS_TO_PRECACHE = [
   "offline.html",
   "style.css",
   "script.js",
-  ".manifest.json",
+  "manifest.json",
   "icons/192.png",
   "icons/512.png"
   ];

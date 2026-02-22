@@ -1,6 +1,6 @@
 // =======================
 // 앱 버전 — 여기만 수정하면 표시도 자동으로 갱신됨
-const APP_VERSION = "v5";  // ← 배포할 때마다 여기를 업데이트하세요
+const APP_VERSION = "v1";  // ← 배포할 때마다 여기를 업데이트하세요
 // =======================
 
 // 공휴일 리스트 (예: 2026년)
@@ -356,25 +356,24 @@ function renderCalendar() {
 bar.classList.add("supplement-bar");
 bar.style.backgroundColor = sup.circleColor;
 
-// 복용 여부 판단
-// takenStatus가 없는 경우는 아직 체크 없음 → 미복용
+// 복용 여부 판단 — 변경된 전체 체크 기준
 const dayTakenStatus = sup.takenStatus?.[fullDate] || {};
 
-// sup.times 배열에 있는 시간 중
-// 하나라도 체크됐으면 복용된 것으로 간주
-let isTaken = false;
+let allChecked = true;
+
+// sup.times와 sup.family의 모든 조합이 체크돼 있는지 확인
 for (let time of sup.times) {
   for (let member of sup.family) {
-    if (dayTakenStatus[`${time}_${member}`]) {
-      isTaken = true;
+    if (!dayTakenStatus[`${time}_${member}`]) {
+      allChecked = false;
       break;
     }
   }
-  if (isTaken) break;
+  if (!allChecked) break;
 }
 
-// 복용 안 된 경우 클래스 추가
-if (!isTaken) {
+// 모두 체크되어야 taken
+if (!allChecked) {
   bar.classList.add("not-taken");
 }
 
