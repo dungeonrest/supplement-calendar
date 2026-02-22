@@ -42,27 +42,37 @@ self.addEventListener("activate", (event) => {
 });
 
 // — fetch 이벤트 —
+// 네트워크 요청을 처리하면서 최신 캐시를 업데이트
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then((cached) => {
-        if (cached) return cached;
-
-        return fetch(event.request)
-          .then((response) => {
-            if (!response || response.status !== 200) {
-              return caches.match("./offline.html");
-            }
+    caches.match(event.request).then((cached) => {
+      // 캐시가 있을 경우 캐시에서 응답
+      if (cached) {
+        // 네트워크 요청 후, 새 데이터를 캐시에 갱신
+        fetch(event.request).then((response) => {
+          if (response && response.status === 200) {
             const responseClone = response.clone();
-            caches.open(CACHE_NAME).then(cache => {
+            caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseClone);
             });
-            return response;
-          })
-          .catch(() => {
-            // 네트워크도 실패하면 offline.html 리턴
+          }
+        }).catch(() => {}); // 네트워크 실패 시 무시
+        return cached; // 캐시된 응답 반환
+      }
+
+      // 네트워크 요청 후, 응답이 없으면 offline.html로 대체
+      return fetch(event.request)
+        .then((response) => {
+          if (!response || response.status !== 200) {
             return caches.match("./offline.html");
+          }
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone); // 캐시 업데이트
           });
-      })
+          return response;
+        })
+        .catch(() => caches.match("./offline.html"));
+    })
   );
 });
