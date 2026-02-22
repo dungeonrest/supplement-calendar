@@ -1,3 +1,8 @@
+// =======================
+// 앱 버전 — 여기만 수정하면 표시도 자동으로 갱신됨
+const APP_VERSION = "v5";  // ← 배포할 때마다 여기를 업데이트하세요
+// =======================
+
 // 공휴일 리스트 (예: 2026년)
 const koreaHolidays2026 = [
   "2026-01-01",
@@ -872,6 +877,9 @@ const importFileInput = document.getElementById("importFileInput");
 
 // 현재 연도 표시
 footerYear.innerText = new Date().getFullYear();
+
+// 현재 연도 + 앱 버전 표시
+footerYear.innerText = `${new Date().getFullYear()} ${APP_VERSION}`;
 
 // 백업/복원 메뉴 열기
 footerBackupLink.addEventListener("click", () => {
