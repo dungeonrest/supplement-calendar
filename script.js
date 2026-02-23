@@ -1,5 +1,5 @@
 
-const APP_VERSION = "v9";
+const APP_VERSION = "v10";
 
 // 공휴일 리스트 (예: 2026년)
 const koreaHolidays2026 = [
@@ -1012,7 +1012,7 @@ footerVersionEl.addEventListener("click", async () => {
         location.reload();  // 페이지 새로고침
       }
     } else {
-      alert(`✅ 최신 버전입니다! (${currentVersion})`);
+      alert(`💊 최신 버전입니다! (${currentVersion})`);
     }
   } catch (err) {
     console.error("버전 체크 실패:", err);
