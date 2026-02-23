@@ -984,7 +984,7 @@ document.getElementById("footerAppVersion").innerText = APP_VERSION;
 // 클릭 이벤트
 footerVersionEl.addEventListener("click", async () => {
   try {
-    const res = await fetch("version.json?" + Date.now()); // 캐시 방지
+    const res = await fetch("./version.json?" + Date.now()); // 캐시 방지
     const data = await res.json();
 
     const latestVersion = data.version;
@@ -996,7 +996,7 @@ footerVersionEl.addEventListener("click", async () => {
         location.reload();  // 페이지 새로고침
       }
     } else {
-      alert(`✅ 최신 버전입니다! (v${currentVersion})`);
+      alert(`✅ 최신 버전입니다! (${currentVersion})`);
     }
   } catch (err) {
     console.error("버전 체크 실패:", err);
