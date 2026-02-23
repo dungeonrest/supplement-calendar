@@ -984,7 +984,7 @@ document.getElementById("footerAppVersion").innerText = APP_VERSION;
 // 클릭 이벤트
 footerVersionEl.addEventListener("click", async () => {
   try {
-    const res = await fetch("/version.json?" + Date.now()); // 캐시 방지
+    const res = await fetch("version.json?" + Date.now()); // 캐시 방지
     const data = await res.json();
 
     const latestVersion = data.version;
