@@ -17,10 +17,9 @@ const ASSETS_TO_PRECACHE = [
 // — 설치 (install) 이벤트 —
 // 핵심 리소스를 미리 캐싱
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ASSETS_TO_PRECACHE))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS_TO_PRECACHE))
   );
 });
 
@@ -28,15 +27,12 @@ self.addEventListener("install", (event) => {
 // 이전 캐시를 제거하고 새로운 버전 적용
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys.filter(key => key !== CACHE_NAME)
+            .map(key => caches.delete(key))
+      )
+    )
   );
   self.clients.claim();
 });

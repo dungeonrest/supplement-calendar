@@ -505,6 +505,7 @@ saveInfoBtn.addEventListener("click", async () => {
 
   await saveAllSupplements();
   modalOverlay.classList.add("hidden");
+  document.body.classList.remove("modal-open");
   selectedDateForList = start;
   renderCalendar();
 });
