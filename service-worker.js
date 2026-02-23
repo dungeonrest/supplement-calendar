@@ -27,48 +27,40 @@ self.addEventListener("install", (event) => {
 // 이전 캐시를 제거하고 새로운 버전 적용
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys.filter(key => key !== CACHE_NAME)
-            .map(key => caches.delete(key))
-      )
-    )
+    caches.keys().then((keys) => {
+      return Promise.all(
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
+    })
   );
   self.clients.claim();
 });
 
-// — fetch 이벤트 —
-// 네트워크 요청을 처리하면서 최신 캐시를 업데이트
+// fetch 이벤트: 네트워크 우선 → 캐시 fallback
 self.addEventListener("fetch", (event) => {
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      // 캐시가 있을 경우 캐시에서 응답
-      if (cached) {
-        // 네트워크 요청 후, 새 데이터를 캐시에 갱신
-        fetch(event.request).then((response) => {
-          if (response && response.status === 200) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseClone);
-            });
-          }
-        }).catch(() => {}); // 네트워크 실패 시 무시
-        return cached; // 캐시된 응답 반환
-      }
-
-      // 네트워크 요청 후, 응답이 없으면 offline.html로 대체
-      return fetch(event.request)
-        .then((response) => {
-          if (!response || response.status !== 200) {
-            return caches.match("./offline.html");
-          }
-          const responseClone = response.clone();
+    fetch(event.request)
+      .then((networkResponse) => {
+        // 네트워크 성공하면 캐시에 업데이트
+        if (networkResponse && networkResponse.status === 200) {
+          const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone); // 캐시 업데이트
+            cache.put(event.request, responseClone);
           });
-          return response;
-        })
-        .catch(() => caches.match("./offline.html"));
-    })
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        // 네트워크 실패 시 캐시에서 가져오기
+        return caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          // 캐시에도 없으면 오프라인 페이지로
+          return caches.match(`./offline.html?v=${CACHE_VERSION}`);
+        });
+      })
   );
 });
