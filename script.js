@@ -1,6 +1,6 @@
 // =======================
 // 앱 버전 — 여기만 수정하면 표시도 자동으로 갱신됨
-const APP_VERSION = "v7";  // ← 배포할 때마다 여기를 업데이트하세요
+const APP_VERSION = "v8";  // ← 배포할 때마다 여기를 업데이트하세요
 // =======================
 
 // 공휴일 리스트 (예: 2026년)
@@ -350,32 +350,43 @@ function renderCalendar() {
     }
 
     supplements.forEach(sup => {
+      // 해당 날짜 일정이 있을 때만 bar 추가
       if (sup.schedule.includes(fullDate)) {
 
         const bar = document.createElement("div");
-bar.classList.add("supplement-bar");
-bar.style.backgroundColor = sup.circleColor;
+        bar.classList.add("supplement-bar");
 
-// 복용 여부 판단 — 변경된 전체 체크 기준
-const dayTakenStatus = sup.takenStatus?.[fullDate] || {};
+        // 반투명 배경 (남은 부분)
+        bar.style.backgroundColor = `rgba(${hexToRgb(sup.circleColor)}, 0.35)`;
 
-let allChecked = true;
+        // 채워진 부분
+        const fill = document.createElement("div");
+        fill.classList.add("bar-fill");
+        fill.style.backgroundColor = sup.circleColor;
 
-// sup.times와 sup.family의 모든 조합이 체크돼 있는지 확인
-for (let time of sup.times) {
-  for (let member of sup.family) {
-    if (!dayTakenStatus[`${time}_${member}`]) {
-      allChecked = false;
-      break;
-    }
-  }
-  if (!allChecked) break;
-}
+        // 복용 체크 상태 읽기
+        const dayStatus = sup.takenStatus?.[fullDate] || {};
+        let takenSlots = 0;
+        for (let t of sup.times) {
+          for (let m of sup.family) {
+            if (dayStatus[`${t}_${m}`]) takenSlots++;
+          }
+        }
 
-// 모두 체크되어야 taken
-if (!allChecked) {
-  bar.classList.add("not-taken");
-}
+        const totalSlots = sup.family.length * sup.times.length;
+        const fillPercent = totalSlots > 0
+          ? Math.floor((takenSlots / totalSlots) * 100)
+          : 0;
+
+        // 채운 넓이 설정
+        fill.style.width = `${fillPercent}%`;
+
+        // 라벨 텍스트
+        const labelInBar = document.createElement("span");
+        labelInBar.classList.add("supplement-bar-label");
+        labelInBar.innerText = sup.productName;
+
+        bar.appendChild(fill);
 
 // 현재 날짜 fullDate
 const currDateObj = new Date(fullDate);
@@ -1003,3 +1014,12 @@ footerVersionEl.addEventListener("click", async () => {
     alert("버전 체크 중 오류가 발생했습니다.");
   }
 });
+
+function hexToRgb(hex) {
+  hex = hex.replace("#", "");
+  const bigint = parseInt(hex, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `${r}, ${g}, ${b}`;
+}

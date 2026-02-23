@@ -138,33 +138,41 @@ body {
    막대바 스타일 (영양제 표시)
    ========================= */
 .supplement-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: 1px;
-  padding-bottom: 0.2px;
+  position: relative; /* 위치 기준을 확실히 함 */
   width: 80%;
   height: 7px;
+  padding-top: 1px;
+  padding-bottom: 0.2px;
   margin: 1px auto;
   border-radius: 3px;
+  overflow: hidden;
+
+  /* 불투명 배경 (남은 부분) */
+  background-color: rgba(255,255,255,0.35);
 }
 
-/* 미복용 막대바 */
-.supplement-bar.not-taken {
-  opacity: 0.4;
+/* 내부 채운 부분 (부분 복용 Fill) */
+.supplement-bar .bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%; /* JS에서 동적으로 변경됨 */
+  background-color: inherit; /* 부모 색을 그대로 물려받음 */
+  transition: width 0.25s ease;
 }
 
-/* 막대바 내부 텍스트 라벨 */
+/* 라벨 텍스트는 기존처럼 응원 그대로 위치 유지 */
 .supplement-bar-label {
-  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -45%);
   font-size: 7px;
   font-weight: 700;
-  text-align: center;
   color: white;
-  width: 100%;
+  pointer-events: none;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* 날짜셀 안에 영양제 리스트 공간 */
