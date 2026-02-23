@@ -1,6 +1,6 @@
 // =======================
 // 앱 버전 — 여기만 수정하면 표시도 자동으로 갱신됨
-const APP_VERSION = "v8";  // ← 배포할 때마다 여기를 업데이트하세요
+const APP_VERSION = "v9";  // ← 배포할 때마다 여기를 업데이트하세요
 // =======================
 
 // 공휴일 리스트 (예: 2026년)
@@ -412,10 +412,17 @@ if (weekScheds.length > 0) {
 
 // 만약 this fullDate가 해당 주에서 최초 등장 날짜라면
 if (firstInWeek === fullDate) {
-  const labelInBar = document.createElement("span");
-  labelInBar.classList.add("supplement-bar-label");
-  labelInBar.innerText = sup.productName;
-  bar.appendChild(labelInBar);
+  // 라벨 생성
+const labelInBar = document.createElement("span");
+labelInBar.classList.add("supplement-bar-label");
+
+// 미복용 상태이면 추가 클래스 추가
+if (fillPercent === 0) {
+  labelInBar.classList.add("unTaken");
+}
+
+labelInBar.innerText = sup.productName;
+bar.appendChild(labelInBar);
 }
 
 // 클릭 이벤트 유지

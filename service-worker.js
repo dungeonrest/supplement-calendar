@@ -1,5 +1,5 @@
 // ===== 버전 관리 캐시 이름
-const CACHE_VERSION = "v8";
+const CACHE_VERSION = "v9";
 const CACHE_NAME = `supplement-calendar-cache-${CACHE_VERSION}`;
 
 // ===== 설치 시 반드시 캐싱할 필수 리소스
@@ -40,12 +40,21 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// fetch 이벤트: 네트워크 우선 → 캐시 fallback
 self.addEventListener("fetch", (event) => {
+  // 네비게이션 요청만 오프라인 fallback 대상으로
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match("/offline.html");
+      })
+    );
+    return;
+  }
+
+  // CSS/JS/이미지 등 나머지는 기존 캐시/네트워크 흐름 유지
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {
-        // 네트워크 성공하면 캐시에 업데이트
         if (networkResponse && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -55,11 +64,9 @@ self.addEventListener("fetch", (event) => {
         return networkResponse;
       })
       .catch(() => {
-        // 네트워크 실패 시 캐시에서 가져오기
         return caches.match(event.request).then((cached) => {
           if (cached) return cached;
-          // 캐시에도 없으면 오프라인 페이지로
-          return caches.match(`./offline.html?v=${CACHE_VERSION}`);
+          return null; // 네트워크와 캐시 둘 다 없으면 null
         });
       })
   );
