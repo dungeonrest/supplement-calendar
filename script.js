@@ -1008,7 +1008,7 @@ footerVersionEl.addEventListener("click", async () => {
 
     if (latestVersion !== currentVersion) {
       // 최신 버전이 다르면 리로드 묻기
-      if (confirm(`🔄 새로운 버전이 있습니다! (현재: ${currentVersion} → 최신: ${latestVersion})\n업데이트하려면 확인을 누르세요.`)) {
+      if (confirm(`🔄 새로운 버전이 있습니다!\n업데이트하려면 확인을 누르세요.`)) {
         location.reload();  // 페이지 새로고침
       }
     } else {
