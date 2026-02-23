@@ -1,6 +1,6 @@
 // =======================
 // 앱 버전 — 여기만 수정하면 표시도 자동으로 갱신됨
-const APP_VERSION = "v6";  // ← 배포할 때마다 여기를 업데이트하세요
+const APP_VERSION = "v7";  // ← 배포할 때마다 여기를 업데이트하세요
 // =======================
 
 // 공휴일 리스트 (예: 2026년)
@@ -878,9 +878,6 @@ const importFileInput = document.getElementById("importFileInput");
 // 현재 연도 표시
 footerYear.innerText = new Date().getFullYear();
 
-// 현재 연도 + 앱 버전 표시
-footerYear.innerText = `${new Date().getFullYear()} ${APP_VERSION}`;
-
 // 백업/복원 메뉴 열기
 footerBackupLink.addEventListener("click", () => {
   backupMenuModal.classList.remove("hidden");
@@ -972,4 +969,37 @@ function deleteDatabaseAsync() {
   }
 
   e.target.value = "";
+});
+
+// ===========================================
+// 📌 하단 버전 클릭 → 최신 버전 체크 & 리로드
+// ===========================================
+
+// 하단 텍스트 요소
+const footerVersionEl = document.getElementById("footerVersion");
+
+// 앱 내부 버전 표시 (기존 v6처럼)
+document.getElementById("footerAppVersion").innerText = APP_VERSION;
+
+// 클릭 이벤트
+footerVersionEl.addEventListener("click", async () => {
+  try {
+    const res = await fetch("/version.json?" + Date.now()); // 캐시 방지
+    const data = await res.json();
+
+    const latestVersion = data.version;
+    const currentVersion = APP_VERSION;
+
+    if (latestVersion !== currentVersion) {
+      // 최신 버전이 다르면 리로드 묻기
+      if (confirm(`🔄 새로운 버전이 있습니다! (현재: ${currentVersion} → 최신: ${latestVersion})\n업데이트하려면 확인을 누르세요.`)) {
+        location.reload();  // 페이지 새로고침
+      }
+    } else {
+      alert(`✅ 최신 버전입니다! (v${currentVersion})`);
+    }
+  } catch (err) {
+    console.error("버전 체크 실패:", err);
+    alert("버전 체크 중 오류가 발생했습니다.");
+  }
 });
