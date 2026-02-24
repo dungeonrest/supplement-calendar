@@ -325,6 +325,14 @@ body.dark-mode .modal {
 .input-dose { width: 210px; height: 20px; }
 .input-price { width: 210px; height: 20px; }
 
+.input-color {
+  width: 225px;
+  height: 10px;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+}
+
 .modal input {
   margin-top: 8px;
   padding: 8px;

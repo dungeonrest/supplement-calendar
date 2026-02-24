@@ -1,5 +1,5 @@
 
-const APP_VERSION = "v12";
+const APP_VERSION = "v13";
 
 // 공휴일 리스트 (예: 2026년)
 const koreaHolidays2026 = [
@@ -46,6 +46,7 @@ const inputDate = document.getElementById("inputDate");
 const inputProduct = document.getElementById("inputProduct");
 const inputTotal = document.getElementById("inputTotal");
 const inputPrice = document.getElementById("inputPrice");
+const inputColor = document.getElementById("inputColor");
 const inputFamily = document.getElementsByClassName("inputFamily");
 const inputTime = document.getElementsByClassName("inputTime");
 const saveInfoBtn = document.getElementById("saveInfo");
@@ -67,6 +68,7 @@ function openSupplementModal(sup) {
   inputTotal.value = sup.totalCapsules;
   inputDose.value = sup.dose ?? "";
   inputPrice.value = sup.price;
+    inputColor.value = sup.circleColor || "#000000";
 
   for (let cb of inputFamily) cb.checked = sup.family.includes(cb.value);
   for (let tb of inputTime) tb.checked = sup.times.includes(tb.value);
@@ -494,15 +496,21 @@ saveInfoBtn.addEventListener("click", async () => {
     price,
     family,
     times,
-    schedule
+    schedule,
+    circleColor: inputColor.value
   });
 } else {
   let assignedColor;
+
+    if (inputColor.value) {
+    assignedColor = inputColor.value;
+    } else {
   const usedColors = supplements.map(s => s.circleColor);
   assignedColor = colorList.find(c => !usedColors.includes(c));
   if (!assignedColor) {
     assignedColor = colorList[supplements.length % colorList.length];
   }
+}
 
   supplements.push({
     id: Date.now(),
