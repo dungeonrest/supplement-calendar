@@ -40,8 +40,8 @@ body {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-size: 21px;
+  gap: 20px;
+  font-size: 24px;
   font-weight: 700;
 }
 
@@ -49,12 +49,12 @@ body {
 .plus-btn,
 .theme-btn,
 .monthly-cost-btn {
-  font-size: 21px;
+  font-size: 20px;
   background: none;
   border: none;
   color: var(--text-color);
   cursor: pointer;
-  padding: 5px;
+  padding: 2px;
 }
 
 .today-header:hover,

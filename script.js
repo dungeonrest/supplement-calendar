@@ -1,5 +1,5 @@
 
-const APP_VERSION = "v11";
+const APP_VERSION = "v12";
 
 // 공휴일 리스트 (예: 2026년)
 const koreaHolidays2026 = [
@@ -81,21 +81,21 @@ let selectedDateForList = "";
 let currentEditId = null;
 
 const colorList = [
-  "#FF6B6B", // Coral Red
+  "#E84855", // Raspberry Red
   "#4ECDC4", // Turquoise
   "#FFD93D", // Vibrant Yellow
   "#1A535C", // Deep Teal
   "#FF9F1C", // Bright Orange
-  "#2EC4B6", // Cyan Teal
-  "#E84855", // Raspberry Red
-  "#FFB5A7", // Soft Peach
-  "#06D6A0", // Mint Green
   "#118AB2", // Ocean Blue
-  "#F4D35E", // Mustard Yellow
   "#8E44AD", // Medium Purple
-  "#E74C3C", // Tomato Red
+  "#16A085",  // Sea Green
+  "#fa7f66", // Soft Peach
+  "#F4D35E", // Mustard Yellow
+  "#06D6A0", // Mint Green
+  "#97aa44", // Tomato Red
   "#3498DB", // Sky Blue
-  "#16A085"  // Sea Green
+  "#c96a3f", // Coral Red
+  "#2fb974", // Cyan Teal
 ];
 
 // ====================
