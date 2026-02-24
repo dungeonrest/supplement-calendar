@@ -37,8 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
 // ====================
 const datesContainer = document.getElementById("dates");
 const monthDisplay = document.getElementById("monthDisplay");
-const prevMonthBtn = document.getElementById("prevMonth");
-const nextMonthBtn = document.getElementById("nextMonth");
 const todayBtn = document.getElementById("todayBtn");
 const addBtn = document.getElementById("addBtn");
 const themeToggleBtn = document.getElementById("themeToggle");
@@ -535,24 +533,27 @@ async function loadSupplements() {
   renderCalendar();
 }
 
-prevMonthBtn.addEventListener("click", () => {
-  const day = selectedDateForList.split("-")[2];
-  dt.setMonth(dt.getMonth()-1);
-  selectedDateForList = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${day}`;
-  renderCalendar();
-});
-
-nextMonthBtn.addEventListener("click", () => {
-  const day = selectedDateForList.split("-")[2];
-  dt.setMonth(dt.getMonth()+1);
-  selectedDateForList = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,"0")}-${day}`;
-  renderCalendar();
-});
-
 todayBtn.addEventListener("click", () => {
-  selectedDateForList = new Date().toISOString().slice(0,10);
-  dt = new Date();
-  renderCalendar();
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const d = now.getDate();
+
+  // 1) 오늘 기준으로 상태값 정리
+  selectedDateForList = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+  dt = new Date(y, m, d);
+
+  // 2) renderCalendar 를 즉시 호출하지 말고
+  // 현재 상태를 1tick 이후에 실행하도록 함
+  setTimeout(() => {
+    renderCalendar();
+  }, 0);
+});
+
+// 오늘 버튼 touchend로도 처리
+todayBtn.addEventListener("touchend", (e) => {
+  e.preventDefault(); // 기본 phantom click을 막는다
+  todayBtn.click();   // click 처리를 강제 호출
 });
 
 loadSupplements();
@@ -945,7 +946,7 @@ importFileInput.addEventListener("change", async (e) => {
       return;
     }
 
-    if (!confirm("기존 기록이 삭제되고 백업 내용으로 덮어씌워집니다. 계속할까요?")) {
+    if (!confirm("기존 기록이 삭제되고\n백업 내용으로 덮어씌워집니다.\n계속할까요?")) {
       return;
     }
 
@@ -1012,7 +1013,7 @@ footerVersionEl.addEventListener("click", async () => {
         location.reload();  // 페이지 새로고침
       }
     } else {
-      alert(`💊 최신 버전입니다! (${currentVersion})`);
+      alert(`💊 최신 버전입니다!`);
     }
   } catch (err) {
     console.error("버전 체크 실패:", err);
@@ -1027,4 +1028,109 @@ function hexToRgb(hex) {
   const g = (bigint >> 8) & 255;
   const b = bigint & 255;
   return `${r}, ${g}, ${b}`;
+}
+
+// ―――――――――――――――――――
+// 스와이프 제스처로 좌우 월 이동 처리 (개선)
+// ―――――――――――――――――――
+let touchStartX = 0;
+let touchStartY = 0;
+let touchEndX = 0;
+let touchEndY = 0;
+
+const minSwipeDistance = 70;
+const swipeRatio = 1.5;
+
+const datesWrapper = document.getElementById("dates-wrapper");
+
+datesWrapper.addEventListener("touchstart", (e) => {
+  touchStartX = e.changedTouches[0].screenX;
+  touchStartY = e.changedTouches[0].screenY;
+});
+
+datesWrapper.addEventListener("touchmove",  (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+
+    const diffX = touchEndX - touchStartX;
+    const diffY = touchEndY - touchStartY;
+
+    const absDiffX = Math.abs(diffX);
+    const absDiffY = Math.abs(diffY);
+
+    // 수평 스와이프라고 판단될 때
+    if (absDiffX > minSwipeDistance && absDiffX > absDiffY * swipeRatio) {
+      // 브라우저 기본 vertical scroll 막기
+      e.preventDefault();
+    }
+  },
+  { passive: false } // 반드시 필요
+);
+
+datesWrapper.addEventListener("touchend", () => {
+  const diffX = touchEndX - touchStartX;
+  const diffY = touchEndY - touchStartY;
+
+  const absDiffX = Math.abs(diffX);
+  const absDiffY = Math.abs(diffY);
+
+  // 최종 swipe 판단은 여전히 기존 기준으로
+  if (absDiffX > minSwipeDistance && absDiffX > absDiffY * swipeRatio) {
+    if (diffX < 0) {
+      changeMonthWithDay(1);
+    } else if (diffX > 0) {
+      changeMonthWithDay(-1);
+    }
+  }
+
+  touchStartX = 0;
+  touchStartY = 0;
+  touchEndX = 0;
+  touchEndY = 0;
+});
+
+// ―――――――――――――――――――
+// 월 변경 함수 (날짜 유지 & 보정)
+// ―――――――――――――――――――
+function changeMonthWithDay(direction) {
+  // 현재 선택된 날짜가 없다면 오늘 날짜 기준으로 처리
+  let year, month, day;
+  if (selectedDateForList) {
+    const parts = selectedDateForList.split("-");
+    year  = parseInt(parts[0]);
+    month = parseInt(parts[1]) - 1;
+    day   = parseInt(parts[2]);
+  } else {
+    const today = new Date();
+    year  = today.getFullYear();
+    month = today.getMonth();
+    day   = today.getDate();
+  }
+
+  // 새로운 달 계산
+  const newDate = new Date(year, month + direction, day);
+
+  // 그 달의 마지막 날짜 구하기
+  const lastDayOfNewMonth = new Date(
+    newDate.getFullYear(),
+    newDate.getMonth() + 1,
+    0
+  ).getDate();
+
+  // 만약 날짜(day)가 그 달의 마지막보다 크면 보정
+  const adjustedDay = day > lastDayOfNewMonth ? lastDayOfNewMonth : day;
+
+  // 선택 날짜 업데이트
+  selectedDateForList = `${newDate.getFullYear()}-${String(
+    newDate.getMonth() + 1
+  ).padStart(2, "0")}-${String(adjustedDay).padStart(2, "0")}`;
+
+  // dt 객체도 보정된 날짜로 맞춤
+  dt = new Date(
+    newDate.getFullYear(),
+    newDate.getMonth(),
+    adjustedDay
+  );
+
+  renderCalendar();
 }

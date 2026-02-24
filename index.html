@@ -20,8 +20,6 @@
 <header class="calendar-header">
   <div class="header-left">
     <span id="monthDisplay" class="month-display"></span>
-    <button id="prevMonth" class="nav-arrow no-double-tap-zoom">＜</button>
-    <button id="nextMonth" class="nav-arrow no-double-tap-zoom">＞</button>
     <span id="todayBtn" class="today-header">오늘</span>
     <span id="addBtn" class="plus-btn">＋</span>
     <button id="monthlyCostBtn" class="monthly-cost-btn">₩</button>
@@ -171,26 +169,6 @@
 <button id="fabAddBtn" class="fab-add-btn">＋</button>
 
 <script src="script.js"></script>
-
-
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./service-worker.js')
-    .then(reg => {
-      console.log('Service Worker registered:', reg);
-
-      // 🔄 자동 갱신 시도
-      // 페이지가 로드될 때마다 새 버전이 있는지 체크합니다.
-      if (reg) {
-        reg.update(); // 새 버전이 있으면 설치 시도 — 자동 갱신 트리거
-      }
-    })
-    .catch(err => {
-      console.error('Service Worker registration failed:', err);
-    });
-}
-</script>
 
 </body>
 </html>
