@@ -1,5 +1,5 @@
 
-const APP_VERSION = "v10";
+const APP_VERSION = "v11";
 
 // 공휴일 리스트 (예: 2026년)
 const koreaHolidays2026 = [
