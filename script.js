@@ -1,33 +1,43 @@
 
-const APP_VERSION = "v15";
+const APP_VERSION = "v16";
 const AUTO_BACKUP_KEY = "lastAutoBackupDate";
 
 // 자동 백업 함수 ↓
-async function autoBackupWhenFirstTakenToday() {
+async function autoBackupOnFirstTakenToday() {
   const todayKST = getTodayKST();
 
-  // 이미 오늘 백업이 수행됐다면 무시
-  const lastDate = localStorage.getItem("lastAutoBackupDate");
-  if (lastDate === todayKST) return;
+  // 저장된 todayTakenBackupDone 값 불러오기
+  const doneKey = `todayTakenBackupDone_${todayKST}`;
+  const done = localStorage.getItem(doneKey);
 
-  // 오늘 복용 체크가 들어간 순간이므로 자동 백업 실행
-  // supplements 배열에는 현재 상태가 반영돼 있어야 함
+  // 이미 체크 복용 백업이 이루어진 날이면 종료
+  if (done === "true") {
+    console.log("자동 백업: 이미 오늘 복용 체크 백업 수행됨");
+    return;
+  }
+
+  // 저장할 데이터가 없으면 종료
+  if (!supplements || supplements.length === 0) {
+    console.log("자동 백업: 백업할 데이터 없음");
+    return;
+  }
+
+  // 백업 생성
   const blob = new Blob([JSON.stringify(supplements, null, 2)], {
     type: "application/json",
   });
-  const url = URL.createObjectURL(blob);
 
+  const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `supplements-auto-backup.json`; // 항상 덮어쓰기
+  a.download = `supplements-auto-backup.json`;
   a.click();
-
   URL.revokeObjectURL(url);
 
-  // 저장한 날짜 기록 → 동일 날짜 자동백업은 한 번만
-  localStorage.setItem("lastAutoBackupDate", todayKST);
-
-  alert("📦 자동 백업이 저장되었습니다!\n복용 체크 내용을 기반으로 생성됨");
+  // 백업 완료 표시
+  localStorage.setItem(doneKey, "true");
+  alert("📦 자동 백업이 생성되었습니다!");
+  console.log("자동 백업 수행:", todayKST);
 }
 
 // 공휴일 리스트 (예: 2026년)
@@ -593,12 +603,7 @@ todayBtn.addEventListener("touchend", (e) => {
   todayBtn.click();   // click 처리를 강제 호출
 });
 
-async function initApp() {
-  await loadSupplements();
-  autoBackupSupplements();
-}
-
-initApp();
+loadSupplements();
 
 
 function openTakenCheckUI(date) {
@@ -676,7 +681,8 @@ function openTakenCheckUI(date) {
           chk.addEventListener("change", async () => {
             sup.takenStatus[date][`${time}_${member}`] = chk.checked;
             await saveAllSupplements();
-            autoBackupWhenFirstTakenToday();
+            
+            autoBackupOnFirstTakenToday();
           });
 
           td.appendChild(chk);
