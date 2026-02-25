@@ -1,39 +1,33 @@
 
-const APP_VERSION = "v14";
+const APP_VERSION = "v15";
 const AUTO_BACKUP_KEY = "lastAutoBackupDate";
 
 // 자동 백업 함수 ↓
-async function autoBackupSupplements() {
+async function autoBackupWhenFirstTakenToday() {
   const todayKST = getTodayKST();
 
-  // 마지막 자동 백업 날짜 불러오기
-  const lastDate = localStorage.getItem(AUTO_BACKUP_KEY);
-  if (lastDate === todayKST) {
-    console.log("자동 백업: 오늘 이미 백업됨 (" + todayKST + ")");
-    return;
-  }
+  // 이미 오늘 백업이 수행됐다면 무시
+  const lastDate = localStorage.getItem("lastAutoBackupDate");
+  if (lastDate === todayKST) return;
 
-  if (!supplements || supplements.length === 0) {
-    console.log("자동 백업: 백업할 데이터가 없음");
-    localStorage.setItem(AUTO_BACKUP_KEY, todayKST);
-    return;
-  }
-
+  // 오늘 복용 체크가 들어간 순간이므로 자동 백업 실행
+  // supplements 배열에는 현재 상태가 반영돼 있어야 함
   const blob = new Blob([JSON.stringify(supplements, null, 2)], {
     type: "application/json",
   });
-
   const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
 
+  const a = document.createElement("a");
   a.href = url;
-  a.download = `supplements-auto-backup.json`; // 항상 같은 이름
+  a.download = `supplements-auto-backup.json`; // 항상 덮어쓰기
   a.click();
 
   URL.revokeObjectURL(url);
 
-  console.log("자동 백업 생성됨:", todayKST);
-  localStorage.setItem(AUTO_BACKUP_KEY, todayKST);
+  // 저장한 날짜 기록 → 동일 날짜 자동백업은 한 번만
+  localStorage.setItem("lastAutoBackupDate", todayKST);
+
+  alert("📦 자동 백업이 저장되었습니다!\n복용 체크 내용을 기반으로 생성됨");
 }
 
 // 공휴일 리스트 (예: 2026년)
@@ -599,8 +593,13 @@ todayBtn.addEventListener("touchend", (e) => {
   todayBtn.click();   // click 처리를 강제 호출
 });
 
-loadSupplements();
-autoBackupSupplements();
+async function initApp() {
+  await loadSupplements();
+  autoBackupSupplements();
+}
+
+initApp();
+
 
 function openTakenCheckUI(date) {
   const modal = document.getElementById("takenCheckModal");
@@ -677,6 +676,7 @@ function openTakenCheckUI(date) {
           chk.addEventListener("change", async () => {
             sup.takenStatus[date][`${time}_${member}`] = chk.checked;
             await saveAllSupplements();
+            autoBackupWhenFirstTakenToday();
           });
 
           td.appendChild(chk);
