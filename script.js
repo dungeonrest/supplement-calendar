@@ -1,5 +1,40 @@
 
 const APP_VERSION = "v13";
+const AUTO_BACKUP_KEY = "lastAutoBackupDate";
+
+// 자동 백업 함수 ↓
+async function autoBackupSupplements() {
+  const todayKST = getTodayKST();
+
+  // 마지막 자동 백업 날짜 불러오기
+  const lastDate = localStorage.getItem(AUTO_BACKUP_KEY);
+  if (lastDate === todayKST) {
+    console.log("자동 백업: 오늘 이미 백업됨 (" + todayKST + ")");
+    return;
+  }
+
+  if (!supplements || supplements.length === 0) {
+    console.log("자동 백업: 백업할 데이터가 없음");
+    localStorage.setItem(AUTO_BACKUP_KEY, todayKST);
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify(supplements, null, 2)], {
+    type: "application/json",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = `supplements-auto-backup.json`; // 항상 같은 이름
+  a.click();
+
+  URL.revokeObjectURL(url);
+
+  console.log("자동 백업 생성됨:", todayKST);
+  localStorage.setItem(AUTO_BACKUP_KEY, todayKST);
+}
 
 // 공휴일 리스트 (예: 2026년)
 const koreaHolidays2026 = [
@@ -300,7 +335,7 @@ function renderCalendar() {
     if (koreaHolidays2026.includes(fullDatePrev)) {
       div.classList.add("holiday");
     }
-    if (fullDatePrev === todayStr) div.classList.add("today-date"); // ★ 오늘 표시
+    if (fullDatePrev === getTodayKST()) div.classList.add("today-date");
 
     div.innerHTML = `<span class="number">${dayNum}</span>`;
     datesContainer.appendChild(div);
@@ -319,8 +354,8 @@ function renderCalendar() {
     if (koreaHolidays2026.includes(fullDate)) {
       div.classList.add("holiday");
     }
-   if (fullDate === todayStr) {
-      div.classList.add("today-date"); // ★ 오늘 표시
+   if (fullDate === getTodayKST()) {
+      div.classList.add("today-date");
     }
 
     div.innerHTML = `<span class="number">${i}</span>`;
@@ -452,7 +487,7 @@ listArea.appendChild(bar);
     if (koreaHolidays2026.includes(fullDateNext)) {
       div.classList.add("holiday");
     }
-    if (fullDateNext === todayStr) div.classList.add("today-date"); // ★ 오늘 표시
+    if (fullDateNext === getTodayKST()) div.classList.add("today-date");
 
     div.innerHTML = `<span class="number">${j}</span>`;
     datesContainer.appendChild(div);
@@ -565,6 +600,7 @@ todayBtn.addEventListener("touchend", (e) => {
 });
 
 loadSupplements();
+autoBackupSupplements();
 
 function openTakenCheckUI(date) {
   const modal = document.getElementById("takenCheckModal");
