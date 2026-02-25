@@ -1,5 +1,5 @@
 
-const APP_VERSION = "v13";
+const APP_VERSION = "v14";
 const AUTO_BACKUP_KEY = "lastAutoBackupDate";
 
 // 자동 백업 함수 ↓
