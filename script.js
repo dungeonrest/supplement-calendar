@@ -1,5 +1,5 @@
 
-const APP_VERSION = "v16";
+const APP_VERSION = "v17";
 const AUTO_BACKUP_KEY = "lastAutoBackupDate";
 
 // 자동 백업 함수 ↓
@@ -143,9 +143,16 @@ const colorList = [
 // 한국 시간 기준 오늘 날짜 문자열 (YYYY-MM-DD)
 function getTodayKST() {
   const now = new Date();
-  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-  const kst = new Date(utc + (9 * 60 * 60000));
-  return kst.toISOString().slice(0,10);
+
+  // 현재 시간을 UTC + 9로 변환
+  const utcMS = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const kstDate = new Date(utcMS + (9 * 60 * 60000));
+
+  const year  = kstDate.getFullYear();
+  const month = String(kstDate.getMonth() + 1).padStart(2, "0");
+  const date  = String(kstDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${date}`;
 }
 
 // ====================
