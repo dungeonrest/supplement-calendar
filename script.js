@@ -1,5 +1,5 @@
 
-const APP_VERSION = "v17";
+const APP_VERSION = "v18";
 const AUTO_BACKUP_KEY = "lastAutoBackupDate";
 
 // 자동 백업 함수 ↓
@@ -107,7 +107,7 @@ function openSupplementModal(sup) {
   inputTotal.value = sup.totalCapsules;
   inputDose.value = sup.dose ?? "";
   inputPrice.value = sup.price;
-    inputColor.value = sup.circleColor || "#000000";
+  inputColor.value = sup.circleColor || "";
 
   for (let cb of inputFamily) cb.checked = sup.family.includes(cb.value);
   for (let tb of inputTime) tb.checked = sup.times.includes(tb.value);
@@ -286,6 +286,7 @@ addBtn.addEventListener("click", () => {
   inputTotal.value = "";
   inputDose.value = ""; 
   inputPrice.value = "";
+  inputColor.value = "";
   for (let cb of inputFamily) cb.checked = false;
   for (let tb of inputTime) tb.checked = false;
 });
@@ -302,13 +303,12 @@ closeModalBtn.addEventListener("click", () => {
   document.body.classList.remove("modal-open");
 });
 
-document.body.classList.remove("modal-open");
-
 deleteSupplementBtnModal.addEventListener("click", async () => {
   if (currentEditId) {
     await deleteSupplementFromDB(currentEditId);
     supplements = supplements.filter(s => s.id !== currentEditId);
     modalOverlay.classList.add("hidden");
+    document.body.classList.remove("modal-open");
     renderCalendar();
   } else {
     alert("삭제할 영양제가 선택되지 않았습니다.");
@@ -546,11 +546,18 @@ saveInfoBtn.addEventListener("click", async () => {
     circleColor: inputColor.value
   });
 } else {
-  let assignedColor;
+  // 할당할 색상 값 계산
+let assignedColor;
 
-    if (inputColor.value) {
-    assignedColor = inputColor.value;
-    } else {
+// 유효 HEX색상인지 검사
+const colorValue = inputColor.value?.trim().toLowerCase();
+const isValidHex = /^#[0-9a-f]{6}$/i.test(colorValue);
+
+// 유효HEX이면서 기본값(#000000)이 아니라면 사용
+if (isValidHex && colorValue !== "#000000") {
+  assignedColor = colorValue;
+} else {
+  // 자동 색상 할당
   const usedColors = supplements.map(s => s.circleColor);
   assignedColor = colorList.find(c => !usedColors.includes(c));
   if (!assignedColor) {
@@ -955,11 +962,13 @@ footerYear.innerText = new Date().getFullYear();
 // 백업/복원 메뉴 열기
 footerBackupLink.addEventListener("click", () => {
   backupMenuModal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
 });
 
 // 취소/닫기
 closeBackupMenu.addEventListener("click", () => {
   backupMenuModal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
 });
 
 // ====================
@@ -980,6 +989,7 @@ exportBtn.addEventListener("click", () => {
 
   URL.revokeObjectURL(url);
   backupMenuModal.classList.add("hidden");
+  document.body.classList.remove("modal-open");
 });
 
 // ====================
@@ -1033,6 +1043,7 @@ function deleteDatabaseAsync() {
     await saveAllSupplements();
 
     backupMenuModal.classList.add("hidden");
+    document.body.classList.remove("modal-open");
     selectedDateForList = new Date().toISOString().slice(0,10);
     renderCalendar();
 
