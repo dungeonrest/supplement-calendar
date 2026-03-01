@@ -1,5 +1,5 @@
 
-const APP_VERSION = "v19";
+const APP_VERSION = "v20";
 const AUTO_BACKUP_KEY = "lastAutoBackupDate";
 
 // 자동 백업 함수 ↓
@@ -107,7 +107,7 @@ function openSupplementModal(sup) {
   inputTotal.value = sup.totalCapsules;
   inputDose.value = sup.dose ?? "";
   inputPrice.value = sup.price;
-  inputColor.value = sup.circleColor || "";
+  updateColorBar(sup.circleColor);
 
   for (let cb of inputFamily) cb.checked = sup.family.includes(cb.value);
   for (let tb of inputTime) tb.checked = sup.times.includes(tb.value);
@@ -129,7 +129,7 @@ const colorList = [
   "#FF9F1C", // Bright Orange
   "#118AB2", // Ocean Blue
   "#8E44AD", // Medium Purple
-  "#16A085",  // Sea Green
+  "#16A085", // Sea Green
   "#fa7f66", // Soft Peach
   "#F4D35E", // Mustard Yellow
   "#06D6A0", // Mint Green
@@ -161,10 +161,14 @@ function getTodayKST() {
 const DB_NAME = "supplementCalendarDB";
 const DB_VERSION = 1;
 const STORE_NAME = "supplements";
-let db;
+let db = null;
 
 function openDatabase() {
   return new Promise((resolve, reject) => {
+    if (db) {
+      resolve(db);
+      return;
+    }
     const request = indexedDB.open(DB_NAME, DB_VERSION);
     request.onupgradeneeded = (e) => {
       const database = e.target.result;
@@ -172,7 +176,16 @@ function openDatabase() {
         database.createObjectStore(STORE_NAME, { keyPath: "id" });
       }
     };
-    request.onsuccess = () => { db = request.result; resolve(db); };
+    request.onsuccess = () => { 
+      db = request.result; 
+      // 연결이 예기치 않게 끊겼을 때 처리
+      db.onversionchange = () => {
+        db.close();
+        alert("데이터베이스 버전이 변경되었습니다. 앱을 재실행합니다.");
+        location.reload();
+      };
+      resolve(db); 
+    };
     request.onerror = () => reject(request.error);
   });
 }
@@ -190,7 +203,7 @@ function getAllSupplements() {
 
 function saveSupplementToDB(sup) {
   return new Promise(async (resolve, reject) => {
-    await openDatabase();
+    // await openDatabase();
     const tx = db.transaction([STORE_NAME], "readwrite");
     const store = tx.objectStore(STORE_NAME);
     const req = store.put(sup);
@@ -205,7 +218,7 @@ function saveSupplementToDB(sup) {
 
 function deleteSupplementFromDB(id) {
   return new Promise(async (resolve, reject) => {
-    await openDatabase();
+    // await openDatabase();
     const tx = db.transaction([STORE_NAME], "readwrite");
     const store = tx.objectStore(STORE_NAME);
     const req = store.delete(id);
@@ -286,7 +299,7 @@ addBtn.addEventListener("click", () => {
   inputTotal.value = "";
   inputDose.value = ""; 
   inputPrice.value = "";
-  inputColor.value = "";
+  updateColorBar("#000000");
   for (let cb of inputFamily) cb.checked = false;
   for (let tb of inputTime) tb.checked = false;
 });
@@ -305,8 +318,11 @@ closeModalBtn.addEventListener("click", () => {
 
 deleteSupplementBtnModal.addEventListener("click", async () => {
   if (currentEditId) {
+    if (!confirm("이 영양제와 관련된 모든 복용 기록이 삭제됩니다. 삭제할까요?")) return;
     await deleteSupplementFromDB(currentEditId);
-    supplements = supplements.filter(s => s.id !== currentEditId);
+     supplements = supplements.filter(s => s.id !== currentEditId);
+     await saveAllSupplements();
+
     modalOverlay.classList.add("hidden");
     document.body.classList.remove("modal-open");
     renderCalendar();
@@ -547,24 +563,18 @@ saveInfoBtn.addEventListener("click", async () => {
     circleColor: inputColor.value
   });
 } else {
-  // 할당할 색상 값 계산
-let assignedColor;
-
-// 유효 HEX색상인지 검사
-const colorValue = inputColor.value?.trim().toLowerCase();
-const isValidHex = /^#[0-9a-f]{6}$/i.test(colorValue);
-
-// 유효HEX이면서 기본값(#000000)이 아니라면 사용
-if (isValidHex && colorValue !== "#000000") {
-  assignedColor = colorValue;
-} else {
-  // 자동 색상 할당
-  const usedColors = supplements.map(s => s.circleColor);
-  assignedColor = colorList.find(c => !usedColors.includes(c));
-  if (!assignedColor) {
-    assignedColor = colorList[supplements.length % colorList.length];
+ 
+  const usedColors = supplements.map(s => s.circleColor?.toLowerCase().trim());
+  let assignedColor;
+  const selectedColor = inputColor.value?.toLowerCase().trim();
+  if (selectedColor && selectedColor !== "#000000" && !usedColors.includes(selectedColor)) {
+    assignedColor = selectedColor;
+  } else {
+    assignedColor = colorList.find(c => !usedColors.includes(c.toLowerCase().trim()));
+    if (!assignedColor) {
+      assignedColor = colorList[supplements.length % colorList.length];
+    }
   }
-}
 
   supplements.push({
     id: Date.now(),
@@ -1202,4 +1212,30 @@ function changeMonthWithDay(direction) {
   );
 
   renderCalendar();
+}
+
+// 요소 가져오기
+const realColorInput = document.getElementById('inputColor');
+const colorDot = document.getElementById('colorDot');
+const colorHexText = document.getElementById('colorHexText');
+
+// 값이 변경될 때 UI 업데이트 (사용자가 색을 고른 직후 실행됨)
+if (realColorInput) {
+  realColorInput.addEventListener('input', (e) => {
+    const newColor = e.target.value.toUpperCase();
+    if (colorDot) colorDot.style.backgroundColor = newColor;
+    if (colorHexText) colorHexText.innerText = newColor;
+  });
+}
+
+// 모달 열 때 UI를 동기화해주는 함수
+function updateColorBar(color) {
+  const isAuto = !color || color === "#000000" || color === "";
+  const displayColor = isAuto ? "#000000" : color;
+  
+  if (realColorInput) realColorInput.value = displayColor;
+  if (colorDot) colorDot.style.backgroundColor = displayColor;
+  if (colorHexText) {
+    colorHexText.innerText = isAuto ? "자동 색상" : displayColor.toUpperCase();
+  }
 }

@@ -325,12 +325,58 @@ body.dark-mode .modal {
 .input-dose { width: 210px; height: 20px; }
 .input-price { width: 210px; height: 20px; }
 
-.input-color {
-  width: 225px;
-  height: 10px;
-  padding: 0;
-  border: none;
+/* 색상 바 컨테이너 */
+.color-picker-container {
+  width: 225px; /* 다른 입력창 너비와 동일하게 */
+  margin-top: 8px;
+  margin-left: 0; /* 중앙 정렬 필요시 조정 */
+}
+
+/* 커스텀 바 디자인 */
+.custom-color-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 36px; /* 다른 입력창 높이와 비슷하게 */
+  padding: 0 12px;
+  background: #eeeded; /* 기존 모달 입력창 배경색과 통일 */
+  border-radius: 8px;
   cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+body.dark-mode .custom-color-bar {
+  background: #3a3a3a; /* 밤 모드 배경색 */
+}
+
+/* 왼쪽 정보 영역 (점 + 텍스트) */
+.color-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 색상 점 */
+.color-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #000;
+  border: 2px solid white;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+/* 색상 코드 텍스트 */
+#colorHexText {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--text-color);
+}
+
+.edit-icon {
+  font-size: 14px;
+  opacity: 0.6;
 }
 
 .modal input {
