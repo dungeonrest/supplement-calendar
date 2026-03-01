@@ -1,5 +1,5 @@
 
-const APP_VERSION = "v18";
+const APP_VERSION = "v19";
 const AUTO_BACKUP_KEY = "lastAutoBackupDate";
 
 // 자동 백업 함수 ↓
@@ -44,7 +44,7 @@ async function autoBackupOnFirstTakenToday() {
 const koreaHolidays2026 = [
   "2026-01-01",
   "2026-02-16","2026-02-17","2026-02-18",
-  "2026-03-01", "20260-03-02",
+  "2026-03-01", "2026-03-02",
   "2026-05-05",
   "2026-05-24","2026-05-25",
   "2026-06-03","2026-06-06",
@@ -378,6 +378,7 @@ function renderCalendar() {
 
     div.addEventListener("click", () => {
       selectedDateForList = fullDate;
+      inputDate.value = fullDate;
       renderCalendar();
 
     const hasSupps = supplements.some(sup => sup.schedule.includes(fullDate));
@@ -694,8 +695,7 @@ function openTakenCheckUI(date) {
 
           chk.addEventListener("change", async () => {
             sup.takenStatus[date][`${time}_${member}`] = chk.checked;
-            await saveAllSupplements();
-            
+            await saveSupplementToDB(sup);
             autoBackupOnFirstTakenToday();
           });
 
@@ -734,8 +734,7 @@ extendBtn.addEventListener("click", async () => {
 
   if (confirm(confirmMsg)) {
     extendScheduleFromDate(sup, baseDate, additionalDays);
-
-    await saveAllSupplements();
+    await saveSupplementToDB(sup);
     renderCalendar();
 
     alert("📅 일정이 연장되었습니다!");
@@ -773,8 +772,10 @@ statsBtn.addEventListener("click", () => {
   document.body.classList.add("modal-open");
   // 기본 기간: 올해
   const year = new Date().getFullYear();
-  periodStart.value = `${String(year)}-01`;
-  periodEnd.value = `${String(year)}-12`;
+  document.getElementById("periodStart").value = `${year}-01`;
+  document.getElementById("periodEnd").value = `${year}-12`;
+  
+  statsContent.innerHTML = "<p style='text-align:center; font-size:12px; opacity:0.6; margin-top:20px;'>가족 이름을 선택하면<br>올해의 복용 통계가 표시됩니다.</p>";
 });
 
 // 닫기
@@ -811,17 +812,12 @@ familyBtns.forEach(btn => {
 
 // 통계 계산
 function showStatsForFamily(name) {
-  const start = periodStart.value;
-  const end = periodEnd.value;
+  const start = document.getElementById("periodStart").value;
+  const end = document.getElementById("periodEnd").value;
 
-  if (!start || !end) {
-    statsContent.innerHTML = "<p>기간을 먼저 선택하세요.</p>";
-    return;
-  }
-
+  // 기간 설정 로직 (기존 유지)
   const startArr = start.split("-");
   const startDate = new Date(parseInt(startArr[0]), parseInt(startArr[1]) - 1, 1);
-
   const endArr = end.split("-");
   const endDate = new Date(parseInt(endArr[0]), parseInt(endArr[1]) - 1, 1);
   endDate.setMonth(endDate.getMonth() + 1);
@@ -830,58 +826,56 @@ function showStatsForFamily(name) {
   const stats = {};
 
   supplements.forEach(sup => {
-    // 해당 가족이 포함되지 않으면 skip
-    if (!sup.family.includes(name)) return;
+    if (!sup.family.includes(name) || !sup.takenStatus) return;
 
-    // 복용 체크 내용 없으면 skip
-    if (!sup.takenStatus) return;
+    // 해당 기간 내 총 복용해야 할 횟수(Target)와 실제 복용 횟수(Taken) 계산
+    let targetForPeriod = 0;
+    let takenForPeriod = 0;
 
-    for (let dateStr in sup.takenStatus) {
+    sup.schedule.forEach(dateStr => {
       const d = new Date(dateStr);
-      if (d < startDate || d > endDate) continue;
+      if (d >= startDate && d <= endDate) {
+        targetForPeriod += (sup.dose / sup.times.length) * sup.times.length; // 목표치
 
-      const dayStatus = sup.takenStatus[dateStr];
-
-      for (const key in dayStatus) {
-        // key 예: "아침_도림", "점심_뚜임"
-        if (!dayStatus[key]) continue;
-
-        const [timeName, memberName] = key.split("_");
-
-        // 이 체크가 지금 보고 있는 가족(name)인지 확인
-        if (memberName !== name) continue;
-
-        // 1회 복용량 계산
-        const timesCount = sup.times.length;
-        let oneDosePerTime = 0;
-        if (timesCount > 0) {
-          oneDosePerTime = Math.floor(sup.dose / timesCount);
+        const dayStatus = sup.takenStatus[dateStr] || {};
+        for (const key in dayStatus) {
+          if (key.includes(`_${name}`) && dayStatus[key]) {
+             // 1회 복용량 가산
+             takenForPeriod += (sup.dose / sup.times.length);
+          }
         }
-
-        // 초기화
-        if (!stats[sup.productName]) {
-          stats[sup.productName] = { capsules: 0 };
-        }
-
-        // 체크된 시간만큼만 누적
-        stats[sup.productName].capsules += oneDosePerTime;
       }
+    });
+
+    if (targetForPeriod > 0) {
+      stats[sup.productName] = {
+        taken: takenForPeriod,
+        target: targetForPeriod,
+        color: sup.circleColor
+      };
     }
   });
 
   let html = "";
-
   if (Object.keys(stats).length === 0) {
-    html += "<p></p>";
+    html = "<p>기록이 없습니다.</p>";
   } else {
-    html += "<ul>";
     for (const key in stats) {
       const info = stats[key];
-      html += `<li>${key}: ${info.capsules.toLocaleString()}회</li>`;
+      const percent = Math.round((info.taken / info.target) * 100);
+      
+      // 원형 그래프와 텍스트 조합
+      html += `
+        <div class="stats-item">
+          <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, #e0e0e0 0)"></div>
+          <div class="stats-info">
+            <span class="stats-product-name">${key}</span>
+            <span class="stats-count-text">${percent}% (${Math.round(info.taken)} / ${Math.round(info.target)}회)</span>
+          </div>
+        </div>
+      `;
     }
-    html += "</ul>";
   }
-
   statsContent.innerHTML = html;
 }
 
@@ -1017,23 +1011,29 @@ importFileInput.addEventListener("change", async (e) => {
       return;
     }
 
-    // ==== IndexedDB 완전 삭제 함수 ====
-function deleteDatabaseAsync() {
-  return new Promise((resolve, reject) => {
-    const deleteReq = indexedDB.deleteDatabase(DB_NAME);
-
-    deleteReq.onblocked = () => {
-      console.warn("IndexedDB 삭제가 차단됨 — 창을 닫고 다시 시도하세요.");
+if (db) {
+      db.close();
+      db = null; 
+    }
+    
+const deleteDatabaseAsync = () => {
+      return new Promise((resolve, reject) => {
+        const deleteReq = indexedDB.deleteDatabase(DB_NAME);
+        
+        deleteReq.onsuccess = () => resolve();
+        deleteReq.onerror = () => reject(new Error("DB 삭제 실패"));
+        
+        // 여전히 차단될 경우를 위한 처리
+        deleteReq.onblocked = () => {
+          console.warn("DB 삭제 차단됨");
+          // 차단되어도 진행될 수 있도록 resolve를 해주거나 
+          // 사용자에게 명확한 가이드를 줍니다.
+          resolve(); 
+        };
+      });
     };
 
-    deleteReq.onerror = () => reject(deleteReq.error);
-
-    deleteReq.onsuccess = () => {
-      console.log("IndexedDB 삭제 완료!");
-      resolve();
-    };
-  });
-}
+    await deleteDatabaseAsync();
 
     // ===== 메모리에 백업 데이터 적용 =====
     supplements = data;
@@ -1047,12 +1047,13 @@ function deleteDatabaseAsync() {
     selectedDateForList = new Date().toISOString().slice(0,10);
     renderCalendar();
 
-    alert("백업 데이터를 불러왔습니다!");
-  } catch (err) {
-    alert("파일 읽기 중 오류가 발생했습니다.");
-    console.error(err);
-  }
+alert("백업 데이터를 성공적으로 불러왔습니다!");
 
+  } catch (err) {
+    // 4. 에러 발생 시 상세 이유를 콘솔에 찍어 확인하기 위함
+    console.error("복원 에러 상세:", err);
+    alert("복원 중 오류가 발생했습니다. (사유: " + err.message + ")");
+  }
   e.target.value = "";
 });
 

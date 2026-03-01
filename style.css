@@ -481,6 +481,37 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
+/* 통계 그래프 스타일 */
+.stats-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  margin-left: 32px;
+}
+
+.pie-chart {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stats-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stats-product-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.stats-count-text {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
 .stats-modal .modal-header h3 {
   margin-left: 20px;
 }
@@ -499,6 +530,9 @@ input[type="checkbox"] {
 
 .stats-modal {
   width: 240px;
+  max-height: 55vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .family-buttons {
@@ -514,16 +548,40 @@ input[type="checkbox"] {
 }
 
 .period-select {
-  margin-top: 5px;
+  margin-top: 1px;
+  margin-bottom: 1px;
   display: flex;
   justify-content: space-between;
 }
 
+.period-select input[type="month"] {
+  width: 42%;          /* 가로 폭을 반씩 차지하게 조절 */
+  padding: 4px 6px;    /* 내부 여백 축소 */
+  font-size: 14px;     /* 글자 크기 축소 */
+  height: 28px;        /* 높이를 낮게 고정 */
+  border-radius: 6px;
+  background: #f0f0f0;
+  border: none;
+}
+
 #statsContent {
-  margin-top: 5px;
+  margin-top: 15px;
   font-size: 14px;
   font-weight: 600;
   padding-left: 10%;
+  padding: 0 5%;
+  /* 핵심: 높이 제한과 스크롤 설정 */
+  max-height: 350px;    /* 모바일 화면에서 적절한 높이 (조절 가능) */
+  overflow-y: auto;     /* 내용이 많아지면 세로 스크롤 생성 */
+  overflow-x: hidden;   /* 가로 스크롤 방지 */
+  
+  /* 스크롤바 숨기기 (기존 스타일 유지) */
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+}
+
+#statsContent::-webkit-scrollbar {
+  display: none;
 }
 
 /* 선택된 버튼 - 낮/밤 모드 별로 */
