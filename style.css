@@ -10,10 +10,14 @@
 }
 
 body.dark-mode {
-  --bg-color: #242323;
-  --text-color: #ffffff;
+  --bg-color: #121212;
+  --text-color: #e0e0e0;
   --sun-color: #df2222;
   --sat-color: #3767f7;
+}
+
+body.dark-mode .calendar-wrapper {
+  background-color: #121212;
 }
 
 body {
@@ -270,9 +274,9 @@ body.dark-mode .modal-overlay {
 }
 
 body.dark-mode .modal {
-  border: 1px solid rgba(255,255,255,0.15);
-  box-shadow: 0px 4px 16px rgba(0,0,0,0.50),
-              0px 2px 6px rgba(0,0,0,0.40);
+  background-color: #1e1e1e; 
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  border: 1px solid #333;
 }
 
 
@@ -298,26 +302,6 @@ body.dark-mode .modal {
   padding: 0px;
 }
 
-.checkbox-line {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 5px;
-}
-
-.checkbox-item {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 15px;
-}
-
-.checkbox-item input[type="checkbox"] {
-  width: 12px;
-  height: 12px;
-  accent-color: #444242;
-}
-
 /* 입력너비 */
 .input-date { width: 210px; height: 20px; }
 .input-product { width: 210px; height: 20px; }
@@ -325,11 +309,55 @@ body.dark-mode .modal {
 .input-dose { width: 210px; height: 20px; }
 .input-price { width: 210px; height: 20px; }
 
-/* 색상 바 컨테이너 */
-.color-picker-container {
-  width: 225px; /* 다른 입력창 너비와 동일하게 */
-  margin-top: 8px;
-  margin-left: 0; /* 중앙 정렬 필요시 조정 */
+/* 날짜 입력창 정밀 보정 */
+.modal input[type="date"] {
+  width: 100% !important;
+  height: 22px;
+  padding: 0 10px;
+  margin: 10px 0 0 0;
+  border-radius: 10px;
+  background: #f5f5f5;
+  border: 1px solid transparent;
+  font-family: inherit;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+  display: flex;       /* flex로 설정하여 내부 정렬 제어 */
+  align-items: center; /* 세로 중앙 */
+  color: #333;
+  -webkit-appearance: none;
+  
+  /* 📌 파란색 글씨 방지 및 색상 고정 */
+  color: #333;             /* 낮 모드일 때 진한 회색/검정 */
+  font-weight: 700;
+  -webkit-appearance: none; /* 아이폰 기본 스타일 제거 */
+}
+
+/* 다크모드 대응 */
+body.dark-mode .modal input[type="date"] {
+  background: #2c2c2c !important;
+  color: #ffffff;          /* 밤 모드일 때 흰색 */
+  color-scheme: dark;      /* 아이폰 시스템 달력 팝업도 다크하게 */
+}
+
+/* 📌 아이폰 Safari 전용: 가운데 정렬 강제 해제 */
+.modal input[type="date"]::-webkit-date-and-time-value {
+  text-align: left !important; /* 왼쪽 정렬 강제 */
+  display: block;
+  width: 100%;
+  color: #333;
+  /* 아이폰에서 글자가 위로 쏠려 보인다면 아래 여백 추가 */
+  padding-left: 0; 
+}
+
+/* 다크모드 대응 */
+body.dark-mode .modal input[type="date"] {
+  background: #333232;
+  color: #ffffff;
+}
+
+body.dark-mode .modal input[type="date"]::-webkit-date-and-time-value {
+  color: #ffffff;
 }
 
 /* 커스텀 바 디자인 */
@@ -337,16 +365,20 @@ body.dark-mode .modal {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 36px; /* 다른 입력창 높이와 비슷하게 */
+  height: 22px;
   padding: 0 12px;
-  background: #eeeded; /* 기존 모달 입력창 배경색과 통일 */
-  border-radius: 8px;
+  background: #f5f5f5;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  margin-bottom: 8px;
   cursor: pointer;
+  box-sizing: border-box;
   transition: background 0.2s ease;
 }
 
 body.dark-mode .custom-color-bar {
-  background: #3a3a3a; /* 밤 모드 배경색 */
+  background: #2c2c2c !important;
+  color: #ffffff;
 }
 
 /* 왼쪽 정보 영역 (점 + 텍스트) */
@@ -358,8 +390,8 @@ body.dark-mode .custom-color-bar {
 
 /* 색상 점 */
 .color-dot {
-  width: 18px;
-  height: 18px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #000;
   border: 2px solid white;
@@ -379,36 +411,116 @@ body.dark-mode .custom-color-bar {
   opacity: 0.6;
 }
 
+/* 모달 입력창 디자인 개선 */
 .modal input {
-  margin-top: 8px;
-  padding: 8px;
-  border-radius: 8px;
-  font-size: 15px;
-  background: #eeeded;
-  border: none;
+  width: 100%; /* 너비를 100%로 꽉 채움 */
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 14px;
+  background: #f5f5f5; /* 더 부드러운 배경색 */
+  border: 1px solid transparent;
   outline: none;
+  box-sizing: border-box;
+  transition: border 0.2s;
+}
+
+body.dark-mode .modal input {
+  background: #2c2c2c !important;
+  color: #ffffff;
+}
+
+.modal input:focus {
+  border: 1px solid #0077B6; /* 포커스 시 포인트 컬러 */
+}
+
+/* 버튼 컨테이너 (버튼들을 가로로 나란히) */
+.modal-footer-btns {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+/* 저장/삭제 버튼 공통 스타일 */
+.save-btn, .del-btn {
+  flex: 1; /* 버튼 너비를 동일하게 배분 */
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  margin-left: 0 !important; /* 기존 여백 제거 */
+  transition: opacity 0.2s, transform 0.1s;
 }
 
 .save-btn {
-  font-size: 15px;
-  margin-top: 8px;
-  padding: 8px;
-  margin-left: 63px;
   background: #0077B6;
   color: white;
-  border: none;
-  cursor: pointer;
 }
 
 .del-btn {
-  font-size: 15px;
-  margin-top: 8px;
-  padding: 8px;
-  margin-left: 5px;
-  background: #E63946;
-  color: white;
-  border: none;
+  background: #f0f0f0; /* 삭제 버튼을 덜 공격적인 색상으로 변경 */
+  color: #E63946;
+}
+
+body.dark-mode .del-btn {
+  background: #3a3a3a;
+}
+
+.save-btn:active, .del-btn:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+/* 컬러 피커 컨테이너 너비 조정 */
+.color-picker-container {
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* 체크박스 한 줄 정렬 (도림~쿤이, 아침~공복) */
+.checkbox-line {
+  display: flex;
+  justify-content: space-between; /* 양 끝으로 균등 분배 */
+  gap: 2px; /* 간격을 좁게 해서 한 줄에 들어가도록 함 */
+  margin-top: 2px;
+  width: 100%;
+}
+
+.checkbox-item {
+  flex: 1; /* 모든 아이템이 동일한 너비를 가짐 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 2px 0;
+}
+
+.checkbox-label-text {
+  font-size: 12.5px; /* 글자 크기를 살짝 줄여서 한 줄 확보 */
+  font-weight: 500;
+  color: #222222;
+  letter-spacing: -0.3px;
   cursor: pointer;
+}
+
+body.dark-mode .checkbox-label-text {
+  color: #ccc;
+}
+
+/* 체크박스 색상만 복용 체크 모달처럼 변경 */
+.checkbox-item input[type="checkbox"] {
+  width: 10px;
+  height: 10px;
+  cursor: pointer;
+  /* 📌 체크되었을 때의 배경색을 검은색으로 고정 */
+  accent-color: #333333;
+
+  /* 📌 아이폰 브라우저 제약을 무시하고 강제로 0.85배 축소 */
+  transform: scale(0.80); 
+  -webkit-transform: scale(0.80); 
+  margin: 0;        /* 스케일 조정 후 발생하는 유령 여백 제거 */
 }
 
 /* 월별 비용 모달 헤더 */
@@ -425,26 +537,77 @@ body.dark-mode .custom-color-bar {
   font-weight: 700;
 }
 
+/* 월별 비용 모달 내부 디자인 업그레이드 */
 #monthlyCostModal .modal {
-  width: 170px;
-  padding: 10px;
+  width: 260px; /* 조금 더 넓게 조정 */
 }
 
-.monthly-sup-list {
-  margin-left: 15px;
+.cost-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 0 10px;
+}
+
+.cost-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 14px;
   font-weight: 700;
 }
 
-.monthly-sup-list .sup-name {
-  margin: 2px 0;
+/* 비용 전용 막대 그래프 */
+.cost-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: #e0e0e0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cost-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.total-cost-wrapper {
+  margin-top: 15px;
+  padding-top: 12px;
+  border-top: 1px solid var(--calendar-line);
+  text-align: center;
+  padding-right: 6px;
+}
+
+.total-cost-label {
+  font-size: 12px;
+  opacity: 0.7;
+  display: block;
+}
+
+.total-cost-amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0077B6;
+}
+
+body.dark-mode .total-cost-amount {
+  color: #72cdf4;
 }
 
 /* ==== 복용 체크 모달 스타일 ==== */
 .taken-modal {
   width: 280px;
   max-height: 80vh;
+  padding: 15px !important;
   overflow-y: auto;
+}
+
+/* 복용 체크 모달 헤더와 내용 사이 간격 추가 */
+.taken-modal .modal-header {
+  margin-bottom: 15px !important; /* 📌 헤더 아래에 15px의 여백 생성 */
 }
 
 .taken-sup-section {
@@ -512,9 +675,41 @@ input[type="checkbox"] {
   transform: translateY(-50%);
 }
 
-/* --- 첫 영양제 구간과 헤더 사이 여백 --- */
-#takenCheckBody .taken-sup-section:first-child {
-  margin-top: 16px;
+/* 2. 복용 체크 모달 (Taken Check Modal) 내부 여백 조절 */
+/* 복용 체크 모달 내의 각 항목(줄) 간격 줄이기 */
+#takenCheckBody .taken-item {
+  display: flex;
+  align-items: center;
+  padding: 0px 0 !important; 
+  margin: 0 !important;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+#takenCheckBody input[type="checkbox"] {
+  width: 10px;      /* 📌 여기도 크기 통일 */
+  height: 10px;
+  margin-right: 6px;
+  margin: 0 8px 0 0 !important;
+  accent-color: #333333;
+  transform: scale(0.80);
+  -webkit-transform: scale(0.80);
+}
+
+.time-group-header {
+  margin-top: 10px !important; /* 다음 그룹 시작 전 여백을 기존보다 절반으로 축소 */
+  margin-bottom: 2px !important;
+  font-weight: bold;
+  font-size: 13px;
+  color: #0077B6; /* 시간대 구분 강조 */
+}
+
+/* 체크박스와 이름 사이 간격 밀착 */
+#takenCheckBody .taken-item label {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  width: 100%;
 }
 
 /* 연장 버튼 꾸미기 */
@@ -537,8 +732,8 @@ input[type="checkbox"] {
 }
 
 .pie-chart {
-  width: 25px;
-  height: 25px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   flex-shrink: 0;
 }

@@ -1,5 +1,5 @@
 
-const APP_VERSION = "v20";
+const APP_VERSION = "_";
 const AUTO_BACKUP_KEY = "lastAutoBackupDate";
 
 // 자동 백업 함수 ↓
@@ -108,7 +108,7 @@ function openSupplementModal(sup) {
   inputDose.value = sup.dose ?? "";
   inputPrice.value = sup.price;
   updateColorBar(sup.circleColor);
-
+  deleteSupplementBtnModal.style.display = "block"; // 수정 시 삭제 버튼 보임
   for (let cb of inputFamily) cb.checked = sup.family.includes(cb.value);
   for (let tb of inputTime) tb.checked = sup.times.includes(tb.value);
 }
@@ -245,37 +245,57 @@ monthlyCostBtn.addEventListener("click", () => {
   document.getElementById("monthlyCostTitle").innerText = `${year}.${String(month).padStart(2,"0")} 비용`;
 
   let totalCost = 0;
-  let costHtml = "";
-  const supNamesThisMonth = [];
+  const monthlyItems = [];
 
-  // 해당 월(입력월)에 입력된 영양제만 선택
+  // 1. 해당 월에 입력된 데이터 계산
   supplements.forEach(sup => {
-    const supInputDate = sup.schedule?.[0] ?? ""; // 일정 첫 날짜 (입력 날짜)
+    const supInputDate = sup.schedule?.[0] ?? "";
     const [y, m] = supInputDate.split("-").map(x => parseInt(x));
 
     if (y === year && m === month) {
-      supNamesThisMonth.push(sup.productName);
-
-      // 1달 비용 = price ÷ 전체개월수 (기존 로직 그대로)
       const totalDays = sup.schedule.length;
       const monthsCount = Math.ceil(totalDays / 30);
-      const monthlyPart = sup.price / monthsCount;
+      const monthlyPart = Math.round(sup.price / monthsCount);
+      
       totalCost += monthlyPart;
+      monthlyItems.push({
+        name: sup.productName,
+        cost: monthlyPart,
+        color: sup.circleColor
+      });
     }
   });
 
-  // 이름 리스트 그리기
-  if (supNamesThisMonth.length > 0) {
-    costHtml += "<div class='monthly-sup-list'>";
-    supNamesThisMonth.forEach(name => {
-      costHtml += `<div class='sup-name'>${name}</div>`;
+  // 2. HTML 생성
+  let costHtml = "";
+  if (monthlyItems.length > 0) {
+    monthlyItems.forEach(item => {
+      // 해당 제품이 이번 달 전체 비용에서 차지하는 비율 계산
+      const ratio = totalCost > 0 ? Math.round((item.cost / totalCost) * 100) : 0;
+      
+      costHtml += `
+        <div class="cost-item">
+          <div class="cost-item-header">
+            <span>${item.name}</span>
+            <span>${item.cost.toLocaleString()}원</span>
+          </div>
+          <div class="cost-bar-bg">
+            <div class="cost-bar-fill" style="width: ${ratio}%; background-color: ${item.color};"></div>
+          </div>
+        </div>
+      `;
     });
-    costHtml += "</div>";
   } else {
-    costHtml += "<div class='sup-name none'></div>";
+    costHtml = "<p style='text-align:center; opacity:0.5; font-size:13px;'>이번 달 등록된 비용이 없습니다.</p>";
   }
 
-  costHtml += `<p><strong>￦ ${Math.round(totalCost).toLocaleString()}</strong></p>`;
+  // 총액 표시 영역
+  costHtml += `
+    <div class="total-cost-wrapper">
+      <span class="total-cost-label">총 합계</span>
+      <span class="total-cost-amount">₩ ${Math.round(totalCost).toLocaleString()}</span>
+    </div>
+  `;
 
   monthlyCostContent.innerHTML = costHtml;
   monthlyCostModal.classList.remove("hidden");
@@ -300,6 +320,7 @@ addBtn.addEventListener("click", () => {
   inputDose.value = ""; 
   inputPrice.value = "";
   updateColorBar("#000000");
+  deleteSupplementBtnModal.style.display = "none"; // 새 추가 시 삭제 버튼 숨김
   for (let cb of inputFamily) cb.checked = false;
   for (let tb of inputTime) tb.checked = false;
 });
@@ -320,9 +341,8 @@ deleteSupplementBtnModal.addEventListener("click", async () => {
   if (currentEditId) {
     if (!confirm("이 영양제와 관련된 모든 복용 기록이 삭제됩니다. 삭제할까요?")) return;
     await deleteSupplementFromDB(currentEditId);
-     supplements = supplements.filter(s => s.id !== currentEditId);
-     await saveAllSupplements();
-
+    supplements = supplements.filter(s => s.id !== currentEditId);
+    
     modalOverlay.classList.add("hidden");
     document.body.classList.remove("modal-open");
     renderCalendar();
@@ -589,15 +609,26 @@ saveInfoBtn.addEventListener("click", async () => {
   });
 }
 
-  await saveAllSupplements();
+  // 방금 작업한 데이터(currentEditId가 있으면 수정본, 없으면 마지막 추가본)만 저장
+  const target = currentEditId 
+    ? supplements.find(s => s.id === currentEditId) 
+    : supplements[supplements.length - 1];
+    
+  await saveAllSupplements(target);
   modalOverlay.classList.add("hidden");
   document.body.classList.remove("modal-open");
   selectedDateForList = start;
   renderCalendar();
 });
 
-
-async function saveAllSupplements() { for (let sup of supplements) await saveSupplementToDB(sup); }
+// 인자가 있으면 해당 데이터만 저장, 없으면 전체 저장 (복원 시 대비)
+async function saveAllSupplements(targetSup) {
+  if (targetSup) {
+    await saveSupplementToDB(targetSup);
+  } else {
+    for (let sup of supplements) await saveSupplementToDB(sup);
+  }
+}
 
 async function loadSupplements() {
   supplements = await getAllSupplements();
@@ -744,9 +775,11 @@ extendBtn.addEventListener("click", async () => {
 
   if (confirm(confirmMsg)) {
     extendScheduleFromDate(sup, baseDate, additionalDays);
-    await saveSupplementToDB(sup);
+    
+    // 개별 저장 함수를 호출하여 성능 최적화 유지
+    await saveAllSupplements(sup); 
+    
     renderCalendar();
-
     alert("📅 일정이 연장되었습니다!");
   }
 });
@@ -760,8 +793,7 @@ extendBtn.addEventListener("click", async () => {
 // ❌ 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
 document.getElementById("closeTakenCheckBtn")
   .addEventListener("click", async () => {
-    // IndexedDB에 자동 저장
-    await saveAllSupplements();
+    // 개별 저장 로직이 이미 chk.addEventListener에 있으므로 전체 저장은 생략합니다.
     document.getElementById("takenCheckModal").classList.add("hidden");
     document.body.classList.remove("modal-open");
     renderCalendar();
@@ -1125,6 +1157,8 @@ const datesWrapper = document.getElementById("dates-wrapper");
 datesWrapper.addEventListener("touchstart", (e) => {
   touchStartX = e.changedTouches[0].screenX;
   touchStartY = e.changedTouches[0].screenY;
+  touchEndX = touchStartX;
+  touchEndY = touchStartY;
 });
 
 datesWrapper.addEventListener("touchmove",  (e) => {

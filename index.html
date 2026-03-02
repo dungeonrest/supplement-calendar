@@ -66,7 +66,7 @@
       <button id="closeModal" class="close-btn">×</button>
     </div>
     <div id="modalBody">
-      <input type="date" id="inputDate" class="my-date input-date"><br>
+      <input type="date" id="inputDate" class="my-date input-date">
       <input type="text" id="inputProduct" placeholder="제품명" class="product-name input-product">
       <input type="number" id="inputTotal" placeholder="제공량" min="1" class="total-name input-total">
       <input type="number" id="inputDose" placeholder="복용량" min="1" class="dose-name input-dose">
@@ -122,9 +122,11 @@
         </label>
       </div>
 
-      <button id="saveInfo" class="save-btn">저장</button>
-      <button id="deleteSupplement" class="del-btn">삭제</button>
-    </div>
+      <div class="modal-footer-btns">
+  <button id="deleteSupplement" class="del-btn">삭제</button>
+  <button id="saveInfo" class="save-btn">저장</button>
+  </div>
+</div>
   </div>
 </div>
 
