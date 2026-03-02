@@ -21,17 +21,20 @@ body.dark-mode .calendar-wrapper {
 }
 
 body {
-  margin: 0; /* 1에서 0으로 수정 */
+  margin: 0;
   font-family: 'D2Coding ligature', sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
-  
-  /* 아이폰 상하단 안전 영역 확보 */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
-  
-  /* 스크롤 시 튕김 현상 방지 및 부드러운 스크롤 */
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
   -webkit-overflow-scrolling: touch;
+}
+
+input, textarea {
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
 }
 
 /* 하단 백업 영역 여백 추가 */
@@ -279,6 +282,14 @@ body.dark-mode .supplement-bar-label:not(.unTaken) {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2000;
+}
+
+@media screen and (max-height: 500px) {
+  .modal-overlay {
+    align-items: flex-start; /* 키보드가 올라오면 모달을 위로 밀어올림 */
+    padding-top: 20px;
+  }
 }
 
 /* 낮 모드 모달 오버레이 */
@@ -357,11 +368,13 @@ body.dark-mode .modal {
   background: #f5f5f5;
   border: 1px solid transparent;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   box-sizing: border-box;
   outline: none;
   display: flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   
   /* 📌 폰트 스타일 고정 */
   color: #333;
@@ -380,22 +393,6 @@ body.dark-mode .modal input[type="date"] {
   color-scheme: dark;      /* 아이폰 시스템 달력 팝업도 다크하게 */
 }
 
-/* 📌 아이폰 Safari 전용: 가운데 정렬 강제 해제 */
-.modal input[type="date"]::-webkit-date-and-time-value {
-  text-align: left !important; /* 왼쪽 정렬 강제 */
-  display: block;
-  width: 100%;
-  color: #333;
-  /* 아이폰에서 글자가 위로 쏠려 보인다면 아래 여백 추가 */
-  padding-left: 0; 
-}
-
-/* 다크모드 대응 */
-body.dark-mode .modal input[type="date"] {
-  background: #333232;
-  color: #ffffff;
-}
-
 body.dark-mode .modal input[type="date"]::-webkit-date-and-time-value {
   color: #ffffff;
 }
@@ -403,7 +400,7 @@ body.dark-mode .modal input[type="date"]::-webkit-date-and-time-value {
 /* 커스텀 바 디자인 */
 .custom-color-bar {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   height: 30px;
   padding: 0 12px;
@@ -446,23 +443,88 @@ body.dark-mode .custom-color-bar {
   color: var(--text-color);
 }
 
-.edit-icon {
+#inputProduct {
+  margin-bottom: 8px !important; /* 아래 칸(제공량)과의 간격 생성 */
+}
+
+/* 입력창 그룹 (하나의 커다란 입력창처럼 보이게 함) */
+.input-combined-group {
+  display: flex;
+  align-items: center;
+  background: #f5f5f5; /* 입력창 배경색과 동일하게 */
+  border-radius: 10px;
+  padding: 0 12px 0 40px;
+  margin-bottom: 8px;
+  height: 30px; /* 높이 통일 */
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  overflow: hidden;
+}
+
+body.dark-mode .input-combined-group {
+  background: #2c2c2c;
+}
+
+/* 실제 숫자 입력 부분 */
+.input-combined-group input {
+  flex: 1;
+  border: none !important; /* 테두리 제거 */
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
   font-size: 14px;
-  opacity: 0.6;
+  height: 100%;
+  outline: none;
+  color: inherit;
+}
+
+/* 3. 내부 단위(Select, Span) 스타일 통일 */
+.unit-select-inside, 
+#unitDisplay, 
+.unit-won {
+  font-size: 12px;
+  font-weight: 700;   /* 너무 두껍지 않게 조절 */
+  color: #b4b2b2;        /* 약간 흐린 회색으로 세련되게 */
+  border: none !important;
+  background: transparent !important;
+  outline: none !important;
+  text-align: right;
+  min-width: 30px;      /* 단위 너비 고정으로 통일감 부여 */
+  height: 100%;        /* 부모 높이와 일치시킴 */
+  display: flex;       /* 수직 중앙 정렬을 위해 */
+  align-items: center; /* 수직 중앙 정렬 */
+  justify-content: flex-end; /* 오른쪽 정렬 */
+  padding: 0 !important;
+  margin: 0 !important;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+select.unit-select-inside {
+  cursor: pointer;
+  line-height: normal; /* 라인 높이 초기화 */
+  direction: rtl;      /* 텍스트를 오른쪽으로 밀기 */
+}
+
+body.dark-mode .unit-select-inside,
+body.dark-mode #unitDisplay,
+body.dark-mode .unit-won {
+  color: #aaa;
 }
 
 /* 모달 입력창 디자인 개선 */
 .modal input {
-  width: 100%; /* 너비를 100%로 꽉 채움 */
+  width: 100%;
   margin-top: 10px;
   padding: 10px;
   border-radius: 10px;
   font-size: 14px;
-  background: #f5f5f5; /* 더 부드러운 배경색 */
+  background: #f5f5f5;
   border: 1px solid transparent;
   outline: none;
   box-sizing: border-box;
   transition: border 0.2s;
+  text-align: center;
 }
 
 body.dark-mode .modal input {

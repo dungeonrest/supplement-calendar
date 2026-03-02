@@ -1,5 +1,5 @@
 
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.0.1";
 const AUTO_BACKUP_KEY = "lastAutoBackupDate";
 
 // 자동 백업 함수 ↓
@@ -84,6 +84,7 @@ const closeModalBtn = document.getElementById("closeModal");
 const inputDate = document.getElementById("inputDate");
 const inputProduct = document.getElementById("inputProduct");
 const inputTotal = document.getElementById("inputTotal");
+const inputDose = document.getElementById("inputDose");
 const inputPrice = document.getElementById("inputPrice");
 const inputColor = document.getElementById("inputColor");
 const inputFamily = document.getElementsByClassName("inputFamily");
@@ -95,22 +96,38 @@ const monthlyCostModal = document.getElementById("monthlyCostModal");
 const monthlyCostContent = document.getElementById("monthlyCostContent");
 const closeMonthlyCostModal = document.getElementById("closeMonthlyCostModal");
 
+document.addEventListener("change", (e) => {
+  if (e.target.id === "inputUnit") {
+    const unitDisplay = document.getElementById("unitDisplay");
+    if (unitDisplay) unitDisplay.innerText = e.target.value;
+  }
+});
 
 function openSupplementModal(sup) {
   currentEditId = sup.id;
-
   modalOverlay.classList.remove("hidden");
   document.body.classList.add("modal-open");
 
-  inputDate.value = sup.schedule[0] || "";
+  inputDate.value = selectedDateForList || (sup.schedule && sup.schedule[0]) || "";
   inputProduct.value = sup.productName;
   inputTotal.value = sup.totalCapsules;
-  inputDose.value = sup.dose ?? "";
-  inputPrice.value = sup.price;
+  const doseInput = document.getElementById("inputDose");
+  if (doseInput) doseInput.value = sup.dose ?? "";
+  inputPrice.value = sup.price ? sup.price.toLocaleString() : "";
+  const unitVal = sup.unit || "캡슐";
+  const unitSelect = document.getElementById("inputUnit");
+  const unitDisplay = document.getElementById("unitDisplay");
+  if (unitSelect) unitSelect.value = unitVal;
+  if (unitDisplay) unitDisplay.innerText = unitVal;
+  deleteSupplementBtnModal.style.display = "block";
+  for (let cb of inputFamily) {
+    cb.checked = sup.family && sup.family.includes(cb.value);
+  }
+  for (let tb of inputTime) {
+    tb.checked = sup.times && sup.times.includes(tb.value);
+  }
   updateColorBar(sup.circleColor);
-  deleteSupplementBtnModal.style.display = "block"; // 수정 시 삭제 버튼 보임
-  for (let cb of inputFamily) cb.checked = sup.family.includes(cb.value);
-  for (let tb of inputTime) tb.checked = sup.times.includes(tb.value);
+  
 }
 
 // ====================
@@ -142,17 +159,11 @@ const colorList = [
 // ====================
 // 한국 시간 기준 오늘 날짜 문자열 (YYYY-MM-DD)
 function getTodayKST() {
-  const now = new Date();
-
-  // 현재 시간을 UTC + 9로 변환
-  const utcMS = now.getTime() + (now.getTimezoneOffset() * 60000);
-  const kstDate = new Date(utcMS + (9 * 60 * 60000));
-
-  const year  = kstDate.getFullYear();
-  const month = String(kstDate.getMonth() + 1).padStart(2, "0");
-  const date  = String(kstDate.getDate()).padStart(2, "0");
-
-  return `${year}-${month}-${date}`;
+  const options = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
+  const formatter = new Intl.DateTimeFormat('ko-KR', options);
+  const [{ value: year }, , { value: month }, , { value: day }] = formatter.formatToParts(new Date());
+  
+  return `${year}-${month}-${day}`;
 }
 
 // ====================
@@ -186,7 +197,11 @@ function openDatabase() {
       };
       resolve(db); 
     };
-    request.onerror = () => reject(request.error);
+    request.onerror = (e) => {
+      console.error("DB 오픈 실패:", e.target.error);
+      alert("데이터베이스를 열 수 없습니다. 브라우저 설정을 확인해주세요.");
+      reject(request.error);
+    };
   });
 }
 
@@ -314,10 +329,11 @@ addBtn.addEventListener("click", () => {
   currentEditId = null;
   modalOverlay.classList.remove("hidden");
   document.body.classList.add("modal-open");
-  inputDate.valueAsDate = new Date(selectedDateForList ? selectedDateForList : new Date());
+  inputDate.value = selectedDateForList || getTodayKST();  inputProduct.value = "";
   inputProduct.value = "";
   inputTotal.value = "";
-  inputDose.value = ""; 
+  const doseEl = document.getElementById("inputDose");
+  if (doseEl) doseEl.value = "";
   inputPrice.value = "";
   updateColorBar("#000000");
   deleteSupplementBtnModal.style.display = "none"; // 새 추가 시 삭제 버튼 숨김
@@ -374,11 +390,20 @@ function renderCalendar() {
     const div = document.createElement("div");
     div.classList.add("date", "inactive");
 
-    const dow = new Date(year, month-1, dayNum).getDay();
+    // 1. 이전 달의 정확한 날짜 객체를 먼저 만듭니다. (자바스크립트가 연도/월 전환을 알아서 계산함)
+    const prevDateObj = new Date(year, month - 1, dayNum);
+    const pY = prevDateObj.getFullYear();
+    const pM = String(prevDateObj.getMonth() + 1).padStart(2, "0");
+    const pD = String(prevDateObj.getDate()).padStart(2, "0");
+    
+    // 2. 요일(Day of Week) 계산
+    const dow = prevDateObj.getDay();
     if (dow === 0) div.classList.add("sun");
     if (dow === 6) div.classList.add("sat");
 
-    const fullDatePrev = `${year}-${String(month).padStart(2,"0")}-${String(dayNum).padStart(2,"0")}`;
+    // 3. YYYY-MM-DD 형식의 문자열 생성
+    const fullDatePrev = `${pY}-${pM}-${pD}`;
+    
     if (koreaHolidays2026.includes(fullDatePrev)) {
       div.classList.add("holiday");
     }
@@ -506,6 +531,7 @@ function renderCalendar() {
 // 클릭 이벤트 유지
 bar.addEventListener("click", (e) => {
   e.stopPropagation();
+  selectedDateForList = fullDate;
   openSupplementModal(sup);
 });
 
@@ -528,7 +554,12 @@ listArea.appendChild(bar);
     if (dowNext === 0) div.classList.add("sun");
     if (dowNext === 6) div.classList.add("sat");
 
-    const fullDateNext = `${year}-${String(month+2).padStart(2,"0")}-${String(j).padStart(2,"00")}`;
+    // 다음 달 날짜 객체 생성 (자바스크립트가 연도/월 전환 자동 계산)
+    const nextDateObj = new Date(year, month + 1, j);
+    const nY = nextDateObj.getFullYear();
+    const nM = String(nextDateObj.getMonth() + 1).padStart(2, "0");
+    const nD = String(nextDateObj.getDate()).padStart(2, "0");
+    const fullDateNext = `${nY}-${nM}-${nD}`;
     if (koreaHolidays2026.includes(fullDateNext)) {
       div.classList.add("holiday");
     }
@@ -545,13 +576,14 @@ listArea.appendChild(bar);
 saveInfoBtn.addEventListener("click", async () => {
   const start = inputDate.value;
   const product = inputProduct.value.trim();
-  const totalCaps = parseInt(inputTotal.value);
+  const totalCaps = parseInt(inputTotal.value)
   const dose = parseInt(inputDose.value);
-  const price = parseInt(inputPrice.value);
+  const unit = document.getElementById("inputUnit").value;
+  const price = parseInt(inputPrice.value.toString().replace(/,/g, "")) || 0;
   const family = [...inputFamily].filter(cb => cb.checked).map(cb => cb.value);
   const times = [...inputTime].filter(tb => tb.checked).map(tb => tb.value);
 
-  if (!start || !product || !totalCaps || !dose || !price || family.length === 0) {
+  if (!start || !product || !totalCaps || !dose || family.length === 0 || times.length === 0) {
     alert("모든 정보를 입력해주세요.");
     return;
   }
@@ -563,59 +595,59 @@ saveInfoBtn.addEventListener("click", async () => {
   let d = new Date(start);
   for (let k = 0; k < totalDays; k++){
     schedule.push(d.toISOString().slice(0,10));
-    d = new Date(d);
     d.setDate(d.getDate()+1);
   }
 
  if (currentEditId) {
-  const found = supplements.find(s => s.id === currentEditId);
-  Object.assign(found, {
-    productName: product,
-    totalCapsules: totalCaps,
-    dose,
-    price,
-    family,
-    times,
-    schedule,
-    circleColor: inputColor.value
-  });
-} else {
- 
-  const usedColors = supplements.map(s => s.circleColor?.toLowerCase().trim());
-  let assignedColor;
-  const selectedColor = inputColor.value?.toLowerCase().trim();
-  if (selectedColor && selectedColor !== "#000000" && !usedColors.includes(selectedColor)) {
-    assignedColor = selectedColor;
+    const found = supplements.find(s => s.id === currentEditId);
+    Object.assign(found, {
+      productName: product,
+      totalCapsules: totalCaps,
+      unit: unit,
+      dose,
+      price,
+      family,
+      times,
+      schedule,
+      circleColor: document.getElementById('inputColor').value
+    });
+    await saveSupplementToDB(found);
   } else {
-    assignedColor = colorList.find(c => !usedColors.includes(c.toLowerCase().trim()));
-    if (!assignedColor) {
-      assignedColor = colorList[supplements.length % colorList.length];
+    // [복구] 사용자님의 원래 색상 순차 부여 로직
+    const usedColors = supplements.map(s => s.circleColor?.toLowerCase().trim());
+    let assignedColor;
+    const selectedColor = document.getElementById('inputColor').value?.toLowerCase().trim();
+    
+    if (selectedColor && selectedColor !== "#000000" && !usedColors.includes(selectedColor)) {
+      assignedColor = selectedColor;
+    } else {
+      assignedColor = colorList.find(c => !usedColors.includes(c.toLowerCase().trim()));
+      if (!assignedColor) {
+        assignedColor = colorList[supplements.length % colorList.length];
+      }
     }
+
+    const newSup = {
+      id: Date.now(),
+      productName: product,
+      totalCapsules: totalCaps,
+      unit: unit,
+      dose,
+      price,
+      family,
+      times,
+      schedule,
+      circleColor: assignedColor,
+      takenStatus: {}
+    };
+    supplements.push(newSup);
+    await saveSupplementToDB(newSup);
   }
 
-  supplements.push({
-    id: Date.now(),
-    productName: product,
-    totalCapsules: totalCaps,
-    dose,
-    price,
-    family,
-    times,
-    schedule,
-    circleColor: assignedColor
-  });
-}
-
-  // 방금 작업한 데이터(currentEditId가 있으면 수정본, 없으면 마지막 추가본)만 저장
-  const target = currentEditId 
-    ? supplements.find(s => s.id === currentEditId) 
-    : supplements[supplements.length - 1];
-    
-  await saveAllSupplements(target);
-  modalOverlay.classList.add("hidden");
-  document.body.classList.remove("modal-open");
-  selectedDateForList = start;
-  renderCalendar();
+    modalOverlay.classList.add("hidden");
+    document.body.classList.remove("modal-open");
+    selectedDateForList = start;
+    renderCalendar();
 });
 
 // 인자가 있으면 해당 데이터만 저장, 없으면 전체 저장 (복원 시 대비)
@@ -652,11 +684,11 @@ todayBtn.addEventListener("click", () => {
   renderCalendar();
 });
 
-// 오늘 버튼 touchend로도 처리
+// touchend와 click이 중복 실행되지 않도록 개선된 방식입니다.
 todayBtn.addEventListener("touchend", (e) => {
-  e.preventDefault(); // 기본 phantom click을 막는다
-  todayBtn.click();   // click 처리를 강제 호출
-});
+  if (e.cancelable) e.preventDefault(); 
+  todayBtn.click();
+}, { passive: false });
 
 loadSupplements();
 
@@ -888,7 +920,7 @@ function showStatsForFamily(name) {
 
     sup.schedule.forEach(dateStr => {
         if (dateStr >= startStr && dateStr <= endStr) {
-        targetForPeriod += (sup.dose / sup.times.length) * sup.times.length;
+        targetForPeriod += sup.dose;
 
         const dayStatus = sup.takenStatus?.[dateStr] || {};
         for (const key in dayStatus) {
@@ -1069,21 +1101,33 @@ if (db) {
     }
     
 const deleteDatabaseAsync = () => {
-      return new Promise((resolve, reject) => {
-        const deleteReq = indexedDB.deleteDatabase(DB_NAME);
-        
-        deleteReq.onsuccess = () => resolve();
-        deleteReq.onerror = () => reject(new Error("DB 삭제 실패"));
-        
-        // 여전히 차단될 경우를 위한 처리
-        deleteReq.onblocked = () => {
-          console.warn("DB 삭제 차단됨");
-          // 차단되어도 진행될 수 있도록 resolve를 해주거나 
-          // 사용자에게 명확한 가이드를 줍니다.
-          resolve(); 
-        };
-      });
+  return new Promise((resolve, reject) => {
+    // 1. 현재 열려있는 DB가 있다면 확실히 닫습니다.
+    if (db) {
+      db.close();
+      db = null;
+    }
+    
+    const deleteReq = indexedDB.deleteDatabase(DB_NAME);
+    
+    // iOS 대응: 삭제 작업이 성공적으로 완료되었을 때
+    deleteReq.onsuccess = () => {
+      console.log("DB 삭제 성공");
+      resolve();
     };
+    
+    deleteReq.onerror = (e) => {
+      console.error("DB 삭제 중 에러:", e);
+      reject(new Error("DB 삭제 실패"));
+    };
+    
+    // iOS 특이점: 다른 연결이 남아있을 때 호출됨
+    deleteReq.onblocked = () => {
+      alert("기존 데이터 연결이 남아있습니다. 앱을 완전히 껐다 켜주세요.");
+      resolve(); // 일단 진행은 시도함
+    };
+  });
+};
 
     await deleteDatabaseAsync();
 
@@ -1165,7 +1209,16 @@ const swipeRatio = 1.5;
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
-  touchStartX = e.changedTouches[0].screenX;
+  const x = e.changedTouches[0].screenX;
+  const screenWidth = window.innerWidth;
+
+  // 화면 가장자리 20px 이내에서 시작하는 터치는 시스템 제스처(뒤로가기 등)를 위해 무시
+  if (x < 20 || x > screenWidth - 20) {
+    touchStartX = 0; // 스와이프 실행 안 되게 0으로 설정
+    return;
+  }
+
+  touchStartX = x;
   touchStartY = e.changedTouches[0].screenY;
   touchEndX = touchStartX;
   touchEndY = touchStartY;
@@ -1269,6 +1322,23 @@ if (realColorInput) {
     const newColor = e.target.value.toUpperCase();
     if (colorDot) colorDot.style.backgroundColor = newColor;
     if (colorHexText) colorHexText.innerText = newColor;
+  });
+}
+
+// 가격 입력 시 실시간 쉼표 추가 로직
+const inputPriceEl = document.getElementById("inputPrice");
+
+if (inputPriceEl) {
+  inputPriceEl.addEventListener("input", (e) => {
+    // 1. 숫자 이외의 문자를 모두 제거 (쉼표 포함)
+    let value = e.target.value.replace(/[^0-9]/g, "");
+    
+    // 2. 숫자가 있을 때만 천 단위 쉼표를 찍어서 다시 노출
+    if (value) {
+      e.target.value = Number(value).toLocaleString();
+    } else {
+      e.target.value = "";
+    }
   });
 }
 
