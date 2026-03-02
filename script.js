@@ -1,5 +1,5 @@
 
-const APP_VERSION = "_";
+const APP_VERSION = "1.0.0";
 const AUTO_BACKUP_KEY = "lastAutoBackupDate";
 
 // 자동 백업 함수 ↓
@@ -437,8 +437,25 @@ function renderCalendar() {
         const bar = document.createElement("div");
         bar.classList.add("supplement-bar");
 
-        // 반투명 배경 (남은 부분)
-        bar.style.backgroundColor = `rgba(${hexToRgb(sup.circleColor)}, 0.35)`;
+        // 1. 이 영양제가 끝나는 날(마지막 날짜) 가져오기
+        const endDateStr = sup.schedule[sup.schedule.length - 1];
+        const endDateObj = new Date(endDateStr);
+        
+        // 2. 해당 종료일이 포함된 주의 일요일과 토요일 계산
+        const endSun = new Date(endDateObj);
+        endSun.setDate(endDateObj.getDate() - endDateObj.getDay()); // 종료 주 일요일
+        const endSat = new Date(endSun);
+        endSat.setDate(endSun.getDate() + 6); // 종료 주 토요일
+
+        // 3. 현재 렌더링 중인 날짜(fullDate)가 이 범위 안에 있는지 확인
+        const currDateObj = new Date(fullDate);
+        if (currDateObj >= endSun && currDateObj <= endSat) {
+          bar.classList.add("last-week-bar"); // 사선 패턴 클래스 추가
+        }
+
+       // 기존 투명도를 약간 높여서 사선이 잘 보이게 배경을 진하게 설정
+        const isDark = document.body.classList.contains("dark-mode");
+        bar.style.backgroundColor = `rgba(${hexToRgb(sup.circleColor)}, ${isDark ? 0.45 : 0.3})`;
 
         // 채워진 부분
         const fill = document.createElement("div");
@@ -469,42 +486,22 @@ function renderCalendar() {
 
         bar.appendChild(fill);
 
-// 현재 날짜 fullDate
-const currDateObj = new Date(fullDate);
+        // 현재 날짜의 요일 (0:일, 1:월...)
+        const dayNum = new Date(fullDate).getDay();
 
-// 이번 주 시작/끝 계산 (일요일 기준)
-const startOfWeek = new Date(currDateObj);
-startOfWeek.setDate(currDateObj.getDate() - currDateObj.getDay());
+        // 1. 해당 날짜가 일요일(0)이거나, 
+        // 2. 일정의 시작일(`sup.schedule[0]`)인 경우에만 라벨 표시
+        if (dayNum === 0 || sup.schedule[0] === fullDate) {
+          const labelInBar = document.createElement("span");
+          labelInBar.classList.add("supplement-bar-label");
 
-const endOfWeek = new Date(startOfWeek);
-endOfWeek.setDate(startOfWeek.getDate() + 6);
+          if (fillPercent === 0) {
+            labelInBar.classList.add("unTaken");
+          }
 
-// 이번 주에 해당하는 sup.schedule 날짜들만 필터
-const weekScheds = sup.schedule
-  .map(d => new Date(d))
-  .filter(d => d >= startOfWeek && d <= endOfWeek);
-
-// 이번 주 일정 중 가장 빠른 날짜 문자열
-let firstInWeek = null;
-if (weekScheds.length > 0) {
-  weekScheds.sort((a,b) => a - b);
-  firstInWeek = weekScheds[0].toISOString().slice(0,10);
-}
-
-// 만약 this fullDate가 해당 주에서 최초 등장 날짜라면
-if (firstInWeek === fullDate) {
-  // 라벨 생성
-const labelInBar = document.createElement("span");
-labelInBar.classList.add("supplement-bar-label");
-
-// 미복용 상태이면 추가 클래스 추가
-if (fillPercent === 0) {
-  labelInBar.classList.add("unTaken");
-}
-
-labelInBar.innerText = sup.productName;
-bar.appendChild(labelInBar);
-}
+          labelInBar.innerText = sup.productName;
+          bar.appendChild(labelInBar);
+        }
 
 // 클릭 이벤트 유지
 bar.addEventListener("click", (e) => {
@@ -626,7 +623,14 @@ async function saveAllSupplements(targetSup) {
   if (targetSup) {
     await saveSupplementToDB(targetSup);
   } else {
-    for (let sup of supplements) await saveSupplementToDB(sup);
+    const tx = db.transaction([STORE_NAME], "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    for (let sup of supplements) {
+      store.put(sup);
+    }
+    return new Promise((resolve) => {
+      tx.oncomplete = () => resolve();
+    });
   }
 }
 
@@ -642,15 +646,10 @@ todayBtn.addEventListener("click", () => {
   const m = now.getMonth();
   const d = now.getDate();
 
-  // 1) 오늘 기준으로 상태값 정리
-  selectedDateForList = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-  dt = new Date(y, m, d);
+ selectedDateForList = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+ dt = new Date(y, m, d);
 
-  // 2) renderCalendar 를 즉시 호출하지 말고
-  // 현재 상태를 1tick 이후에 실행하도록 함
-  setTimeout(() => {
-    renderCalendar();
-  }, 0);
+  renderCalendar();
 });
 
 // 오늘 버튼 touchend로도 처리
@@ -661,7 +660,6 @@ todayBtn.addEventListener("touchend", (e) => {
 
 loadSupplements();
 
-
 function openTakenCheckUI(date) {
   const modal = document.getElementById("takenCheckModal");
   const title = document.getElementById("takenCheckTitle");
@@ -670,36 +668,70 @@ function openTakenCheckUI(date) {
   title.innerText = `${date}`;
   body.innerHTML = ""; // 기존 내용 초기화
 
-  document.body.classList.add("modal-open");
-
-  // 해당 날짜 영양제들
+  // 해당 날짜 영양제들 필터링
   const matchedSupps = supplements.filter(s => s.schedule.includes(date));
 
   if (matchedSupps.length === 0) {
     body.innerHTML = "<p>해당 날짜의 영양제가 없습니다.</p>";
   } else {
     matchedSupps.forEach(sup => {
-      // 섹션 구분
+      // 1. 섹션 카드 생성
       const section = document.createElement("div");
       section.classList.add("taken-sup-section");
 
-      // 영양제 제목
-      const titleEl = document.createElement("div");
-      titleEl.classList.add("taken-sup-title");
-      titleEl.innerText = sup.productName;
-      section.appendChild(titleEl);
+      // 2. 제목 컨테이너 (Dot + 이름 + 연장버튼)
+      const titleContainer = document.createElement("div");
+      titleContainer.classList.add("taken-sup-title");
 
-      // ===== 연장 버튼 추가 =====
+      const dot = document.createElement("span");
+      dot.classList.add("sup-dot");
+      dot.style.backgroundColor = sup.circleColor;
+      titleContainer.appendChild(dot);
+
+      const nameText = document.createElement("span");
+      nameText.classList.add("sup-name-text");
+      nameText.innerText = sup.productName;
+      titleContainer.appendChild(nameText);
+
       const extendBtn = document.createElement("button");
       extendBtn.classList.add("extend-btn");
       extendBtn.innerText = "🔁";
-      titleEl.appendChild(extendBtn);
+      
+      // [중요!] 연장 버튼 클릭 이벤트 (함수 내부로 이동)
+      extendBtn.addEventListener("click", async () => {
+        const baseDate = date;
+        const leftUnTakenSlots = calculateLeftUnTakenSlotsBefore(sup, baseDate);
+        const additionalDays = calculateAdditionalDays(sup, baseDate, leftUnTakenSlots);
 
-      // 테이블
+        if (additionalDays === 0) {
+          alert("📍 연장할 일정이 없습니다.");
+          return;
+        }
+
+        let confirmMsg = `📍 ${baseDate}\n\n` +
+          `미복용 체크 슬롯: ${leftUnTakenSlots}개\n` +
+          `예상 추가 일정: ${additionalDays}일\n\n` +
+          `이대로 연장할까요?`;
+
+        if (confirm(confirmMsg)) {
+          extendScheduleFromDate(sup, baseDate, additionalDays);
+          await saveAllSupplements(sup); 
+          renderCalendar();
+          alert("📅 일정이 연장되었습니다!");
+          // 연장 후 모달을 닫아주거나 새로고침 할 수 있습니다.
+          modal.classList.add("hidden");
+          document.body.classList.remove("modal-open");
+        }
+      });
+      
+      titleContainer.appendChild(extendBtn);
+      section.appendChild(titleContainer);
+
+      // 3. 복용 체크 테이블 생성
       const table = document.createElement("table");
       table.classList.add("taken-table");
 
-      // 헤더: 가족명 열
+      // 헤더 행
       const headerRow = document.createElement("tr");
       const thTime = document.createElement("th");
       thTime.innerText = "시간";
@@ -712,16 +744,13 @@ function openTakenCheckUI(date) {
       });
       table.appendChild(headerRow);
 
+      // 시간별 체크박스 행
       const times = sup.times || [];
-
-      // 날짜 기준 기존 저장 상태
       if (!sup.takenStatus) sup.takenStatus = {};
       if (!sup.takenStatus[date]) sup.takenStatus[date] = {};
 
-      // 각 시간대 행 만들기
       times.forEach(time => {
         const row = document.createElement("tr");
-
         const tdTime = document.createElement("td");
         tdTime.innerText = time;
         row.appendChild(tdTime);
@@ -730,64 +759,50 @@ function openTakenCheckUI(date) {
           const td = document.createElement("td");
           const chk = document.createElement("input");
           chk.type = "checkbox";
-
-          // 초기 체크 상태 불러오기
           chk.checked = sup.takenStatus[date][`${time}_${member}`] || false;
+          chk.style.margin = "2px";
 
           chk.addEventListener("change", async () => {
             sup.takenStatus[date][`${time}_${member}`] = chk.checked;
             await saveSupplementToDB(sup);
+            td.style.backgroundColor = chk.checked ? "rgba(78, 205, 196, 0.2)" : "rgba(128, 128, 128, 0.05)";
             autoBackupOnFirstTakenToday();
           });
+
+          td.style.backgroundColor = chk.checked ? "rgba(78, 205, 196, 0.2)" : "rgba(128, 128, 128, 0.05)";
+          td.style.transition = "background-color 0.3s";
+          td.style.padding = "2px";
 
           td.appendChild(chk);
           row.appendChild(td);
         });
-
         table.appendChild(row);
       });
 
       section.appendChild(table);
       body.appendChild(section);
+    }); // 루프 끝
 
-extendBtn.addEventListener("click", async () => {
-  const baseDate = date; // 모달 열린 날짜
+    // 4. 하단 통합 닫기 버튼 (딱 한 번만 생성)
+    const footer = document.createElement("div");
+    footer.classList.add("modal-footer");
 
-  // ← 변경된 계산 함수
-  const leftUnTakenSlots = calculateLeftUnTakenSlotsBefore(sup, baseDate);
+    const bottomCloseBtn = document.createElement("button");
+    bottomCloseBtn.classList.add("modal-close-btn");
+    bottomCloseBtn.innerText = "닫기";
 
-  // 예상 추가 일수
-  const additionalDays = calculateAdditionalDays(sup, baseDate, leftUnTakenSlots);
-
-  // 메시지 텍스트를 변경
-  let confirmMsg = 
-    `📍 ${baseDate}\n\n` +
-    `미복용 체크 슬롯: ${leftUnTakenSlots}개\n` +
-    `예상 추가 일정: ${additionalDays}일\n\n`;
-
-  // 추가 일수가 0이면 취소 메시지
-  if (additionalDays === 0) {
-    alert("📍 연장할 일정이 없습니다.");
-    return;
-  }
-
-  confirmMsg += "이대로 연장할까요?";
-
-  if (confirm(confirmMsg)) {
-    extendScheduleFromDate(sup, baseDate, additionalDays);
-    
-    // 개별 저장 함수를 호출하여 성능 최적화 유지
-    await saveAllSupplements(sup); 
-    
-    renderCalendar();
-    alert("📅 일정이 연장되었습니다!");
-  }
-});
-
+    bottomCloseBtn.addEventListener("click", () => {
+      modal.classList.add("hidden");
+      document.body.classList.remove("modal-open");
+      renderCalendar(); // 체크 상태 반영을 위해 달력 리렌더링
     });
+
+    footer.appendChild(bottomCloseBtn);
+    body.appendChild(footer);
   }
 
   modal.classList.remove("hidden");
+  document.body.classList.add("modal-open");
 }
 
 // ❌ 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
@@ -857,13 +872,10 @@ function showStatsForFamily(name) {
   const start = document.getElementById("periodStart").value;
   const end = document.getElementById("periodEnd").value;
 
-  // 기간 설정 로직 (기존 유지)
-  const startArr = start.split("-");
-  const startDate = new Date(parseInt(startArr[0]), parseInt(startArr[1]) - 1, 1);
+  const startStr = `${start}-01`; 
   const endArr = end.split("-");
-  const endDate = new Date(parseInt(endArr[0]), parseInt(endArr[1]) - 1, 1);
-  endDate.setMonth(endDate.getMonth() + 1);
-  endDate.setDate(0);
+  const lastDay = new Date(parseInt(endArr[0]), parseInt(endArr[1]), 0).getDate();
+  const endStr = `${end}-${String(lastDay).padStart(2, '0')}`;
 
   const stats = {};
 
@@ -875,15 +887,13 @@ function showStatsForFamily(name) {
     let takenForPeriod = 0;
 
     sup.schedule.forEach(dateStr => {
-      const d = new Date(dateStr);
-      if (d >= startDate && d <= endDate) {
-        targetForPeriod += (sup.dose / sup.times.length) * sup.times.length; // 목표치
+        if (dateStr >= startStr && dateStr <= endStr) {
+        targetForPeriod += (sup.dose / sup.times.length) * sup.times.length;
 
-        const dayStatus = sup.takenStatus[dateStr] || {};
+        const dayStatus = sup.takenStatus?.[dateStr] || {};
         for (const key in dayStatus) {
           if (key.includes(`_${name}`) && dayStatus[key]) {
-             // 1회 복용량 가산
-             takenForPeriod += (sup.dose / sup.times.length);
+            takenForPeriod += (sup.dose / sup.times.length);
           }
         }
       }

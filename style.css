@@ -21,10 +21,26 @@ body.dark-mode .calendar-wrapper {
 }
 
 body {
-  margin: 1;
-  font-family: 'D2Coding ligature';
+  margin: 0; /* 1에서 0으로 수정 */
+  font-family: 'D2Coding ligature', sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
+  
+  /* 아이폰 상하단 안전 영역 확보 */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  
+  /* 스크롤 시 튕김 현상 방지 및 부드러운 스크롤 */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 하단 백업 영역 여백 추가 */
+.footer-backup-area {
+  text-align: center;
+  font-size: 12px;
+  padding: 10px 0 30px 0; /* 아래 여백을 30px로 늘려 홈 바와 겹침 방지 */
+  color: var(--text-color);
+  opacity: 0.7;
 }
 
 /* 더블탭 확대 억제 */
@@ -233,6 +249,29 @@ body.dark-mode .supplement-bar-label:not(.unTaken) {
 .date.inactive.sun span.number { color: var(--sun-color); }
 .date.inactive.sat span.number { color: var(--sat-color); }
 
+/* 영양제 종료 주간(Last Week)을 위한 강화된 사선 패턴 */
+.last-week-bar {
+  /* 배경색 위에 진한 흰색 사선을 덧씌움 (라이트 모드용) */
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.4),
+    rgba(255, 255, 255, 0.4) 4px,
+    transparent 4px,
+    transparent 8px
+  ) !important;
+}
+
+/* 다크 모드에서는 검은색 사선으로 대비를 줌 */
+.dark-mode .last-week-bar {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.3),
+    rgba(0, 0, 0, 0.3) 4px,
+    transparent 4px,
+    transparent 8px
+  ) !important;
+}
+
 /* 모달 */
 .modal-overlay {
   position: fixed;
@@ -303,16 +342,15 @@ body.dark-mode .modal {
 }
 
 /* 입력너비 */
-.input-date { width: 210px; height: 20px; }
-.input-product { width: 210px; height: 20px; }
-.input-total { width: 210px; height: 20px; }
-.input-dose { width: 210px; height: 20px; }
-.input-price { width: 210px; height: 20px; }
+.input-date { width: 210px; height: 30px; }
+.input-product { width: 210px; height: 30px; }
+.input-total { width: 210px; height: 30px; }
+.input-dose { width: 210px; height: 30px; }
+.input-price { width: 210px; height: 30px; }
 
 /* 날짜 입력창 정밀 보정 */
 .modal input[type="date"] {
   width: 100% !important;
-  height: 22px;
   padding: 0 10px;
   margin: 10px 0 0 0;
   border-radius: 10px;
@@ -322,15 +360,17 @@ body.dark-mode .modal {
   font-size: 14px;
   box-sizing: border-box;
   outline: none;
-  display: flex;       /* flex로 설정하여 내부 정렬 제어 */
-  align-items: center; /* 세로 중앙 */
-  color: #333;
-  -webkit-appearance: none;
+  display: flex;
+  align-items: center;
   
-  /* 📌 파란색 글씨 방지 및 색상 고정 */
-  color: #333;             /* 낮 모드일 때 진한 회색/검정 */
+  /* 📌 폰트 스타일 고정 */
+  color: #333;
   font-weight: 700;
-  -webkit-appearance: none; /* 아이폰 기본 스타일 제거 */
+
+  /* 📌 아이폰/사파리 기본 스타일 제거 및 표준 설정 */
+  -webkit-appearance: none; /* 사파리용 */
+  -moz-appearance: none;    /* 파이어폭스용 */
+  appearance: none;         /* 표준 설정 */
 }
 
 /* 다크모드 대응 */
@@ -365,7 +405,7 @@ body.dark-mode .modal input[type="date"]::-webkit-date-and-time-value {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 22px;
+  height: 30px;
   padding: 0 12px;
   background: #f5f5f5;
   border: 1px solid transparent;
@@ -455,7 +495,7 @@ body.dark-mode .modal input {
 }
 
 .save-btn {
-  background: #0077B6;
+  background: #4ECDC4;
   color: white;
 }
 
@@ -509,18 +549,63 @@ body.dark-mode .checkbox-label-text {
   color: #ccc;
 }
 
-/* 체크박스 색상만 복용 체크 모달처럼 변경 */
-.checkbox-item input[type="checkbox"] {
-  width: 10px;
-  height: 10px;
+/* [통합] 세련된 플랫 & 컬러 체크박스 */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: rgba(128, 128, 128, 0.08); /* 체크 전: 아주 연한 회색 바탕 */
+  margin: 0;
   cursor: pointer;
-  /* 📌 체크되었을 때의 배경색을 검은색으로 고정 */
-  accent-color: #333333;
+  
+  width: 24px;  /* 크기를 살짝 키워 터치하기 편하게 */
+  height: 24px;
+  border: 1px solid rgba(128, 128, 128, 0.2); /* 체크 전: 부드러운 테두리 */
+  border-radius: 8px; /* 요즘 스타일의 둥근 사각형 */
+  display: inline-grid;
+  place-content: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
+  position: relative;
+  vertical-align: middle;
+}
 
-  /* 📌 아이폰 브라우저 제약을 무시하고 강제로 0.85배 축소 */
-  transform: scale(0.80); 
-  -webkit-transform: scale(0.80); 
-  margin: 0;        /* 스케일 조정 후 발생하는 유령 여백 제거 */
+/* 1. 체크되었을 때: 낮/밤 상관없이 선명한 민트색 */
+input[type="checkbox"]:checked {
+  background-color: #4ECDC4 !important; /* 강제 적용 */
+  border-color: #4ECDC4 !important;
+  box-shadow: 0 2px 6px rgba(78, 205, 196, 0.3); /* 살짝 빛나는 효과 */
+}
+
+/* 2. 체크 표시(V) 디자인 */
+input[type="checkbox"]::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  transform: scale(0);
+  transition: 150ms transform cubic-bezier(0.18, 0.89, 0.32, 1.28); /* 튕기는 듯한 효과 */
+  background-color: white; 
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+
+input[type="checkbox"]:checked::before {
+  transform: scale(1); /* 체크 시 V자가 뿅 나타남 */
+}
+
+/* 3. 마우스 올리거나 터치할 때 피드백 */
+input[type="checkbox"]:hover {
+  border-color: #4ECDC4;
+  background-color: rgba(78, 205, 196, 0.05);
+}
+
+/* 4. 다크모드 전용 보정 (체크 안 됐을 때만) */
+.dark-mode input[type="checkbox"] {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 다크모드에서도 체크되면 민트색 유지 */
+.dark-mode input[type="checkbox"]:checked {
+  background-color: #4ECDC4 !important;
+  border-color: #4ECDC4 !important;
 }
 
 /* 월별 비용 모달 헤더 */
@@ -605,121 +690,130 @@ body.dark-mode .total-cost-amount {
   overflow-y: auto;
 }
 
-/* 복용 체크 모달 헤더와 내용 사이 간격 추가 */
-.taken-modal .modal-header {
-  margin-bottom: 15px !important; /* 📌 헤더 아래에 15px의 여백 생성 */
+/* 복용 체크 모달 커스텀 */
+#takenCheckBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 0;
 }
 
 .taken-sup-section {
-  margin-bottom: 10px;
-  padding-bottom: 1px;
+  background: var(--card-bg, rgba(255, 255, 255, 0.05));
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(128, 128, 128, 0.1);
 }
 
 .taken-sup-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  gap: 8px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: 700;
-  font-size: 14px;
-  margin-bottom: 3px;
+  color: var(--text-color);
+}
+
+.sup-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%; /* 완벽한 원형 */
+  display: inline-block;
+  flex-shrink: 0; /* 크기 고정 */
+  box-shadow: inset 0 0 2px rgba(0,0,0,0.1); /* 입체감 살짝 */
+}
+
+.sup-name-text {
+  flex-grow: 1; /* 글자가 영역을 꽉 채우도록 */
+  color: var(--text-color);
+}
+
+.extend-btn {
+  background: rgba(187, 184, 184, 0.1);
+  border: none;
+  border-radius: 8px;
+  padding: 2px 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: transform 0.2s;
+}
+
+.extend-btn:active {
+  transform: scale(1.2);
 }
 
 .taken-table {
   width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.taken-table th,
-.taken-table td {
-  text-align: center;
-  padding: 4px 2px;
-  font-size: 14px;
-  font-weight: 500;
+  border-collapse: separate;
+  border-spacing: 0 4px;
 }
 
 .taken-table th {
+  font-size: 12px;
+  font-weight: 700;
+  opacity: 0.6;
+  padding-bottom: 4px;
+  text-align: center;
+}
+
+.taken-table td {
+  text-align: center;
+  padding: 4px 2px;
+  background: rgba(90, 89, 89, 0.05);
+  background-color: rgba(90, 89, 89, 0.05); 
+  border-radius: 8px;
+  transition: background-color 0.3s, transform 0.1s;
+}
+
+/* 체크박스 클릭 시 칸이 살짝 눌리는 느낌 추가 */
+.taken-table td:active {
+  transform: scale(0.95);
+}
+
+.taken-table tr td:first-child {
+  border-radius: 8px 0 0 8px;
   font-weight: 600;
-  background: #f3f3f3;
+  font-size: 12px;
+  width: 40px;
 }
 
-body.dark-mode .taken-table th {
-  background-color: #444444;
-  color: #ffffff;
+.taken-table tr td:last-child {
+  border-radius: 0 8px 8px 8;
 }
 
-.taken-check-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-}
-
-input[type="checkbox"] {
-  accent-color: #444242;
-}
-
-/* 복용 체크 모달 헤더 텍스트 가운데 정렬 */
-#takenCheckModal .modal-header {
+/* 모달 하단 푸터 영역 */
+.modal-footer {
+  margin-top: 5px;
+  padding-top: 5px;
   display: flex;
   justify-content: center;
-  align-items: center;
-  position: relative;
-  padding-left: 0%;
 }
 
-/* 닫기 버튼은 오른쪽에 유지 */
-#takenCheckModal .modal-header .close-btn {
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-}
-
-/* 2. 복용 체크 모달 (Taken Check Modal) 내부 여백 조절 */
-/* 복용 체크 모달 내의 각 항목(줄) 간격 줄이기 */
-#takenCheckBody .taken-item {
-  display: flex;
-  align-items: center;
-  padding: 0px 0 !important; 
-  margin: 0 !important;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-}
-
-#takenCheckBody input[type="checkbox"] {
-  width: 10px;      /* 📌 여기도 크기 통일 */
-  height: 10px;
-  margin-right: 6px;
-  margin: 0 8px 0 0 !important;
-  accent-color: #333333;
-  transform: scale(0.80);
-  -webkit-transform: scale(0.80);
-}
-
-.time-group-header {
-  margin-top: 10px !important; /* 다음 그룹 시작 전 여백을 기존보다 절반으로 축소 */
-  margin-bottom: 2px !important;
-  font-weight: bold;
-  font-size: 13px;
-  color: #0077B6; /* 시간대 구분 강조 */
-}
-
-/* 체크박스와 이름 사이 간격 밀착 */
-#takenCheckBody .taken-item label {
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
+/* 닫기 버튼 스타일 */
+.modal-close-btn {
   width: 100%;
+  padding: 10px;
+  background-color: var(--primary-color, #4ECDC4);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
 }
 
-/* 연장 버튼 꾸미기 */
-.taken-sup-title .extend-btn {
-  font-size: 12px;
-  padding: 0;
-  background: none;
-  color: var(--text-color);
-  border: none;
-  cursor: pointer;
+.modal-close-btn:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+/* 다크모드에서 버튼이 너무 밝다면 조정 */
+.dark-mode .modal-close-btn {
+  background-color: #3cb3ab;
 }
 
 /* 통계 그래프 스타일 */
