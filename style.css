@@ -355,11 +355,11 @@ body.dark-mode .modal {
 }
 
 /* 입력너비 */
-.input-date { width: 210px; height: 30px; }
-.input-product { width: 210px; height: 30px; }
-.input-total { width: 210px; height: 30px; }
-.input-dose { width: 210px; height: 30px; }
-.input-price { width: 210px; height: 30px; }
+.input-date { width: 210px; height: 35px; }
+.input-product { width: 210px; height: 35px; }
+.input-total { width: 210px; height: 35px; }
+.input-dose { width: 210px; height: 35px; }
+.input-price { width: 210px; height: 35px; }
 
 /* 날짜 입력창 정밀 보정 */
 .modal input[type="date"] {
@@ -370,7 +370,7 @@ body.dark-mode .modal {
   background: #f5f5f5;
   border: 1px solid transparent;
   font-family: inherit;
-  font-size: 15px;
+  font-size: 16px;
   box-sizing: border-box;
   outline: none;
   display: flex;
@@ -404,7 +404,7 @@ body.dark-mode .modal input[type="date"]::-webkit-date-and-time-value {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 30px;
+  height: 35px;
   padding: 0 12px;
   background: #f5f5f5;
   border: 1px solid transparent;
@@ -429,8 +429,8 @@ body.dark-mode .custom-color-bar {
 
 /* 색상 점 */
 .color-dot {
-  width: 10px;
-  height: 10px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   background: #000;
   border: 2px solid white;
@@ -457,7 +457,7 @@ body.dark-mode .custom-color-bar {
   border-radius: 10px;
   padding: 0 12px 0 40px;
   margin-bottom: 8px;
-  height: 30px; /* 높이 통일 */
+  height: 35px; /* 높이 통일 */
   box-sizing: border-box;
   border: 1px solid transparent;
   overflow: hidden;
@@ -599,7 +599,7 @@ body.dark-mode .del-btn {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 2px 0;
+  padding: 5px 0;
 }
 
 .checkbox-label-text {
@@ -956,26 +956,9 @@ input[type="number"], .total-cost-amount, .stats-count-text {
 }
 
 .family-btn {
-  padding: 5px 8px;
+  padding: 6px 9px;
   cursor: pointer;
   font-size: 14px;
-}
-
-.period-select {
-  margin-top: 1px;
-  margin-bottom: 1px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.period-select input[type="month"] {
-  width: 42%;          /* 가로 폭을 반씩 차지하게 조절 */
-  padding: 4px 6px;    /* 내부 여백 축소 */
-  font-size: 14px;     /* 글자 크기 축소 */
-  height: 28px;        /* 높이를 낮게 고정 */
-  border-radius: 6px;
-  background: #f0f0f0;
-  border: none;
 }
 
 #statsContent {
