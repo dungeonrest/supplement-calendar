@@ -22,11 +22,13 @@ body.dark-mode .calendar-wrapper {
 
 body {
   margin: 0;
-  font-family: 'D2Coding ligature', sans-serif;
+  font-family: "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: none;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-overflow-scrolling: touch;
@@ -482,6 +484,7 @@ body.dark-mode .input-combined-group {
 .unit-select-inside, 
 #unitDisplay, 
 .unit-won {
+  font-family: -apple-system, Helvetica, Arial, sans-serif !important;
   font-size: 12px;
   font-weight: 700;   /* 너무 두껍지 않게 조절 */
   color: #b4b2b2;        /* 약간 흐린 회색으로 세련되게 */
@@ -652,10 +655,12 @@ input[type="checkbox"]:checked::before {
   transform: scale(1); /* 체크 시 V자가 뿅 나타남 */
 }
 
-/* 3. 마우스 올리거나 터치할 때 피드백 */
-input[type="checkbox"]:hover {
-  border-color: #4ECDC4;
-  background-color: rgba(78, 205, 196, 0.05);
+/* 마우스 기기에서만 호버 효과를 주고, 모바일(터치)에서는 무시하도록 설정 */
+@media (hover: hover) {
+  input[type="checkbox"]:hover {
+    border-color: #4ECDC4;
+    background-color: rgba(78, 205, 196, 0.05);
+  }
 }
 
 /* 4. 다크모드 전용 보정 (체크 안 됐을 때만) */
@@ -677,6 +682,13 @@ input[type="checkbox"]:hover {
   align-items: center;
   padding: 5px 5px;
   margin-bottom: 0px;
+  border-bottom: 1px solid var(--calendar-line);
+}
+
+#monthlyCostContent {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
 }
 
 .cost-title {
@@ -742,6 +754,11 @@ input[type="checkbox"]:hover {
 
 body.dark-mode .total-cost-amount {
   color: #72cdf4;
+}
+
+/* 숫자 입력란 정렬 최적화 */
+input[type="number"], .total-cost-amount, .stats-count-text {
+  font-variant-numeric: tabular-nums;
 }
 
 /* ==== 복용 체크 모달 스타일 ==== */
@@ -1097,6 +1114,7 @@ body.modal-open {
 .modal {
   max-height: 80vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* 전체 스크롤바 숨기기 - 모든 스크롤바 숨김 */

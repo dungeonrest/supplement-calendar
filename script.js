@@ -1,5 +1,5 @@
 
-const APP_VERSION = "1.0.1";
+const APP_VERSION = "1.0.2";
 const AUTO_BACKUP_KEY = "lastAutoBackupDate";
 
 // 자동 백업 함수 ↓
@@ -68,6 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const saved = localStorage.getItem("darkMode") === "true";
   if (saved) {
     document.body.classList.add("dark-mode");
+    if (themeToggleBtn) themeToggleBtn.textContent = "🌕";
+  } else {
+    if (themeToggleBtn) themeToggleBtn.textContent = "🔆";
   }
 });
 
@@ -161,8 +164,12 @@ const colorList = [
 function getTodayKST() {
   const options = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
   const formatter = new Intl.DateTimeFormat('ko-KR', options);
-  const [{ value: year }, , { value: month }, , { value: day }] = formatter.formatToParts(new Date());
+  const parts = formatter.formatToParts(new Date());
   
+  // parts 배열에서 각각의 유형(type)에 맞는 값을 찾습니다.
+  const year = parts.find(p => p.type === 'year').value;
+  const month = parts.find(p => p.type === 'month').value;
+  const day = parts.find(p => p.type === 'day').value;  
   return `${year}-${month}-${day}`;
 }
 
@@ -198,10 +205,10 @@ function openDatabase() {
       resolve(db); 
     };
     request.onerror = (e) => {
-      console.error("DB 오픈 실패:", e.target.error);
-      alert("데이터베이스를 열 수 없습니다. 브라우저 설정을 확인해주세요.");
-      reject(request.error);
-    };
+  console.error("DB 오픈 실패:", e.target.error);
+  alert("데이터베이스를 열 수 없습니다.\nSafari 설정에서 '모든 쿠키 차단'이 켜져 있거나\n개인정보 보호 모드인지 확인해주세요.");
+  reject(request.error);
+};
   });
 }
 
@@ -246,8 +253,10 @@ function deleteSupplementFromDB(id) {
 // 테마
 // ====================
 themeToggleBtn.addEventListener("click", () => {
-  document.body.classList.toggle("dark-mode");
-  localStorage.setItem("darkMode", document.body.classList.contains("dark-mode"));
+  const isDark = document.body.classList.toggle("dark-mode");
+  localStorage.setItem("darkMode", isDark);
+
+  themeToggleBtn.textContent = isDark ? "🌕" : "🔆";
 });
 
 // ====================
@@ -270,7 +279,8 @@ monthlyCostBtn.addEventListener("click", () => {
     if (y === year && m === month) {
       const totalDays = sup.schedule.length;
       const monthsCount = Math.ceil(totalDays / 30);
-      const monthlyPart = Math.round(sup.price / monthsCount);
+      // ... 내부 로직 중
+const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
       
       totalCost += monthlyPart;
       monthlyItems.push({
@@ -512,11 +522,13 @@ function renderCalendar() {
         bar.appendChild(fill);
 
         // 현재 날짜의 요일 (0:일, 1:월...)
-        const dayNum = new Date(fullDate).getDay();
+        const currDateObjForLabel = new Date(fullDate);
+        const dayNum = currDateObjForLabel.getDay();
+        const dateNum = currDateObjForLabel.getDate();
 
         // 1. 해당 날짜가 일요일(0)이거나, 
         // 2. 일정의 시작일(`sup.schedule[0]`)인 경우에만 라벨 표시
-        if (dayNum === 0 || sup.schedule[0] === fullDate) {
+        if (dayNum === 0 || sup.schedule[0] === fullDate || dateNum === 1) {
           const labelInBar = document.createElement("span");
           labelInBar.classList.add("supplement-bar-label");
 
@@ -576,8 +588,8 @@ listArea.appendChild(bar);
 saveInfoBtn.addEventListener("click", async () => {
   const start = inputDate.value;
   const product = inputProduct.value.trim();
-  const totalCaps = parseInt(inputTotal.value)
-  const dose = parseInt(inputDose.value);
+  const totalCaps = parseInt(inputTotal.value) || 0;
+  const dose = parseInt(inputDose.value) || 0;
   const unit = document.getElementById("inputUnit").value;
   const price = parseInt(inputPrice.value.toString().replace(/,/g, "")) || 0;
   const family = [...inputFamily].filter(cb => cb.checked).map(cb => cb.value);
@@ -679,7 +691,7 @@ todayBtn.addEventListener("click", () => {
   const d = now.getDate();
 
  selectedDateForList = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
- dt = new Date(y, m, d);
+ dt = new Date(y, m, d, 0, 0, 0);
 
   renderCalendar();
 });
@@ -1143,8 +1155,8 @@ const deleteDatabaseAsync = () => {
     selectedDateForList = new Date().toISOString().slice(0,10);
     renderCalendar();
 
-alert("백업 데이터를 성공적으로 불러왔습니다!");
-
+    alert("백업 데이터를 성공적으로 불러왔습니다!");
+    location.reload();
   } catch (err) {
     // 4. 에러 발생 시 상세 이유를 콘솔에 찍어 확인하기 위함
     console.error("복원 에러 상세:", err);
@@ -1166,7 +1178,8 @@ document.getElementById("footerAppVersion").innerText = APP_VERSION;
 // 클릭 이벤트
 footerVersionEl.addEventListener("click", async () => {
   try {
-    const res = await fetch("./version.json?" + Date.now()); // 캐시 방지
+    const res = await fetch("./version.json?" + Date.now());
+    if (!res.ok) throw new Error();
     const data = await res.json();
 
     const latestVersion = data.version;
@@ -1181,8 +1194,7 @@ footerVersionEl.addEventListener("click", async () => {
       alert(`💊 최신 버전입니다!`);
     }
   } catch (err) {
-    console.error("버전 체크 실패:", err);
-    alert("버전 체크 중 오류가 발생했습니다.");
+    console.log("버전 확인 불가 (오프라인 상태 등)");
   }
 });
 

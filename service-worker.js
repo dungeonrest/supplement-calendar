@@ -1,5 +1,5 @@
 // ===== 버전 관리 캐시 이름
-const CACHE_VERSION = "1.0.1";
+const CACHE_VERSION = "1.0.2";
 const CACHE_NAME = `supplement-calendar-cache-${CACHE_VERSION}`;
 
 // ===== 설치 시 반드시 캐싱할 필수 리소스
@@ -47,7 +47,7 @@ self.addEventListener("fetch", (event) => {
       fetch(event.request).catch(async () => {
         // 경로 문제 방지를 위해 match 옵션을 사용하거나 캐시된 리스트에서 찾음
         const cache = await caches.open(CACHE_NAME);
-        return (await cache.match("./offline.html")) || (await cache.match("offline.html"));
+        return await cache.match("./offline.html") || await cache.match("/offline.html");
       })
     );
     return;

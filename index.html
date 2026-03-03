@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>영양제 캘린더</title>
 
   <!-- PWA -->
@@ -22,8 +22,8 @@
 
 <div class="calendar-wrapper">
 
-<header class="calendar-header">
-  <div class="header-left">
+<header class="calendar-header no-double-tap-zoom">
+  <div class="header-left no-double-tap-zoom">
     <span id="monthDisplay" class="month-display"></span>
     <span id="todayBtn" class="today-header">오늘</span>
     <span id="addBtn" class="plus-btn">＋</span>
@@ -202,6 +202,15 @@
 <button id="fabAddBtn" class="fab-add-btn">＋</button>
 
 <script src="script.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(reg => console.log('서비스 워커 등록 성공!', reg))
+        .catch(err => console.log('서비스 워커 등록 실패:', err));
+    });
+  }
+</script>
 
 </body>
 </html>
