@@ -1,44 +1,5 @@
 
-const APP_VERSION = "1.0.3";
-const AUTO_BACKUP_KEY = "lastAutoBackupDate";
-
-// 자동 백업 함수 ↓
-async function autoBackupOnFirstTakenToday() {
-  const todayKST = getTodayKST();
-
-  // 저장된 todayTakenBackupDone 값 불러오기
-  const doneKey = `todayTakenBackupDone_${todayKST}`;
-  const done = localStorage.getItem(doneKey);
-
-  // 이미 체크 복용 백업이 이루어진 날이면 종료
-  if (done === "true") {
-    console.log("자동 백업: 이미 오늘 복용 체크 백업 수행됨");
-    return;
-  }
-
-  // 저장할 데이터가 없으면 종료
-  if (!supplements || supplements.length === 0) {
-    console.log("자동 백업: 백업할 데이터 없음");
-    return;
-  }
-
-  // 백업 생성
-  const blob = new Blob([JSON.stringify(supplements, null, 2)], {
-    type: "application/json",
-  });
-
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `supplements-auto-backup.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-
-  // 백업 완료 표시
-  localStorage.setItem(doneKey, "true");
-  alert("📦 자동 백업이 생성되었습니다!");
-  console.log("자동 백업 수행:", todayKST);
-}
+const APP_VERSION = "03.05";
 
 // 공휴일 리스트 (예: 2026년)
 const koreaHolidays2026 = [
@@ -114,23 +75,34 @@ function openSupplementModal(sup) {
   inputDate.value = selectedDateForList || (sup.schedule && sup.schedule[0]) || "";
   inputProduct.value = sup.productName;
   inputTotal.value = sup.totalCapsules;
+  
   const doseInput = document.getElementById("inputDose");
   if (doseInput) doseInput.value = sup.dose ?? "";
+  
   inputPrice.value = sup.price ? sup.price.toLocaleString() : "";
+  
   const unitVal = sup.unit || "캡슐";
   const unitSelect = document.getElementById("inputUnit");
   const unitDisplay = document.getElementById("unitDisplay");
   if (unitSelect) unitSelect.value = unitVal;
   if (unitDisplay) unitDisplay.innerText = unitVal;
-  deleteSupplementBtnModal.style.display = "block";
-  for (let cb of inputFamily) {
-    cb.checked = sup.family && sup.family.includes(cb.value);
-  }
-  for (let tb of inputTime) {
-    tb.checked = sup.times && sup.times.includes(tb.value);
-  }
-  updateColorBar(sup.circleColor);
   
+  deleteSupplementBtnModal.style.display = "block";
+
+  // [수정 핵심] 실시간 객체인 inputFamily 대신 
+  // 현재 모달에 새로 생성된 체크박스들을 직접 쿼리해서 대조합니다.
+  const currentFamilyCheckboxes = document.querySelectorAll(".inputFamily");
+  currentFamilyCheckboxes.forEach(cb => {
+    // 해당 영양제(sup.family)에 이름이 있을 때만 체크되도록 명시적 설정
+    cb.checked = sup.family && sup.family.includes(cb.value);
+  });
+
+  const currentTimeCheckboxes = document.querySelectorAll(".inputTime");
+  currentTimeCheckboxes.forEach(tb => {
+    tb.checked = sup.times && sup.times.includes(tb.value);
+  });
+
+  updateColorBar(sup.circleColor);
 }
 
 // ====================
@@ -138,6 +110,7 @@ function openSupplementModal(sup) {
 // ====================
 let dt = new Date();
 let supplements = [];
+let familyMembers = JSON.parse(localStorage.getItem("familyMembers")) || ["도림", "뚜임", "진이", "쿤이"];
 let selectedDateForList = "";
 let currentEditId = null;
 
@@ -337,6 +310,7 @@ closeMonthlyCostModal.addEventListener("click", () => {
 // ====================
 addBtn.addEventListener("click", () => {
   currentEditId = null;
+  renderFamilyCheckboxes();
   modalOverlay.classList.remove("hidden");
   document.body.classList.add("modal-open");
   inputDate.value = selectedDateForList || getTodayKST();  inputProduct.value = "";
@@ -660,6 +634,7 @@ saveInfoBtn.addEventListener("click", async () => {
     document.body.classList.remove("modal-open");
     selectedDateForList = start;
     renderCalendar();
+    window.scrollTo(0, 0);
 });
 
 // 인자가 있으면 해당 데이터만 저장, 없으면 전체 저장 (복원 시 대비)
@@ -680,8 +655,41 @@ async function saveAllSupplements(targetSup) {
 
 async function loadSupplements() {
   supplements = await getAllSupplements();
+  checkInitialSetup();
   selectedDateForList = getTodayKST();
   renderCalendar();
+  renderFamilyUI();
+}
+
+// [추가] 이름 변경 처리 함수
+function changeFamilyMemberName(index, newName) {
+  const oldName = familyMembers[index];
+  familyMembers[index] = newName;
+  localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+
+  // 기존 데이터(supplements) 내의 이름들도 한꺼번에 교체해줘야 통계가 깨지지 않습니다.
+  supplements.forEach(sup => {
+    // 1. 가족 명단 수정
+    if (sup.family.includes(oldName)) {
+      sup.family = sup.family.map(f => f === oldName ? newName : f);
+    }
+    // 2. 복용 기록(takenStatus) 수정
+    if (sup.takenStatus) {
+      for (let date in sup.takenStatus) {
+        for (let key in sup.takenStatus[date]) {
+          if (key.includes(`_${oldName}`)) {
+            const newKey = key.replace(`_${oldName}`, `_${newName}`);
+            sup.takenStatus[date][newKey] = sup.takenStatus[date][key];
+            delete sup.takenStatus[date][key];
+          }
+        }
+      }
+    }
+    saveSupplementToDB(sup); // DB 저장
+  });
+
+  alert(`이름이 '${oldName}'에서 '${newName}'으로 변경되었습니다.`);
+  location.reload(); // 전체 반영을 위해 리로드
 }
 
 todayBtn.addEventListener("click", () => {
@@ -703,6 +711,32 @@ todayBtn.addEventListener("touchend", (e) => {
 }, { passive: false });
 
 loadSupplements();
+
+// [교체] script.js 하단부
+function checkInitialSetup() {
+  const overlay = document.getElementById("initialOverlay");
+  const configModal = document.getElementById("familyConfigModal");
+  const mainContainer = document.querySelector(".container");
+
+  // 조건 1: 등록된 영양제가 하나도 없음
+  // 조건 2: 그리고 아직 가족 이름도 설정한 적이 없음 (localStorage가 비어있음)
+  const isNoSupplements = supplements.length === 0;
+  const isNoFamily = !localStorage.getItem("familyMembers");
+
+  if (isNoSupplements && isNoFamily) {
+    // 두 조건 모두 만족할 때만 (완전 처음 방문일 때만) 온보딩 표시
+    if (overlay) overlay.classList.remove("hidden");
+    if (configModal) configModal.classList.remove("hidden");
+    document.body.classList.add("modal-open");
+    if (mainContainer) mainContainer.style.display = "none";
+  } else {
+    // 영양제가 있거나, 혹은 영양제는 없어도 이름 설정은 이미 마친 경우
+    if (overlay) overlay.classList.add("hidden");
+    if (configModal) configModal.classList.add("hidden");
+    if (mainContainer) mainContainer.style.display = "block";
+    document.body.classList.remove("modal-open");
+  }
+}
 
 function openTakenCheckUI(date) {
   const modal = document.getElementById("takenCheckModal");
@@ -810,7 +844,6 @@ function openTakenCheckUI(date) {
             sup.takenStatus[date][`${time}_${member}`] = chk.checked;
             await saveSupplementToDB(sup);
             td.style.backgroundColor = chk.checked ? "rgba(78, 205, 196, 0.2)" : "rgba(128, 128, 128, 0.05)";
-            autoBackupOnFirstTakenToday();
           });
 
           td.style.backgroundColor = chk.checked ? "rgba(78, 205, 196, 0.2)" : "rgba(128, 128, 128, 0.05)";
@@ -875,33 +908,39 @@ statsBtn.addEventListener("click", () => {
   const year = new Date().getFullYear();
   document.getElementById("periodStart").value = `${year}-01`;
   document.getElementById("periodEnd").value = `${year}-12`;
-  
+
+  renderFamilyUI();
+
   statsContent.innerHTML = "<p style='text-align:center; font-size:12px; opacity:0.6; margin-top:20px;'>가족 이름을 선택하면<br>올해의 복용 통계가 표시됩니다.</p>";
 });
 
-// 닫기
-closeStatsModal.addEventListener("click", () => {
+// 2. 통계 모달 닫기
+// 변수(closeStatsModal)에 연결하는 대신 ID로 직접 연결하는 게 가장 확실합니다.
+document.getElementById("closeStatsModal").onclick = function() {
+  // 모달 닫기
   statsModal.classList.add("hidden");
   document.body.classList.remove("modal-open");
 
-  // 기간 초기화
-  periodStart.value = "";
-  periodEnd.value = "";
+  // 입력값 및 선택 상태 초기화
+  if (periodStart) periodStart.value = "";
+  if (periodEnd) periodEnd.value = "";
+  
+  // 현재 화면에 있는 모든 가족 버튼의 선택 표시 해제
+  document.querySelectorAll(".family-btn").forEach(btn => {
+    btn.classList.remove("selected");
+  });
 
-  // 버튼 활성 초기화
-  familyBtns.forEach(b => b.classList.remove("selected"));
-
-  // 통계 내용 초기화
+  // 내용 비우기
   statsContent.innerHTML = "";
-});
-
+};
+  
 // 가족 버튼 누르면 통계 갱신
 familyBtns.forEach(btn => {
   btn.addEventListener("click", () => {
     const name = btn.dataset.name;
 
     // 모든 버튼에서 selected 제거
-    familyBtns.forEach(b => b.classList.remove("selected"));
+    document.querySelectorAll(".family-btn").forEach(b => b.classList.remove("selected"));
 
     // 현재 버튼에 selected 추가
     btn.classList.add("selected");
@@ -954,7 +993,7 @@ function showStatsForFamily(name) {
 
   let html = "";
   if (Object.keys(stats).length === 0) {
-    html = "<p>기록이 없습니다.</p>";
+    html = "<p style='text-align:center;'>기록이 없습니다.</p>";
   } else {
     for (const key in stats) {
       const info = stats[key];
@@ -973,6 +1012,182 @@ function showStatsForFamily(name) {
     }
   }
   statsContent.innerHTML = html;
+}
+
+function renderFamilyUI() {
+  // 1. 통계 모달의 버튼들 교체 (가족 버튼 영역)
+  const statsFamilyContainer = document.querySelector(".family-buttons");
+  if (statsFamilyContainer) {
+    statsFamilyContainer.innerHTML = ""; 
+    familyMembers.forEach((name, index) => {
+      const btn = document.createElement("button");
+      btn.className = "family-btn";
+      btn.dataset.name = name;
+      btn.innerText = name;
+      
+      // [클릭] 기존 통계 로직
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".family-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        showStatsForFamily(name);
+      });
+
+      // [롱 프레스] 이름 변경/삭제 로직 추가
+      let timer;
+      const startPress = () => {
+        timer = setTimeout(async () => { // async 추가
+  const newName = prompt(`'${name}' 님의 이름을 변경하세요.\n(빈칸으로 두면 삭제됩니다.)`, name);
+  if (newName === null) return;
+
+  const trimmed = newName.trim();
+  if (trimmed === "") {
+    if (confirm(`'${name}' 님을 삭제할까요?\n복용 데이터도 사라집니다.`)) {
+      await deleteFamilyMemberFromDB(name);
+      familyMembers.splice(index, 1);
+      localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+      location.reload();
+    }
+  } else if (trimmed !== name) {
+    // 1. DB 내의 이름 데이터 일괄 변경
+    await updateSupplementFamilyName(name, trimmed);
+    
+    // 2. localStorage 이름 변경
+    familyMembers[index] = trimmed;
+    localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+    
+    alert(`'${name}' 님이 '${trimmed}' 님으로 변경되었습니다.`);
+    location.reload();
+    }
+        }, 500);
+      };
+      const endPress = () => clearTimeout(timer);
+
+      // 모바일 및 PC 이벤트 대응
+      btn.addEventListener("touchstart", startPress);
+      btn.addEventListener("touchend", endPress);
+      btn.addEventListener("mousedown", startPress);
+      btn.addEventListener("mouseup", endPress);
+      btn.addEventListener("mouseleave", endPress);
+
+      statsFamilyContainer.appendChild(btn);
+    });
+
+    // 가족이 4명 미만일 때 추가 버튼 표시
+      if (familyMembers.length < 4) {
+        const addBtn = document.createElement("button");
+        addBtn.className = "family-btn";
+        addBtn.innerText = "추가";
+        
+        addBtn.addEventListener("click", async () => { // async 추가
+          const n = prompt("새로운 이름을 입력하세요.");
+          if (n && n.trim()) {
+            const newName = n.trim();
+
+            // 1. 전체 가족 명단 업데이트 (localStorage)
+            familyMembers.push(newName);
+            localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+
+            // 2. [핵심] 기존 영양제들의 '복용 명단'에도 새 가족 추가
+            // IndexedDB의 모든 데이터를 갱신합니다.
+            const transaction = db.transaction(["supplements"], "readwrite");
+            const store = transaction.objectStore("supplements");
+            
+            transaction.oncomplete = () => {
+              alert(`'${newName}' 님이 추가되었습니다.`);
+              location.reload(); 
+            };
+          }
+        });
+        statsFamilyContainer.appendChild(addBtn);
+      }
+    }
+
+  // 2. 영양제 입력 모달의 체크박스들 교체 (기존 로직 유지)
+  const inputFamilyContainer = document.querySelector(".checkbox-line");
+  if (inputFamilyContainer) {
+    inputFamilyContainer.innerHTML = ""; 
+    familyMembers.forEach(name => {
+      const label = document.createElement("label");
+      label.className = "checkbox-item";
+      
+      // [수정] input 객체를 명시적으로 생성하고 checked를 false로 박아넣습니다.
+      const chk = document.createElement("input");
+      chk.type = "checkbox";
+      chk.className = "inputFamily";
+      chk.value = name;
+      chk.checked = false; // 잔상 방지용 강제 초기화
+
+      const span = document.createElement("span");
+      span.className = "checkbox-label-text";
+      span.innerText = name;
+
+      label.appendChild(chk);
+      label.appendChild(span);
+      inputFamilyContainer.appendChild(label);
+    });
+  }
+}
+
+function renderFamilyCheckboxes() {
+  const familyGroup = document.querySelector(".input-group.family-group");
+  if (!familyGroup) return;
+
+  familyGroup.innerHTML = "<label>복용 가족</label>"; 
+
+  familyMembers.forEach(name => {
+    const label = document.createElement("label");
+    label.className = "check-label";
+    const chk = document.createElement("input");
+    chk.type = "checkbox";
+    chk.className = "inputFamily";
+    chk.value = name;
+    chk.checked = false; // 새로 그릴 때는 무조건 체크 해제 상태로 시작
+
+    label.appendChild(chk);
+    label.appendChild(document.createTextNode(` ${name}`));
+    familyGroup.appendChild(label);
+  });
+}
+
+// 사용자님의 DB 구조를 기반으로 특정 가족 구성원 데이터를 완전히 삭제하는 함수
+async function deleteFamilyMemberFromDB(targetName) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(["supplements"], "readwrite");
+    const store = transaction.objectStore("supplements");
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      const allSups = request.result;
+      allSups.forEach(sup => {
+        let changed = false;
+
+        // 1. 영양제 주인 명단(family)에서 이름 삭제
+        if (sup.family && sup.family.includes(targetName)) {
+          sup.family = sup.family.filter(n => n !== targetName);
+          changed = true;
+        }
+
+        // 2. 복용 기록(takenStatus)에서 해당 이름이 포함된 키 삭제
+        if (sup.takenStatus) {
+          for (let date in sup.takenStatus) {
+            const dayData = sup.takenStatus[date];
+            for (let key in dayData) {
+              // "시간_이름" 형식의 키에서 이름이 일치하면 삭제
+              if (key.endsWith(`_${targetName}`)) {
+                delete dayData[key];
+                changed = true;
+              }
+            }
+          }
+        }
+
+        if (changed) store.put(sup);
+      });
+    };
+
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject();
+  });
 }
 
 // ================================
@@ -1074,7 +1289,7 @@ exportBtn.addEventListener("click", () => {
 
   const a = document.createElement("a");
   a.href = url;
-  a.download = `supplements-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.download = `supplements-auto-backup.json`;
   a.click();
 
   URL.revokeObjectURL(url);
@@ -1106,40 +1321,36 @@ importFileInput.addEventListener("change", async (e) => {
     if (!confirm("기존 기록이 삭제되고\n백업 내용으로 덮어씌워집니다.\n계속할까요?")) {
       return;
     }
+    const deleteDatabaseAsync = () => {
+      return new Promise((resolve, reject) => {
+        if (db) {
+          db.close();
+          db = null;
+        }
+        const deleteReq = indexedDB.deleteDatabase(DB_NAME);
+        deleteReq.onsuccess = () => resolve();
+        deleteReq.onerror = (e) => reject(new Error("DB 삭제 실패"));
+        deleteReq.onblocked = () => {
+          alert("기존 데이터 연결이 남아있습니다. 앱을 완전히 껐다 켜주세요.");
+          resolve();
+        };
+      });
+    };
 
-if (db) {
-      db.close();
-      db = null; 
+    // [중요 2] 가족 명단(familyMembers) 추출 및 갱신
+    // 백업 데이터(data)에 들어있는 가족 이름들을 싹 모아서 localStorage에 넣습니다.
+    const newFamilySet = new Set();
+    data.forEach(sup => {
+      if (sup.family && Array.isArray(sup.family)) {
+        sup.family.forEach(name => newFamilySet.add(name));
+      }
+    });
+
+    if (newFamilySet.size > 0) {
+      const newFamilyList = Array.from(newFamilySet);
+      localStorage.setItem("familyMembers", JSON.stringify(newFamilyList));
+      familyMembers = newFamilyList; // 메모리 변수도 즉시 교체
     }
-    
-const deleteDatabaseAsync = () => {
-  return new Promise((resolve, reject) => {
-    // 1. 현재 열려있는 DB가 있다면 확실히 닫습니다.
-    if (db) {
-      db.close();
-      db = null;
-    }
-    
-    const deleteReq = indexedDB.deleteDatabase(DB_NAME);
-    
-    // iOS 대응: 삭제 작업이 성공적으로 완료되었을 때
-    deleteReq.onsuccess = () => {
-      console.log("DB 삭제 성공");
-      resolve();
-    };
-    
-    deleteReq.onerror = (e) => {
-      console.error("DB 삭제 중 에러:", e);
-      reject(new Error("DB 삭제 실패"));
-    };
-    
-    // iOS 특이점: 다른 연결이 남아있을 때 호출됨
-    deleteReq.onblocked = () => {
-      alert("기존 데이터 연결이 남아있습니다. 앱을 완전히 껐다 켜주세요.");
-      resolve(); // 일단 진행은 시도함
-    };
-  });
-};
 
     await deleteDatabaseAsync();
 
@@ -1152,11 +1363,10 @@ const deleteDatabaseAsync = () => {
 
     backupMenuModal.classList.add("hidden");
     document.body.classList.remove("modal-open");
-    selectedDateForList = new Date().toISOString().slice(0,10);
-    renderCalendar();
-
+    
     alert("백업 데이터를 성공적으로 불러왔습니다!");
     location.reload();
+
   } catch (err) {
     // 4. 에러 발생 시 상세 이유를 콘솔에 찍어 확인하기 위함
     console.error("복원 에러 상세:", err);
@@ -1237,6 +1447,8 @@ datesWrapper.addEventListener("touchstart", (e) => {
 });
 
 datesWrapper.addEventListener("touchmove",  (e) => {
+    if (e.touches.length > 1) return;
+
     touchEndX = e.changedTouches[0].screenX;
     touchEndY = e.changedTouches[0].screenY;
 
@@ -1246,8 +1458,9 @@ datesWrapper.addEventListener("touchmove",  (e) => {
     const absDiffX = Math.abs(diffX);
     const absDiffY = Math.abs(diffY);
 
-    // 수평 스와이프라고 판단될 때
-    if (absDiffX > minSwipeDistance && absDiffX > absDiffY * swipeRatio) {
+    // 수평 스와이프가 감지되면 브라우저의 기본 동작(뒤로가기/앞으로가기 등)을 차단
+    if (absDiffX > 10 && absDiffX > absDiffY) {
+        if (e.cancelable) e.preventDefault();
       // 브라우저 기본 vertical scroll 막기
       e.preventDefault();
     }
@@ -1364,4 +1577,71 @@ function updateColorBar(color) {
   if (colorHexText) {
     colorHexText.innerText = isAuto ? "자동 색상" : displayColor.toUpperCase();
   }
+}
+
+const saveFamilyConfigBtn = document.getElementById("saveFamilyConfig");
+if (saveFamilyConfigBtn) {
+  saveFamilyConfigBtn.addEventListener("click", () => {
+    const input = document.getElementById("familyInput");
+    const value = input.value.trim();
+    if (!value) return alert("이름을 입력해주세요.");
+
+    const names = value.split(",").map(n => n.trim()).filter(n => n !== "").slice(0, 4);
+    
+    localStorage.setItem("familyMembers", JSON.stringify(names));
+    familyMembers = names; // 메모리 갱신
+
+    // 모달 닫기
+    document.getElementById("familyConfigModal").classList.add("hidden");
+    document.body.classList.remove("modal-open");
+
+    // UI 즉시 반영 후 새로고침
+    renderFamilyUI();
+    location.reload(); 
+  });
+}
+
+async function updateSupplementFamilyName(oldName, newName) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(["supplements"], "readwrite");
+    const store = transaction.objectStore("supplements");
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      const allSups = request.result;
+      allSups.forEach(sup => {
+        let changed = false;
+        
+        // 1. 가족 명단 배열 업데이트
+        if (sup.family && sup.family.includes(oldName)) {
+          sup.family = sup.family.map(n => n === oldName ? newName : n);
+          changed = true;
+        }
+
+        // 2. [중요] 사용자님의 takenStatus 키값 변경 (시간_이름 형식)
+        if (sup.takenStatus) {
+          for (let date in sup.takenStatus) {
+            const dayData = sup.takenStatus[date];
+            for (let key in dayData) {
+              // key가 "아침_도림" 형태인지 확인
+              if (key.endsWith(`_${oldName}`)) {
+                const timePart = key.split(`_${oldName}`)[0];
+                const newKey = `${timePart}_${newName}`;
+                
+                // 새로운 이름의 키로 값 복사 후 기존 키 삭제
+                dayData[newKey] = dayData[key];
+                delete dayData[key];
+                changed = true;
+              }
+            }
+          }
+        }
+
+        if (changed) store.put(sup);
+      });
+    };
+
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject();
+  });
 }

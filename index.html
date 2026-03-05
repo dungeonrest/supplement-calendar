@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>영양제 캘린더</title>
 
   <!-- PWA -->
@@ -45,6 +45,29 @@
 
 <div id="dates-wrapper">
   <div id="dates" class="dates-container"></div>
+</div>
+
+<div id="familyConfigModal" class="modal-overlay hidden" style="background-color: var(--bg-color); align-items: flex-start; padding-top: 100px;">
+  <div class="onboarding-container">
+    <div class="onboarding-header">
+      <span class="emoji-badge">💊</span>
+      <h1>반가워요!<br>누구와 함께 복용하나요?</h1>
+      <p>이름을 쉼표로 구분해서 적어주세요.</p>
+          </div>
+
+    <div class="onboarding-body">
+      <input type="text" id="familyInput" placeholder="철수, 엄마, 아빠" autocomplete="off">
+      <div class="onboarding-notice">
+        <p>이름은 나중에 언제든 바꿀 수 있어요.</p>
+        <p>통계에서 이름을 길게 눌러 변경할 수 있습니다.</p>
+        <p>최소 1명에서 최대 4명까지 입력해주세요.</p>
+      </div>
+    </div>
+
+    <div class="onboarding-footer">
+      <button id="saveFamilyConfig" class="primary-btn">시작하기</button>
+    </div>
+  </div>
 </div>
 
 <!-- 하단 작은 백업/복원 링크 -->

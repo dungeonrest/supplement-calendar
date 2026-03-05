@@ -1,3 +1,8 @@
+html, body {
+  /* 브라우저의 뒤로가기/앞으로가기 스와이프 동작을 막으려는 시도 */
+  overscroll-behavior-x: none; 
+}
+
 /* ==========================
    기본 색상 변수
    ========================== */
@@ -25,7 +30,6 @@ body {
   font-family: "Apple SD Gothic Neo", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
-  padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: none;
@@ -1111,3 +1115,91 @@ body.modal-open {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
 }
+
+/* 온보딩 컨테이너 */
+.onboarding-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 0 30px;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.8s ease-out;
+}
+
+/* 큰 제목 스타일 */
+.onboarding-header h1 {
+  font-size: 28px;
+  line-height: 1.4;
+  margin-top: 20px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.onboarding-header p {
+  font-size: 16px;
+  color: #888;
+  margin-top: 10px;
+}
+
+.emoji-badge {
+  font-size: 40px;
+  display: block;
+}
+
+/* 입력창: 세련된 언더라인 스타일 */
+#familyInput {
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid #eee;
+  padding: 15px 0;
+  font-size: 20px;
+  margin-top: 30px;
+  background: transparent;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+#familyInput:focus {
+  border-bottom-color: #4ECDC4;
+}
+
+/* 하단 안내 */
+.onboarding-notice {
+  margin-top: 30px;
+}
+
+.onboarding-notice p {
+  font-size: 13px;
+  color: #bbb;
+  margin: 5px 0;
+  text-align: center;
+}
+
+/* 시작하기 버튼: 플로팅 버튼 스타일 */
+.primary-btn {
+  width: 100%;
+  height: 60px;
+  border-radius: 18px;
+  border: none;
+  background: #4ECDC4;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 30px;
+  cursor: pointer;
+  box-shadow: 0 10px 20px rgba(78, 205, 196, 0.3);
+  transition: transform 0.2s;
+}
+
+.primary-btn:active {
+  transform: scale(0.98);
+}
+
+/* 등장 애니메이션 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+body.dark-mode #familyInput { border-bottom-color: #333; color: white; }
+body.dark-mode .onboarding-header h1 { color: white; }
