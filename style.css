@@ -27,7 +27,7 @@ body.dark-mode .calendar-wrapper {
 
 body {
   margin: 0;
-  font-family: "Apple SD Gothic Neo", "Roboto", "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Apple SD Gothic Neo", "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
   padding-bottom: env(safe-area-inset-bottom);

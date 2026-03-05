@@ -1,5 +1,5 @@
 
-const APP_VERSION = "03.05b";
+const APP_VERSION = "03.05c";
 let deferredPrompt;
 
 // 공휴일 리스트 (예: 2026년)
@@ -313,7 +313,7 @@ addBtn.addEventListener("click", () => {
   modalOverlay.classList.remove("hidden");
   document.body.classList.add("modal-open");
   history.pushState({ modal: "add" }, "");
-  inputDate.value = selectedDateForList || getTodayKST();  inputProduct.value = "";
+  inputDate.value = selectedDateForList || getTodayKST();
   inputProduct.value = "";
   inputTotal.value = "";
   const doseEl = document.getElementById("inputDose");
@@ -1437,23 +1437,25 @@ const swipeRatio = 1.5;
 
 const datesWrapper = document.getElementById("dates-wrapper");
 
+// [교체] 아이폰 시스템 제스처(뒤로가기/앞으로가기)를 강제로 차단하고 앱 로직 점유
 datesWrapper.addEventListener("touchstart", (e) => {
   const x = e.changedTouches[0].screenX;
   const screenWidth = window.innerWidth;
 
-  // 화면 가장자리 20px 이내에서 시작하는 터치는 시스템 제스처(뒤로가기 등)를 위해 무시
- if (x < 25 || x > screenWidth - 25) { // 20px은 너무 좁을 수 있어 25px로 권장
-  if (e.cancelable) e.preventDefault(); // 시스템 제스처 발동 차단
-  touchStartX = 0;
-  return;
-}
+  // 가장자리(Edge) 30px 범위 내 터치일 때
+  if (x < 30 || x > screenWidth - 30) {
+    // 시스템 제스처가 발동되지 않도록 브라우저의 기본 동작을 즉시 중단시킵니다.
+    if (e.cancelable) e.preventDefault(); 
+  }
 
+  // 시스템 제스처를 막았으므로, 이제 정상적으로 앱의 스와이프 좌표를 기록합니다.
   touchStartX = x;
   touchStartY = e.changedTouches[0].screenY;
   touchEndX = touchStartX;
   touchEndY = touchStartY;
-});
+}, { passive: false }); // 중요: preventDefault를 쓰려면 passive가 false여야 합니다.
 
+// [교체] 터치 이동 중에도 시스템 제스처가 끼어들 틈을 주지 않음
 datesWrapper.addEventListener("touchmove", (e) => {
   if (e.touches.length > 1) return;
 
@@ -1461,8 +1463,8 @@ datesWrapper.addEventListener("touchmove", (e) => {
   const diffX = Math.abs(touchEndX - touchStartX);
   const diffY = Math.abs(e.changedTouches[0].screenY - touchStartY);
 
-  // 아주 미세한 가로 움직임이라도 감지되면 즉시 시스템 동작 차단
-  if (diffX > 5 && diffX > diffY) {
+  // 가로 방향 움직임이 조금이라도 감지되면 시스템 제스처를 원천 차단
+  if (diffX > 5) {
     if (e.cancelable) e.preventDefault();
   }
 }, { passive: false });
@@ -1646,8 +1648,14 @@ async function updateSupplementFamilyName(oldName, newName) {
 }
 
 window.addEventListener("popstate", () => {
-  // 사용자님의 코드에 정의된 모달 변수들을 활용합니다.
-  const allModals = [addModal, statsModal, backupMenuModal, document.getElementById("familyConfigModal")];
+  const allModals = [
+    modalOverlay,
+    statsModal, 
+    backupMenuModal, 
+    document.getElementById("familyConfigModal"),
+    document.getElementById("takenCheckModal"),
+    monthlyCostModal
+  ];
   
   allModals.forEach(modal => {
     if (modal) modal.classList.add("hidden");
