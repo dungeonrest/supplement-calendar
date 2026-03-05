@@ -1,5 +1,6 @@
 
-const APP_VERSION = "03.05a";
+const APP_VERSION = "03.05b";
+let deferredPrompt;
 
 // 공휴일 리스트 (예: 2026년)
 const koreaHolidays2026 = [
@@ -311,6 +312,7 @@ addBtn.addEventListener("click", () => {
   renderFamilyCheckboxes();
   modalOverlay.classList.remove("hidden");
   document.body.classList.add("modal-open");
+  history.pushState({ modal: "add" }, "");
   inputDate.value = selectedDateForList || getTodayKST();  inputProduct.value = "";
   inputProduct.value = "";
   inputTotal.value = "";
@@ -902,6 +904,7 @@ const periodEnd = document.getElementById("periodEnd");
 statsBtn.addEventListener("click", () => {
   statsModal.classList.remove("hidden");
   document.body.classList.add("modal-open");
+  history.pushState({ modal: "stats" }, "");
   // 기본 기간: 올해
   const year = new Date().getFullYear();
   document.getElementById("periodStart").value = `${year}-01`;
@@ -1271,6 +1274,7 @@ footerYear.innerText = new Date().getFullYear();
 footerBackupLink.addEventListener("click", () => {
   backupMenuModal.classList.remove("hidden");
   document.body.classList.add("modal-open");
+  history.pushState({ modal: "backup" }, "");
 });
 
 // 취소/닫기
@@ -1639,4 +1643,31 @@ async function updateSupplementFamilyName(oldName, newName) {
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject();
   });
+}
+
+window.addEventListener("popstate", () => {
+  // 사용자님의 코드에 정의된 모달 변수들을 활용합니다.
+  const allModals = [addModal, statsModal, backupMenuModal, document.getElementById("familyConfigModal")];
+  
+  allModals.forEach(modal => {
+    if (modal) modal.classList.add("hidden");
+  });
+  document.body.classList.remove("modal-open");
+});
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  console.log("설치 준비 완료");
+});
+
+async function triggerInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') console.log('설치 완료');
+    deferredPrompt = null;
+  } else {
+    alert("이미 설치되어 있거나 지원하지 않는 환경입니다.");
+  }
 }
