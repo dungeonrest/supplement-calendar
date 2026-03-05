@@ -1,5 +1,5 @@
 
-const APP_VERSION = "03.05";
+const APP_VERSION = "03.05a";
 
 // 공휴일 리스트 (예: 2026년)
 const koreaHolidays2026 = [
@@ -51,8 +51,6 @@ const inputTotal = document.getElementById("inputTotal");
 const inputDose = document.getElementById("inputDose");
 const inputPrice = document.getElementById("inputPrice");
 const inputColor = document.getElementById("inputColor");
-const inputFamily = document.getElementsByClassName("inputFamily");
-const inputTime = document.getElementsByClassName("inputTime");
 const saveInfoBtn = document.getElementById("saveInfo");
 const deleteSupplementBtnModal = document.getElementById("deleteSupplement");
 const monthlyCostBtn = document.getElementById("monthlyCostBtn");
@@ -566,8 +564,8 @@ saveInfoBtn.addEventListener("click", async () => {
   const dose = parseInt(inputDose.value) || 0;
   const unit = document.getElementById("inputUnit").value;
   const price = parseInt(inputPrice.value.toString().replace(/,/g, "")) || 0;
-  const family = [...inputFamily].filter(cb => cb.checked).map(cb => cb.value);
-  const times = [...inputTime].filter(tb => tb.checked).map(tb => tb.value);
+  const family = [...document.querySelectorAll(".inputFamily")].filter(cb => cb.checked).map(cb => cb.value);
+  const times = [...document.querySelectorAll(".inputTime")].filter(tb => tb.checked).map(tb => tb.value);
 
   if (!start || !product || !totalCaps || !dose || family.length === 0 || times.length === 0) {
     alert("모든 정보를 입력해주세요.");
@@ -969,18 +967,22 @@ function showStatsForFamily(name) {
     let targetForPeriod = 0;
     let takenForPeriod = 0;
 
-    sup.schedule.forEach(dateStr => {
-        if (dateStr >= startStr && dateStr <= endStr) {
-        targetForPeriod += sup.dose;
-
-        const dayStatus = sup.takenStatus?.[dateStr] || {};
-        for (const key in dayStatus) {
-          if (key.includes(`_${name}`) && dayStatus[key]) {
-            takenForPeriod += (sup.dose / sup.times.length);
-          }
-        }
+    // 수정 방식: 1번 + 1번 + 1번 한 뒤 마지막에 복용량 계산 (정확함)
+sup.schedule.forEach(dateStr => {
+  if (dateStr >= startStr && dateStr <= endStr) {
+    targetForPeriod += sup.dose;
+    const dayStatus = sup.takenStatus?.[dateStr] || {};
+    
+    let takenSlots = 0; // 이 영양제의 해당 날짜 복용 횟수 카운트
+    for (const key in dayStatus) {
+      if (key.includes(`_${name}`) && dayStatus[key]) {
+        takenSlots++; 
       }
-    });
+    }
+    // 해당 날짜에 먹은 횟수만큼의 용량을 계산해서 더함
+    takenForPeriod += (takenSlots * (sup.dose / sup.times.length));
+  }
+});
 
     if (targetForPeriod > 0) {
       stats[sup.productName] = {
@@ -1151,6 +1153,7 @@ function renderFamilyCheckboxes() {
 
 // 사용자님의 DB 구조를 기반으로 특정 가족 구성원 데이터를 완전히 삭제하는 함수
 async function deleteFamilyMemberFromDB(targetName) {
+  await openDatabase();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(["supplements"], "readwrite");
     const store = transaction.objectStore("supplements");
@@ -1435,10 +1438,11 @@ datesWrapper.addEventListener("touchstart", (e) => {
   const screenWidth = window.innerWidth;
 
   // 화면 가장자리 20px 이내에서 시작하는 터치는 시스템 제스처(뒤로가기 등)를 위해 무시
-  if (x < 20 || x > screenWidth - 20) {
-    touchStartX = 0; // 스와이프 실행 안 되게 0으로 설정
-    return;
-  }
+ if (x < 25 || x > screenWidth - 25) { // 20px은 너무 좁을 수 있어 25px로 권장
+  if (e.cancelable) e.preventDefault(); // 시스템 제스처 발동 차단
+  touchStartX = 0;
+  return;
+}
 
   touchStartX = x;
   touchStartY = e.changedTouches[0].screenY;
@@ -1446,27 +1450,18 @@ datesWrapper.addEventListener("touchstart", (e) => {
   touchEndY = touchStartY;
 });
 
-datesWrapper.addEventListener("touchmove",  (e) => {
-    if (e.touches.length > 1) return;
+datesWrapper.addEventListener("touchmove", (e) => {
+  if (e.touches.length > 1) return;
 
-    touchEndX = e.changedTouches[0].screenX;
-    touchEndY = e.changedTouches[0].screenY;
+  touchEndX = e.changedTouches[0].screenX;
+  const diffX = Math.abs(touchEndX - touchStartX);
+  const diffY = Math.abs(e.changedTouches[0].screenY - touchStartY);
 
-    const diffX = touchEndX - touchStartX;
-    const diffY = touchEndY - touchStartY;
-
-    const absDiffX = Math.abs(diffX);
-    const absDiffY = Math.abs(diffY);
-
-    // 수평 스와이프가 감지되면 브라우저의 기본 동작(뒤로가기/앞으로가기 등)을 차단
-    if (absDiffX > 10 && absDiffX > absDiffY) {
-        if (e.cancelable) e.preventDefault();
-      // 브라우저 기본 vertical scroll 막기
-      e.preventDefault();
-    }
-  },
-  { passive: false } // 반드시 필요
-);
+  // 아주 미세한 가로 움직임이라도 감지되면 즉시 시스템 동작 차단
+  if (diffX > 5 && diffX > diffY) {
+    if (e.cancelable) e.preventDefault();
+  }
+}, { passive: false });
 
 datesWrapper.addEventListener("touchend", () => {
   const diffX = touchEndX - touchStartX;

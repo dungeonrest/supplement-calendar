@@ -116,6 +116,12 @@ input, textarea {
   gap: 0;
 }
 
+/* 달력이 있는 컨테이너 혹은 body에 추가 */
+#dates-wrapper {
+  touch-action: pan-y; /* 세로 스크롤만 허용하고, 가로 스크롤(시스템 제스처)은 차단 */
+  overscroll-behavior-x: none; /* 가로로 당겼을 때 뒤 배경이 보이는 현상 방지 */
+}
+
 .date {
   position: relative;
   display: flex;
@@ -1203,3 +1209,17 @@ body.modal-open {
 
 body.dark-mode #familyInput { border-bottom-color: #333; color: white; }
 body.dark-mode .onboarding-header h1 { color: white; }
+
+/* 텍스트 스타일은 유지하고 클릭 범위(공간)만 확장 */
+#footerBackupLink, #footerVersion {
+  display: inline-block; 
+  padding: 20px; /* 사방으로 20px만큼 클릭 가능한 투명 공간을 만듭니다 */
+  margin: -10px; /* 확장된 공간 때문에 주변 요소가 밀리지 않도록 조정 */
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent; /* 터치 시 생기는 하이라이트 제거 */
+}
+
+/* 하단 영역이 너무 좁지 않게 최소한의 높이만 확보 */
+footer {
+  padding-bottom: 30px; /* 아이폰 하단 홈 바와의 간격만 확보 */
+}
