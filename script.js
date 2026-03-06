@@ -1,5 +1,5 @@
 
-const APP_VERSION = "03.05c";
+const APP_VERSION = "03.06c";
 let deferredPrompt;
 
 // 공휴일 리스트 (예: 2026년)
@@ -30,9 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const saved = localStorage.getItem("darkMode") === "true";
   if (saved) {
     document.body.classList.add("dark-mode");
-    if (themeToggleBtn) themeToggleBtn.textContent = "🌕";
-  } else {
-    if (themeToggleBtn) themeToggleBtn.textContent = "🔆";
   }
 });
 
@@ -41,8 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
 // ====================
 const datesContainer = document.getElementById("dates");
 const monthDisplay = document.getElementById("monthDisplay");
-const todayBtn = document.getElementById("todayBtn");
-const addBtn = document.getElementById("addBtn");
+const todayBtn = document.getElementById("fabTodayBtn");
+const addBtn = document.getElementById("fabAddBtn");
 const themeToggleBtn = document.getElementById("themeToggle");
 const modalOverlay = document.getElementById("modalOverlay");
 const closeModalBtn = document.getElementById("closeModal");
@@ -68,7 +65,7 @@ document.addEventListener("change", (e) => {
 
 function openSupplementModal(sup) {
   currentEditId = sup.id;
-  modalOverlay.classList.remove("hidden");
+  modalOverlay.classList.add("active");
   document.body.classList.add("modal-open");
 
   inputDate.value = selectedDateForList || (sup.schedule && sup.schedule[0]) || "";
@@ -114,22 +111,21 @@ let selectedDateForList = "";
 let currentEditId = null;
 
 const colorList = [
-  "#E84855", // Raspberry Red
-  "#4ECDC4", // Turquoise
-  "#FFD93D", // Vibrant Yellow
-  "#1A535C", // Deep Teal
-  "#FF9F1C", // Bright Orange
-  "#118AB2", // Ocean Blue
-  "#8E44AD", // Medium Purple
-  "#16A085", // Sea Green
-  "#fa7f66", // Soft Peach
-  "#F4D35E", // Mustard Yellow
-  "#06D6A0", // Mint Green
-  "#97aa44", // Tomato Red
-  "#3498DB", // Sky Blue
-  "#c96a3f", // Coral Red
-  "#2fb974", // Cyan Teal
-];
+  "#E84855",
+  "#1976D2",
+  "#ceaa1a",
+  "#388E3C",
+  "#8E44AD",
+  "#F57C00",
+  "#118AB2",
+  "#D32F2F",
+  "#97aa44",
+  "#8E24AA",
+  "#FF9F1C",
+  "#16A085",
+  "#3498DB",
+  "#c96a3f",
+  ];
 
 // ====================
 // 한국 시간 기준 오늘 날짜 문자열 (YYYY-MM-DD)
@@ -227,8 +223,6 @@ function deleteSupplementFromDB(id) {
 themeToggleBtn.addEventListener("click", () => {
   const isDark = document.body.classList.toggle("dark-mode");
   localStorage.setItem("darkMode", isDark);
-
-  themeToggleBtn.textContent = isDark ? "🌕" : "🔆";
 });
 
 // ====================
@@ -238,7 +232,7 @@ monthlyCostBtn.addEventListener("click", () => {
   const year = dt.getFullYear();
   const month = dt.getMonth() + 1;
 
-  document.getElementById("monthlyCostTitle").innerText = `${year}.${String(month).padStart(2,"0")} 비용`;
+  document.getElementById("monthlyCostTitle").innerText = `${year}.${String(month).padStart(2,"0")}`;
 
   let totalCost = 0;
   const monthlyItems = [];
@@ -283,7 +277,7 @@ const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
       `;
     });
   } else {
-    costHtml = "<p style='text-align:center; opacity:0.5; font-size:13px;'>이번 달 등록된 비용이 없습니다.</p>";
+    costHtml = "<p style='text-align:center; opacity:0.6; font-size:13px; margin-top:80px; padding-bottom:80px;'>이번 달 등록된 비용이 없습니다.</p>";
   }
 
   // 총액 표시 영역
@@ -295,12 +289,12 @@ const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
   `;
 
   monthlyCostContent.innerHTML = costHtml;
-  monthlyCostModal.classList.remove("hidden");
+  monthlyCostModal.classList.add("active");
   document.body.classList.add("modal-open");
 });
 
 closeMonthlyCostModal.addEventListener("click", () => {
-  monthlyCostModal.classList.add("hidden");
+  monthlyCostModal.classList.remove("active");
   document.body.classList.remove("modal-open");
 });
 
@@ -310,7 +304,7 @@ closeMonthlyCostModal.addEventListener("click", () => {
 addBtn.addEventListener("click", () => {
   currentEditId = null;
   renderFamilyCheckboxes();
-  modalOverlay.classList.remove("hidden");
+  modalOverlay.classList.add("active");
   document.body.classList.add("modal-open");
   history.pushState({ modal: "add" }, "");
   inputDate.value = selectedDateForList || getTodayKST();
@@ -321,8 +315,12 @@ addBtn.addEventListener("click", () => {
   inputPrice.value = "";
   updateColorBar("#000000");
   deleteSupplementBtnModal.style.display = "none"; // 새 추가 시 삭제 버튼 숨김
-  for (let cb of inputFamily) cb.checked = false;
-  for (let tb of inputTime) tb.checked = false;
+  document.querySelectorAll(".inputFamily").forEach(tb => {
+    tb.checked = false;
+  });
+  document.querySelectorAll(".inputTime").forEach(tb => {
+    tb.checked = false;
+  });
 });
 
 const fabAddBtn = document.getElementById("fabAddBtn");
@@ -333,17 +331,17 @@ fabAddBtn.addEventListener("click", () => {
 });
 
 closeModalBtn.addEventListener("click", () => {
-  modalOverlay.classList.add("hidden");
+  modalOverlay.classList.remove("active");
   document.body.classList.remove("modal-open");
 });
 
 deleteSupplementBtnModal.addEventListener("click", async () => {
   if (currentEditId) {
-    if (!confirm("이 영양제와 관련된 모든 복용 기록이 삭제됩니다. 삭제할까요?")) return;
+    if (!confirm("복용 기록도 모두 사라집니다.\n삭제할까요?")) return;
     await deleteSupplementFromDB(currentEditId);
     supplements = supplements.filter(s => s.id !== currentEditId);
     
-    modalOverlay.classList.add("hidden");
+    modalOverlay.classList.remove("active");
     document.body.classList.remove("modal-open");
     renderCalendar();
   } else {
@@ -630,7 +628,7 @@ saveInfoBtn.addEventListener("click", async () => {
     await saveSupplementToDB(newSup);
   }
 
-    modalOverlay.classList.add("hidden");
+    modalOverlay.classList.remove("active");
     document.body.classList.remove("modal-open");
     selectedDateForList = start;
     renderCalendar();
@@ -692,23 +690,27 @@ function changeFamilyMemberName(index, newName) {
   location.reload(); // 전체 반영을 위해 리로드
 }
 
-todayBtn.addEventListener("click", () => {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = now.getMonth();
-  const d = now.getDate();
+if (todayBtn && typeof todayBtn.addEventListener === 'function' && todayBtn.id === "fabTodayBtn") {
+  if (todayBtn) {
+  todayBtn.addEventListener("click", () => {
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = now.getMonth();
+    const d = now.getDate();
 
- selectedDateForList = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
- dt = new Date(y, m, d, 0, 0, 0);
+    selectedDateForList = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+    dt = new Date(y, m, d, 0, 0, 0);
 
-  renderCalendar();
-});
+    renderCalendar();
+    window.scrollTo(0, 0);
+  });
+}
 
-// touchend와 click이 중복 실행되지 않도록 개선된 방식입니다.
-todayBtn.addEventListener("touchend", (e) => {
-  if (e.cancelable) e.preventDefault(); 
-  todayBtn.click();
-}, { passive: false });
+  todayBtn.addEventListener("touchend", (e) => {
+    if (e.cancelable) e.preventDefault(); 
+    todayBtn.click();
+  }, { passive: false });
+}
 
 loadSupplements();
 
@@ -725,14 +727,14 @@ function checkInitialSetup() {
 
   if (isNoSupplements && isNoFamily) {
     // 두 조건 모두 만족할 때만 (완전 처음 방문일 때만) 온보딩 표시
-    if (overlay) overlay.classList.remove("hidden");
-    if (configModal) configModal.classList.remove("hidden");
+    if (overlay) overlay.classList.add("active");
+    if (configModal) configModal.classList.add("active");
     document.body.classList.add("modal-open");
     if (mainContainer) mainContainer.style.display = "none";
   } else {
     // 영양제가 있거나, 혹은 영양제는 없어도 이름 설정은 이미 마친 경우
-    if (overlay) overlay.classList.add("hidden");
-    if (configModal) configModal.classList.add("hidden");
+    if (overlay) overlay.classList.remove("active");
+    if (configModal) configModal.classList.remove("active");
     if (mainContainer) mainContainer.style.display = "block";
     document.body.classList.remove("modal-open");
   }
@@ -742,6 +744,12 @@ function openTakenCheckUI(date) {
   const modal = document.getElementById("takenCheckModal");
   const title = document.getElementById("takenCheckTitle");
   const body = document.getElementById("takenCheckBody");
+
+  if (body) {
+    body.style.overflowY = "auto";
+    body.style.maxHeight = "80vh";
+    body.scrollTop = 0;
+  }
 
   title.innerText = `${date}`;
   body.innerHTML = ""; // 기존 내용 초기화
@@ -773,7 +781,7 @@ function openTakenCheckUI(date) {
 
       const extendBtn = document.createElement("button");
       extendBtn.classList.add("extend-btn");
-      extendBtn.innerText = "🔁";
+      extendBtn.innerText = "연장";
       
       // [중요!] 연장 버튼 클릭 이벤트 (함수 내부로 이동)
       extendBtn.addEventListener("click", async () => {
@@ -797,7 +805,7 @@ function openTakenCheckUI(date) {
           renderCalendar();
           alert("📅 일정이 연장되었습니다!");
           // 연장 후 모달을 닫아주거나 새로고침 할 수 있습니다.
-          modal.classList.add("hidden");
+          modal.classList.remove("active");
           document.body.classList.remove("modal-open");
         }
       });
@@ -859,26 +867,9 @@ function openTakenCheckUI(date) {
       section.appendChild(table);
       body.appendChild(section);
     }); // 루프 끝
-
-    // 4. 하단 통합 닫기 버튼 (딱 한 번만 생성)
-    const footer = document.createElement("div");
-    footer.classList.add("modal-footer");
-
-    const bottomCloseBtn = document.createElement("button");
-    bottomCloseBtn.classList.add("modal-close-btn");
-    bottomCloseBtn.innerText = "닫기";
-
-    bottomCloseBtn.addEventListener("click", () => {
-      modal.classList.add("hidden");
-      document.body.classList.remove("modal-open");
-      renderCalendar(); // 체크 상태 반영을 위해 달력 리렌더링
-    });
-
-    footer.appendChild(bottomCloseBtn);
-    body.appendChild(footer);
   }
 
-  modal.classList.remove("hidden");
+  modal.classList.add("active");
   document.body.classList.add("modal-open");
 }
 
@@ -886,7 +877,7 @@ function openTakenCheckUI(date) {
 document.getElementById("closeTakenCheckBtn")
   .addEventListener("click", async () => {
     // 개별 저장 로직이 이미 chk.addEventListener에 있으므로 전체 저장은 생략합니다.
-    document.getElementById("takenCheckModal").classList.add("hidden");
+    document.getElementById("takenCheckModal").classList.remove("active");
     document.body.classList.remove("modal-open");
     renderCalendar();
   });
@@ -902,7 +893,8 @@ const periodEnd = document.getElementById("periodEnd");
 
 // 통계 모달 열기
 statsBtn.addEventListener("click", () => {
-  statsModal.classList.remove("hidden");
+  if (statsContent) statsContent.scrollTop = 0;
+  statsModal.classList.add("active");
   document.body.classList.add("modal-open");
   history.pushState({ modal: "stats" }, "");
   // 기본 기간: 올해
@@ -912,14 +904,14 @@ statsBtn.addEventListener("click", () => {
 
   renderFamilyUI();
 
-  statsContent.innerHTML = "<p style='text-align:center; font-size:12px; opacity:0.6; margin-top:20px;'>가족 이름을 선택하면<br>올해의 복용 통계가 표시됩니다.</p>";
+  statsContent.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:150px;'>가족 이름을 선택하면<br>올해의 복용 통계가 표시됩니다.</p>";
 });
 
 // 2. 통계 모달 닫기
 // 변수(closeStatsModal)에 연결하는 대신 ID로 직접 연결하는 게 가장 확실합니다.
 document.getElementById("closeStatsModal").onclick = function() {
   // 모달 닫기
-  statsModal.classList.add("hidden");
+  statsModal.classList.remove("active");
   document.body.classList.remove("modal-open");
 
   // 입력값 및 선택 상태 초기화
@@ -998,7 +990,7 @@ sup.schedule.forEach(dateStr => {
 
   let html = "";
   if (Object.keys(stats).length === 0) {
-    html = "<p style='text-align:center;'>기록이 없습니다.</p>";
+    html = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:150px;'>기록이 없습니다.</p>";
   } else {
     for (const key in stats) {
       const info = stats[key];
@@ -1017,10 +1009,11 @@ sup.schedule.forEach(dateStr => {
     }
   }
   statsContent.innerHTML = html;
+  statsContent.scrollTop = 0;
 }
 
 function renderFamilyUI() {
-  // 1. 통계 모달의 버튼들 교체 (가족 버튼 영역)
+  // 1. 통계 모달의 버튼들 교체
   const statsFamilyContainer = document.querySelector(".family-buttons");
   if (statsFamilyContainer) {
     statsFamilyContainer.innerHTML = ""; 
@@ -1030,45 +1023,48 @@ function renderFamilyUI() {
       btn.dataset.name = name;
       btn.innerText = name;
       
-      // [클릭] 기존 통계 로직
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".family-btn").forEach(b => b.classList.remove("selected"));
-        btn.classList.add("selected");
-        showStatsForFamily(name);
-      });
-
-      // [롱 프레스] 이름 변경/삭제 로직 추가
       let timer;
-      const startPress = () => {
-        timer = setTimeout(async () => { // async 추가
-  const newName = prompt(`'${name}' 님의 이름을 변경하세요.\n(빈칸으로 두면 삭제됩니다.)`, name);
-  if (newName === null) return;
+      let isLongPress = false; // 롱 프레스 상태 확인
 
-  const trimmed = newName.trim();
-  if (trimmed === "") {
-    if (confirm(`'${name}' 님을 삭제할까요?\n복용 데이터도 사라집니다.`)) {
-      await deleteFamilyMemberFromDB(name);
-      familyMembers.splice(index, 1);
-      localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
-      location.reload();
-    }
-  } else if (trimmed !== name) {
-    // 1. DB 내의 이름 데이터 일괄 변경
-    await updateSupplementFamilyName(name, trimmed);
-    
-    // 2. localStorage 이름 변경
-    familyMembers[index] = trimmed;
-    localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
-    
-    alert(`'${name}' 님이 '${trimmed}' 님으로 변경되었습니다.`);
-    location.reload();
-    }
+      // [수정된 롱 프레스 로직]
+      const startPress = () => {
+        isLongPress = false;
+        timer = setTimeout(async () => {
+          isLongPress = true; 
+          const newName = prompt(`'${name}' 님의 이름을 변경하세요.\n(빈칸으로 두면 삭제됩니다.)`, name);
+          if (newName === null) return;
+
+          const trimmed = newName.trim();
+          if (trimmed === "") {
+            if (confirm(`'${name}' 님을 삭제할까요?\n복용 데이터도 사라집니다.`)) {
+              await deleteFamilyMemberFromDB(name);
+              familyMembers.splice(index, 1);
+              localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+              location.reload();
+            }
+          } else if (trimmed !== name) {
+            await updateSupplementFamilyName(name, trimmed);
+            familyMembers[index] = trimmed;
+            localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+            alert(`'${name}' 님이 '${trimmed}' 님으로 변경되었습니다.`);
+            location.reload();
+          }
         }, 500);
       };
+      
       const endPress = () => clearTimeout(timer);
 
-      // 모바일 및 PC 이벤트 대응
-      btn.addEventListener("touchstart", startPress);
+      // [기존 클릭 로직] 롱 프레스가 아닐 때만 실행
+      btn.addEventListener("click", () => {
+        if (!isLongPress) {
+          document.querySelectorAll(".family-btn").forEach(b => b.classList.remove("selected"));
+          btn.classList.add("selected");
+          showStatsForFamily(name);
+        }
+      });
+
+      // 이벤트 대응
+      btn.addEventListener("touchstart", startPress, { passive: true });
       btn.addEventListener("touchend", endPress);
       btn.addEventListener("mousedown", startPress);
       btn.addEventListener("mouseup", endPress);
@@ -1077,37 +1073,34 @@ function renderFamilyUI() {
       statsFamilyContainer.appendChild(btn);
     });
 
-    // 가족이 4명 미만일 때 추가 버튼 표시
-      if (familyMembers.length < 4) {
-        const addBtn = document.createElement("button");
-        addBtn.className = "family-btn";
-        addBtn.innerText = "추가";
-        
-        addBtn.addEventListener("click", async () => { // async 추가
-          const n = prompt("새로운 이름을 입력하세요.");
-          if (n && n.trim()) {
-            const newName = n.trim();
+    // [복구] 사용자님의 가족 추가 로직 (4명 미만일 때)
+    if (familyMembers.length < 4) {
+      const addBtn = document.createElement("button");
+      addBtn.className = "family-btn";
+      addBtn.innerText = "추가";
+      
+      addBtn.addEventListener("click", async () => {
+        const n = prompt("새로운 이름을 입력하세요.");
+        if (n && n.trim()) {
+          const newName = n.trim();
+          familyMembers.push(newName);
+          localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
 
-            // 1. 전체 가족 명단 업데이트 (localStorage)
-            familyMembers.push(newName);
-            localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
-
-            // 2. [핵심] 기존 영양제들의 '복용 명단'에도 새 가족 추가
-            // IndexedDB의 모든 데이터를 갱신합니다.
-            const transaction = db.transaction(["supplements"], "readwrite");
-            const store = transaction.objectStore("supplements");
-            
-            transaction.oncomplete = () => {
-              alert(`'${newName}' 님이 추가되었습니다.`);
-              location.reload(); 
-            };
-          }
-        });
-        statsFamilyContainer.appendChild(addBtn);
-      }
+          // [기존 DB 갱신 로직 그대로 유지]
+          const transaction = db.transaction(["supplements"], "readwrite");
+          const store = transaction.objectStore("supplements");
+          
+          transaction.oncomplete = () => {
+            alert(`'${newName}' 님이 추가되었습니다.`);
+            location.reload(); 
+          };
+        }
+      });
+      statsFamilyContainer.appendChild(addBtn);
     }
+  }
 
-  // 2. 영양제 입력 모달의 체크박스들 교체 (기존 로직 유지)
+  // 2. [복구] 영양제 입력 모달의 체크박스 교체 (기존 로직 유지)
   const inputFamilyContainer = document.querySelector(".checkbox-line");
   if (inputFamilyContainer) {
     inputFamilyContainer.innerHTML = ""; 
@@ -1115,12 +1108,11 @@ function renderFamilyUI() {
       const label = document.createElement("label");
       label.className = "checkbox-item";
       
-      // [수정] input 객체를 명시적으로 생성하고 checked를 false로 박아넣습니다.
       const chk = document.createElement("input");
       chk.type = "checkbox";
       chk.className = "inputFamily";
       chk.value = name;
-      chk.checked = false; // 잔상 방지용 강제 초기화
+      chk.checked = false; 
 
       const span = document.createElement("span");
       span.className = "checkbox-label-text";
@@ -1146,7 +1138,9 @@ function renderFamilyCheckboxes() {
     chk.type = "checkbox";
     chk.className = "inputFamily";
     chk.value = name;
-    chk.checked = false; // 새로 그릴 때는 무조건 체크 해제 상태로 시작
+    
+    // [중요] 초기화 시 무조건 false 부여
+    chk.checked = false; 
 
     label.appendChild(chk);
     label.appendChild(document.createTextNode(` ${name}`));
@@ -1272,14 +1266,15 @@ footerYear.innerText = new Date().getFullYear();
 
 // 백업/복원 메뉴 열기
 footerBackupLink.addEventListener("click", () => {
-  backupMenuModal.classList.remove("hidden");
+  if (backupMenuModal) backupMenuModal.scrollTop = 0;
+  backupMenuModal.classList.add("active");
   document.body.classList.add("modal-open");
   history.pushState({ modal: "backup" }, "");
 });
 
 // 취소/닫기
 closeBackupMenu.addEventListener("click", () => {
-  backupMenuModal.classList.add("hidden");
+  backupMenuModal.classList.remove("active");
   document.body.classList.remove("modal-open");
 });
 
@@ -1300,7 +1295,7 @@ exportBtn.addEventListener("click", () => {
   a.click();
 
   URL.revokeObjectURL(url);
-  backupMenuModal.classList.add("hidden");
+  backupMenuModal.classList.remove("active");
   document.body.classList.remove("modal-open");
 });
 
@@ -1368,7 +1363,7 @@ importFileInput.addEventListener("change", async (e) => {
     await openDatabase();
     await saveAllSupplements();
 
-    backupMenuModal.classList.add("hidden");
+    backupMenuModal.classList.remove("active");
     document.body.classList.remove("modal-open");
     
     alert("백업 데이터를 성공적으로 불러왔습니다!");
@@ -1435,56 +1430,54 @@ let touchEndY = 0;
 const minSwipeDistance = 70;
 const swipeRatio = 1.5;
 
+// ―――――――――――――――――――
+// 스와이프 및 가장자리 터치 충돌 개선 로직
+// ―――――――――――――――――――
 const datesWrapper = document.getElementById("dates-wrapper");
 
-// [교체] 아이폰 시스템 제스처(뒤로가기/앞으로가기)를 강제로 차단하고 앱 로직 점유
 datesWrapper.addEventListener("touchstart", (e) => {
-  const x = e.changedTouches[0].screenX;
-  const screenWidth = window.innerWidth;
-
-  // 가장자리(Edge) 30px 범위 내 터치일 때
-  if (x < 30 || x > screenWidth - 30) {
-    // 시스템 제스처가 발동되지 않도록 브라우저의 기본 동작을 즉시 중단시킵니다.
-    if (e.cancelable) e.preventDefault(); 
-  }
-
-  // 시스템 제스처를 막았으므로, 이제 정상적으로 앱의 스와이프 좌표를 기록합니다.
-  touchStartX = x;
+  // 시작 좌표 저장 (터치 차단 안 함 -> 일요일/토요일 터치 가능)
+  touchStartX = e.changedTouches[0].screenX;
   touchStartY = e.changedTouches[0].screenY;
+  // 초기화
   touchEndX = touchStartX;
   touchEndY = touchStartY;
-}, { passive: false }); // 중요: preventDefault를 쓰려면 passive가 false여야 합니다.
+}, { passive: true });
 
-// [교체] 터치 이동 중에도 시스템 제스처가 끼어들 틈을 주지 않음
 datesWrapper.addEventListener("touchmove", (e) => {
   if (e.touches.length > 1) return;
 
   touchEndX = e.changedTouches[0].screenX;
-  const diffX = Math.abs(touchEndX - touchStartX);
-  const diffY = Math.abs(e.changedTouches[0].screenY - touchStartY);
+  touchEndY = e.changedTouches[0].screenY;
 
-  // 가로 방향 움직임이 조금이라도 감지되면 시스템 제스처를 원천 차단
-  if (diffX > 5) {
+  const diffX = touchEndX - touchStartX;
+  const diffY = touchEndY - touchStartY;
+  const absDiffX = Math.abs(diffX);
+  const absDiffY = Math.abs(diffY);
+
+  // 핵심: 가로 움직임이 감지되는 순간 시스템 제스처(앞으로가기)보다 먼저 점유
+  if (absDiffX > 5 && absDiffX > absDiffY) {
+    // 가로 스와이프 의도가 확실하면 브라우저의 기본 제스처를 즉시 차단
     if (e.cancelable) e.preventDefault();
   }
 }, { passive: false });
 
-datesWrapper.addEventListener("touchend", () => {
+datesWrapper.addEventListener("touchend", (e) => {
   const diffX = touchEndX - touchStartX;
   const diffY = touchEndY - touchStartY;
-
   const absDiffX = Math.abs(diffX);
   const absDiffY = Math.abs(diffY);
 
-  // 최종 swipe 판단은 여전히 기존 기준으로
+  // 사용자님의 기존 기준(minSwipeDistance=70, swipeRatio=1.5) 적용
   if (absDiffX > minSwipeDistance && absDiffX > absDiffY * swipeRatio) {
     if (diffX < 0) {
-      changeMonthWithDay(1);
+      changeMonthWithDay(1);  // 다음 달
     } else if (diffX > 0) {
-      changeMonthWithDay(-1);
+      changeMonthWithDay(-1); // 이전 달
     }
   }
 
+  // 좌표 리셋
   touchStartX = 0;
   touchStartY = 0;
   touchEndX = 0;
@@ -1593,7 +1586,7 @@ if (saveFamilyConfigBtn) {
     familyMembers = names; // 메모리 갱신
 
     // 모달 닫기
-    document.getElementById("familyConfigModal").classList.add("hidden");
+    document.getElementById("familyConfigModal").classList.remove("active");
     document.body.classList.remove("modal-open");
 
     // UI 즉시 반영 후 새로고침
@@ -1658,7 +1651,7 @@ window.addEventListener("popstate", () => {
   ];
   
   allModals.forEach(modal => {
-    if (modal) modal.classList.add("hidden");
+    if (modal) modal.classList.remove("active");
   });
   document.body.classList.remove("modal-open");
 });
@@ -1679,3 +1672,26 @@ async function triggerInstall() {
     alert("이미 설치되어 있거나 지원하지 않는 환경입니다.");
   }
 }
+
+// script.js 파일의 맨 마지막 부분에 추가하세요
+document.querySelectorAll(".close-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    // 1. 모든 모달의 active 클래스 제거 (사용자님이 수정한 애니메이션 적용)
+    const modals = [modalOverlay, statsModal, backupMenuModal, 
+                    document.getElementById("takenCheckModal"), 
+                    document.getElementById("familyConfigModal")];
+                    
+    modals.forEach(m => {
+      if(m) m.classList.remove("active");
+      if (m.querySelector('.modal-body')) m.querySelector('.modal-body').scrollTop = 0;
+    });
+
+    // 2. 바디 스크롤 잠금 해제 (사용자님 기존 코드 기반)
+    document.body.classList.remove("modal-open");
+
+    // 3. 브라우저 히스토리 관리 (아이폰의 '뒤로가기'와 연동)
+    if (window.history.state && window.history.state.modal) {
+      window.history.back();
+    }
+  });
+});

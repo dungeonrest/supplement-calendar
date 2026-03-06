@@ -1,11 +1,9 @@
 html, body {
   /* 브라우저의 뒤로가기/앞으로가기 스와이프 동작을 막으려는 시도 */
-  overscroll-behavior-x: none; 
+  overscroll-behavior-x: none;
 }
 
-/* ==========================
-   기본 색상 변수
-   ========================== */
+/* 기본 색상 변수*/
 :root {
   --bg-color: #ffffff;
   --text-color: #000000;
@@ -30,6 +28,7 @@ body {
   font-family: "Apple SD Gothic Neo", "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
+  padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: none;
@@ -61,37 +60,210 @@ input, textarea {
 /* 헤더 */
 .calendar-header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 1px;
-  padding-bottom: 10px;
+  padding: 10px 20px;
 }
 
-.header-left {
+.month-display {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text-color);
+  letter-spacing: -0.5px;  /* 자간을 살짝 좁혀 아이폰 특유의 쫀쫀한 느낌 부여 */
+  padding-left: 1px;
+  cursor: default;
+  user-select: none;       /* 텍스트 선택 방지 */
+}
+
+/* 다크모드 시 가독성 유지 */
+.dark-mode .month-display {
+  color: #ffffff;
+}
+
+.header-right-group {
   display: flex;
   align-items: center;
-  gap: 20px;
-  font-size: 24px;
-  font-weight: 700;
-}
-
-.today-header,
-.plus-btn,
-.theme-btn,
-.monthly-cost-btn {
-  font-size: 20px;
-  background: none;
+  gap: 8px;
+  padding: 2px 4px;
+  border-radius: 50px;
   border: none;
-  color: var(--text-color);
-  cursor: pointer;
-  padding: 2px;
+  background-color: rgba(216, 213, 213, 0.171);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  }
+
+  /* 다크모드 상자 대응 */
+  body.dark-mode .header-right-group {
+   background-color: rgba(32, 32, 32, 0.863);
+   backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
-.today-header:hover,
-.plus-btn:hover,
-.theme-btn:hover,
-.monthly-cost-btn:hover {
-  opacity: 1;
+.theme-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-icon {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--text-color); /* 속이 비어있는 원 */
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 낮 모드: 모든 막대가 중심에서 밖으로 향함 */
+body:not(.dark-mode) .theme-icon::before,
+body:not(.dark-mode) .theme-icon::after {
+ content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  /* 전체 영역은 유지하되 배경 패턴만 조절 */
+  width: 24px;
+  height: 24px;
+  
+  /* 0~2.5px까지만 색을 칠하고, 나머지는 투명하게 비움 */
+  background: 
+    linear-gradient(to bottom, 
+      var(--text-color) 0, var(--text-color) 2.5px, 
+      transparent 2.5px, transparent 21.5px, 
+      var(--text-color) 21.5px, var(--text-color) 24px
+    ),
+    linear-gradient(to right, 
+      var(--text-color) 0, var(--text-color) 2.5px, 
+      transparent 2.5px, transparent 21.5px, 
+      var(--text-color) 21.5px, var(--text-color) 24px
+    );
+    
+  background-size: 2px 24px, 24px 2px; /* 막대 두께 2px 유지 */
+  background-repeat: no-repeat;
+  background-position: center;
+  transform: translate(-50%, -50%);
+}
+
+/* 상하(0도) + 좌우(90도) 막대 생성 */
+body:not(.dark-mode) .theme-icon::before {
+  /* 자기 자신(상하) + 그림자 회전(좌우) */
+  box-shadow: 0 0 0 transparent; /* 잔상 제거 */
+}
+
+/* 1. 상하(12시, 6시) & 좌우(3시, 9시) */
+body:not(.dark-mode) .theme-icon::before {
+  transform: translate(-50%, -50%);
+}
+
+.theme-icon::before {
+  transform: translate(-50%, -50%); /* 12시-6시 방향 */
+}
+
+body:not(.dark-mode) .theme-icon::before {
+  background: 
+    linear-gradient(to bottom, var(--text-color) 4px, transparent 4px, transparent 20px, var(--text-color) 20px),
+    linear-gradient(to right, var(--text-color) 4px, transparent 4px, transparent 20px, var(--text-color) 20px);
+  background-size: 2px 24px, 24px 2px;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 24px;
+  height: 24px;
+}
+
+body:not(.dark-mode) .theme-icon::after {
+  background: 
+    linear-gradient(to bottom, var(--text-color) 4px, transparent 4px, transparent 20px, var(--text-color) 20px),
+    linear-gradient(to right, var(--text-color) 4px, transparent 4px, transparent 20px, var(--text-color) 20px);
+  background-size: 2px 24px, 24px 2px;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 24px;
+  height: 24px;
+  transform: translate(-50%, -50%) rotate(45deg); /* 45도 회전하여 대각선 4개 완성 */
+}
+
+body.dark-mode .theme-icon {
+  width: 16px; height: 16px; border: none;
+  box-shadow: inset -5px -3px 0 0 var(--text-color);
+  transform: rotate(-20deg);
+}
+
+body.dark-mode .theme-icon::before,
+body.dark-mode .theme-icon::after {
+  display: none;
+}
+
+.monthly-cost-btn, .stats-btn {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--text-color);
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity 0.2s;
+}
+
+/* 터치 피드백 */
+.monthly-cost-btn:active, .stats-btn:active {
+  background-color: rgba(128, 128, 128, 0.25);
+  transform: scale(0.95);
+}
+
+/* 원화 버튼 전용 아이콘 */
+.monthly-cost-btn {
+  position: relative;
+}
+
+/* W의 V자 형태를 대신하는 가로 두 줄 */
+.monthly-cost-btn::before,
+.monthly-cost-btn::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 3px;
+  background-color: var(--text-color);
+  border-radius: 2px;
+}
+
+.monthly-cost-btn::before { transform: translateY(-3px); }
+.monthly-cost-btn::after { transform: translateY(3px); }
+
+.stats-btn {
+  display: flex;
+  align-items: flex-end; /* 핵심: 모든 막대를 바닥으로 정렬 */
+  justify-content: center;
+  gap: 3px;
+  height: 32px;
+  padding-bottom: 8px;
+}
+
+.stats-btn span {
+  width: 3.5px;
+  background-color: var(--text-color);
+  border-radius: 10px;
+}
+
+/* 막대별 높이 차이 부여 */
+.stats-btn .bar-1 { height: 8px; }
+.stats-btn .bar-2 { height: 14px; }
+.stats-btn .bar-3 { height: 18px; }
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* 요일 레이블 */
@@ -102,6 +274,8 @@ input, textarea {
   font-size: 13px;
   font-weight: 600;
   margin-top: 3px;
+  padding: 0 5px;
+  box-sizing: border-box;
 }
 
 .day.sun { color: var(--sun-color); }
@@ -112,6 +286,8 @@ input, textarea {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   margin-top: 4px;
+  padding: 0 5px;
+  box-sizing: border-box;
   column-gap: 0;
   row-gap: 0px;
   gap: 0;
@@ -130,13 +306,17 @@ input, textarea {
   align-items: center;
   padding: 0;
   box-sizing: border-box;
-  font-size: 13px;
   padding-bottom: 100%;
-  border-bottom: 1px solid var(--calendar-line); /* 가로선 */
+  border-bottom: 1px solid var(--calendar-line);
   cursor: pointer;
 }
 
-/* === 오늘 날짜 체크 아이콘 겹쳐 표시 === */
+.date span.number {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/*오늘 날짜 체크 아이콘 겹쳐 표시 */
 .date.today-date > span.number {
   position: relative;
   font-weight: 700;
@@ -145,17 +325,14 @@ input, textarea {
 .date.today-date > span.number::after {
   content: "ˇ";
   position: absolute;
-  top: 60%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 27px;
   color: #f13333;
 }
 
-/* ====================
-   날짜셀 고정 높이 + 스크롤 가능한 리스트
-   ==================== */
-
+/*날짜셀 고정 높이 + 스크롤 가능한 리스트*/
 .dates-container .date {
   display: flex;
   flex-direction: column;
@@ -168,17 +345,15 @@ input, textarea {
   overflow: hidden; /* 내용이 넘쳐도 밖으로 나오지 않게 */
 }
 
-/* =========================
-   막대바 스타일 (영양제 표시)
-   ========================= */
-.supplement-bar {
-  position: relative; /* 위치 기준을 확실히 함 */
+/* 막대바 스타일 (영양제 표시)*/
+  .supplement-bar {
+  position: relative;
   width: 80%;
   height: 7px;
-  padding-top: 1px;
-  padding-bottom: 0.2px;
+  padding-top: 1.5px;
+  padding-bottom: 0.7px;
   margin: 1px auto;
-  border-radius: 3px;
+  border-radius: 5px;
   overflow: hidden;
 
   /* 불투명 배경 (남은 부분) */
@@ -191,8 +366,8 @@ input, textarea {
   top: 0;
   left: 0;
   height: 100%;
-  width: 0%; /* JS에서 동적으로 변경됨 */
-  background-color: inherit; /* 부모 색을 그대로 물려받음 */
+  width: 0%;
+  background-color: inherit;
   transition: width 0.25s ease;
 }
 
@@ -202,7 +377,7 @@ input, textarea {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -45%);
-  font-size: 7px;
+  font-size: 7.5px;
   font-weight: 700;
   color: white;
   pointer-events: none;
@@ -211,8 +386,8 @@ input, textarea {
 
 /* 밤모드에서 미복용 상태의 라벨만 반투명 */
 body.dark-mode .supplement-bar-label.unTaken {
-  opacity: 0.5; /* 투명도 조절 (0.3 ~ 0.7 권장) */
-  color: #ffffff; /* 밤모드에는 흰색 유지 */
+  opacity: 0.5;
+  color: #ffffff;
 }
 
 /* 밤모드에서 복용이 있거나 완전 복용된 라벨은 뚜렷하게 */
@@ -225,7 +400,7 @@ body.dark-mode .supplement-bar-label:not(.unTaken) {
 .supplement-list {
   width: 100%;
   max-height: 120px;  /* 이 영역을 넘으면 스크롤 생김 */
-  overflow-y: auto;  /* 내용이 많을 때만 스크롤 */
+  overflow-y: auto;
   padding-top: 0px;
 }
 
@@ -242,11 +417,6 @@ body.dark-mode .supplement-bar-label:not(.unTaken) {
   border-radius: 0px;
   cursor: pointer;
   box-sizing: border-box;
-}
-
-.date span.number {
-  font-size: 13px;
-  font-weight: 600;
 }
 
 .date.sun span.number { color: var(--sun-color); }
@@ -288,100 +458,266 @@ body.dark-mode .supplement-bar-label:not(.unTaken) {
   ) !important;
 }
 
-/* 모달 */
+/* 모달 오픈 시 배경 스크롤 잠금 */
+body.modal-open {
+  overflow: hidden !important;
+  touch-action: none !important;
+  position: fixed; /* 안드로이드에서 뒷 배경 스크롤을 완전히 막는 가장 확실한 방법 */
+  width: 100%;
+}
+
+/* 모달 내부(스크롤 영역) */
+.modal {
+  display: flex;
+  flex-direction: column; /* 헤더와 바디 분리 */
+  overflow: hidden !important; /* 모달 자체 스크롤은 막음 */
+  -webkit-overflow-scrolling: touch;
+}
+
+#modalBody, #monthlyCostContent, #takenCheckBody, #statsContent {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  background-color: transparent !important; 
+  padding: 10px 20px 20px 20px;
+  margin-top: 0;
+}
+
+/* 밤 모드 대응 */
+body.dark-mode #modalBody, 
+body.dark-mode #monthlyCostContent, 
+body.dark-mode #takenCheckBody, 
+body.dark-mode #statsContent {
+  background-color: transparent !important;
+}
+
+/* 첫 번째 섹션이 헤더 바로 밑에서 시작하도록 간격 부여 */
+.taken-sup-section:first-child, 
+.input-date, 
+.family-buttons {
+  margin-top: 10px;
+}
+
+/* 1. 오버레이 설정 보정 (뒤가 안 보이게 불투명하게 설정) */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-end; /* 아래에서 위로 올라오도록 하단 정렬*/
   justify-content: center;
   z-index: 2000;
+  
+  /* 뒷배경을 가리기 위해 투명도 제거하고 배경색 지정 */
+  background: var(--bg-color); 
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease, visibility 0.2s;
 }
 
-@media screen and (max-height: 500px) {
-  .modal-overlay {
-    align-items: flex-start; /* 키보드가 올라오면 모달을 위로 밀어올림 */
-    padding-top: 20px;
-  }
-}
-
-/* 낮 모드 모달 오버레이 */
-body:not(.dark-mode) .modal-overlay {
-  background: rgba(0, 0, 0, 0.3); /* 기존 밝은 오버레이 */
-}
-
-/* 밤 모드 모달 오버레이 */
-body.dark-mode .modal-overlay {
-  background: rgba(0, 0, 0, 0.6); /* 더 진한 오버레이 */
-}
-
-
-.hidden { display: none; }
-
-.modal {
-  background: var(--bg-color);
-  padding: 12px;
-  border-radius: 16px;
-
-  /* 테두리 */
-  border: 1px solid rgba(0,0,0,0.12);
-
-  /* 그림자 */
-  box-shadow: 0px 6px 20px rgba(0,0,0,0.16),
-              0px 3px 10px rgba(0,0,0,0.12);
-
-  width: 250px;
+/* 2. 모든 모달에 일괄 적용 */
+.modal, .taken-modal, .stats-modal, .backup-menu-modal {
+  width: 100% !important; 
+  height: 94vh !important;
+  max-width: none !important;
+  max-height: 94vh !important;
+  padding: 0px;
+  margin-top: 0;
+  border-radius: 30px 30px 0 0;
+  box-sizing: border-box;
+  transform: translateY(100%);
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+  overflow: hidden !important; /* 모달 틀 밖으로 내용 안 나가게 */
 }
 
-body.dark-mode .modal {
-  background-color: #1e1e1e; 
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  border: 1px solid #333;
+/* 3. 모달이 열릴 때 위로 슬라이드 */
+.modal-overlay.active .modal,
+.modal-overlay.active .taken-modal,
+.modal-overlay.active .stats-modal,
+.modal-overlay.active .backup-menu-modal {
+  transform: translateY(0);
+}
+.modal-overlay.active {
+  visibility: visible;
+  opacity: 1;
 }
 
+/* 낮 모드 */
+body:not(.dark-mode) .modal,
+body:not(.dark-mode) .taken-modal,
+body:not(.dark-mode) .stats-modal,
+body:not(.dark-mode) .backup-menu-modal {
+  background-color: rgba(224, 222, 222, 0.1) !important;
+  backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+  box-shadow: 
+    inset 0 0 0 0.5px rgba(83, 83, 83, 0.1),
+    0 0 0 0.5px rgba(83, 83, 83, 0.05) !important;
+  }
 
+/* 밤 모드 */
+body.dark-mode .modal,
+body.dark-mode .taken-modal,
+body.dark-mode .stats-modal,
+body.dark-mode .backup-menu-modal {
+   background-color: rgba(32, 32, 32, 0.863) !important;
+   backdrop-filter: blur(5px) !important;
+  -webkit-backdrop-filter: blur(5px) !important;
+  box-shadow: 
+    inset 0 0 0 0.5px rgba(83, 83, 83, 0.1), 
+    0 0 0 0.5px rgba(83, 83, 83, 0.05) !important;
+}
+
+/* 헤더 내에서 제목과 수평을 맞추기 위한 설정 */
 .modal-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding-left: 70px;
+  justify-content: space-between;
+  padding: 15px 20px;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000; /* 컨텐츠보다 위에 위치 */
+  box-sizing: border-box; /* 패딩이 너비를 넘지 않게 함 */
+  border-radius: 30px 30px 0 0;
+
+  backdrop-filter: blur(25px) saturate(200%);
+  -webkit-backdrop-filter: blur(25px) saturate(200%);
 }
 
+
+/* 제목이 정확히 가운데 오도록 보정 */
 .modal-header h3 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
   margin: 0;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
+  pointer-events: none;
+}
+
+/* 모든 모달 헤더에 공통 블러 효과 강제 적용 */
+.modal-header, .cost-header {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(15px) !important;
+  -webkit-backdrop-filter: blur(15px) !important;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* 다크모드일 때 블러 배경색 대응 */
+body.dark-mode .modal-header, 
+body.dark-mode .cost-header {
+  background-color: rgba(30, 30, 30, 0.7) !important;
+}
+
+/* 저장(체크) 버튼 스타일 */
+.check-btn {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background-color: rgb(250, 90, 90);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+/* 둥근 모서리 체크(V) 아이콘 그리기 */
+.check-btn::before {
+  content: "";
+  position: absolute;
+  top: 45%; 
+  left: 50%;
+  width: 14px;
+  height: 8px;
+  border-left: 4px solid;
+  border-bottom: 4px solid;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  border-radius: 2px;
+}
+
+body:not(.dark-mode) .check-btn::before {
+  border-color: #ffe7e7;
+}
+
+body.dark-mode .check-btn::before {
+  border-color: #ffe7e7;
+}
+
+.check-btn:active {
+  transform: scale(0.9);
+  background-color: rgba(78, 205, 196, 0.3);
+}
+
+/* 닫기 버튼(우측) */
+.close-btn.right {
+  position: relative;
+  margin-left: auto;
 }
 
 .close-btn {
-  font-size: 25px;
-  background: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background-color: rgba(128, 128, 128, 0.233);
   border: none;
-  color: var(--text-color);
   cursor: pointer;
-  padding: 0px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  }
+
+/* 끝이 둥근 X 아이콘 만들기 */
+.close-btn::before,
+.close-btn::after {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 4px;
+  background-color: var(--text-color);
+  border-radius: 2px;
 }
 
-/* 입력너비 */
-.input-date { width: 210px; height: 35px; }
-.input-product { width: 210px; height: 35px; }
-.input-total { width: 210px; height: 35px; }
-.input-dose { width: 210px; height: 35px; }
-.input-price { width: 210px; height: 35px; }
+.close-btn::before { transform: rotate(45deg); }
+.close-btn::after { transform: rotate(-45deg); }
+
+/* 터치 시 피드백 */
+.close-btn:active {
+  background-color: rgba(128, 128, 128, 0.25);
+  transform: scale(0.95);
+}
+
+/* 밤 모드에서의 Liquid 테두리 보정 */
+body.dark-mode .close-btn {
+  background-color: rgba(126, 122, 122, 0.2);
+  }
 
 /* 날짜 입력창 정밀 보정 */
 .modal input[type="date"] {
   width: 100% !important;
+  height: 40px;
   padding: 0 10px;
   margin: 10px 0 0 0;
-  border-radius: 10px;
+  border-radius: 30px;
   background: #f5f5f5;
   border: 1px solid transparent;
   font-family: inherit;
-  font-size: 16px;
+  color: #333;
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 3px;
   box-sizing: border-box;
   outline: none;
   display: flex;
@@ -389,10 +725,6 @@ body.dark-mode .modal {
   justify-content: center;
   text-align: center;
   
-  /* 📌 폰트 스타일 고정 */
-  color: #333;
-  font-weight: 700;
-
   /* 📌 아이폰/사파리 기본 스타일 제거 및 표준 설정 */
   -webkit-appearance: none; /* 사파리용 */
   -moz-appearance: none;    /* 파이어폭스용 */
@@ -401,12 +733,33 @@ body.dark-mode .modal {
 
 /* 다크모드 대응 */
 body.dark-mode .modal input[type="date"] {
-  background: #2c2c2c !important;
-  color: #ffffff;          /* 밤 모드일 때 흰색 */
+  background: #3a3939 !important;
+  color: #ffffff;
   color-scheme: dark;      /* 아이폰 시스템 달력 팝업도 다크하게 */
 }
 
 body.dark-mode .modal input[type="date"]::-webkit-date-and-time-value {
+  color: #ffffff;
+}
+
+/* 모달 입력창 디자인 개선 */
+.modal input {
+  width: 100%;
+  margin-top: 12px;
+  margin-bottom: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 17px;
+  background: #f5f5f5;
+  border: 1px solid transparent;
+  outline: none;
+  box-sizing: border-box;
+  transition: border 0.2s;
+  text-align: center;
+}
+
+body.dark-mode .modal input {
+  background: #2c2c2c !important;
   color: #ffffff;
 }
 
@@ -415,19 +768,19 @@ body.dark-mode .modal input[type="date"]::-webkit-date-and-time-value {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 35px;
-  padding: 0 12px;
+  height: 40px;
+  padding: 0 10px;
   background: #f5f5f5;
   border: 1px solid transparent;
-  border-radius: 10px;
-  margin-bottom: 8px;
+  border-radius: 30px;
+  margin-bottom: 25px;
   cursor: pointer;
   box-sizing: border-box;
   transition: background 0.2s ease;
 }
 
 body.dark-mode .custom-color-bar {
-  background: #2c2c2c !important;
+  background: #3a3939 !important;
   color: #ffffff;
 }
 
@@ -450,45 +803,59 @@ body.dark-mode .custom-color-bar {
 
 /* 색상 코드 텍스트 */
 #colorHexText {
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-color);
 }
 
 #inputProduct {
-  margin-bottom: 8px !important; /* 아래 칸(제공량)과의 간격 생성 */
-}
+  font-size: 17px;
+  font-weight: 500;
+  background: #f5f5f5;
+  height: 40px;
+  border-radius: 30px;
+  margin-bottom: 16px !important;
+  }
 
-/* 입력창 그룹 (하나의 커다란 입력창처럼 보이게 함) */
+  body.dark-mode #inputProduct {
+  background: #3a3939 !important;
+  }
+
+/* 입력창 그룹 */
 .input-combined-group {
+  font-size: 15px;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  background: #f5f5f5; /* 입력창 배경색과 동일하게 */
-  border-radius: 10px;
+  background: #f5f5f5;
+  border-radius: 30px;
   padding: 0 12px 0 40px;
-  margin-bottom: 8px;
-  height: 35px; /* 높이 통일 */
+  margin-bottom: 17px;
+  height: 40px;
   box-sizing: border-box;
   border: 1px solid transparent;
   overflow: hidden;
 }
 
 body.dark-mode .input-combined-group {
-  background: #2c2c2c;
+  background: #3a3939 !important;
 }
 
 /* 실제 숫자 입력 부분 */
 .input-combined-group input {
   flex: 1;
-  border: none !important; /* 테두리 제거 */
+  border: none !important;
   background: transparent !important;
   padding: 0 !important;
   margin: 0 !important;
-  font-size: 14px;
+  font-size: 17px;
   height: 100%;
   outline: none;
   color: inherit;
+}
+
+body.dark-mode .input-combined-group input {
+  background: #3a3939 !important;
 }
 
 /* 3. 내부 단위(Select, Span) 스타일 통일 */
@@ -496,17 +863,17 @@ body.dark-mode .input-combined-group {
 #unitDisplay, 
 .unit-won {
   font-family: -apple-system, Helvetica, Arial, sans-serif !important;
-  font-size: 12px;
-  font-weight: 700;   /* 너무 두껍지 않게 조절 */
-  color: #b4b2b2;        /* 약간 흐린 회색으로 세련되게 */
+  font-size: 14px;
+  font-weight: 700;
+  color: #999797;
   border: none !important;
   background: transparent !important;
   outline: none !important;
   text-align: right;
-  min-width: 30px;      /* 단위 너비 고정으로 통일감 부여 */
-  height: 100%;        /* 부모 높이와 일치시킴 */
-  display: flex;       /* 수직 중앙 정렬을 위해 */
-  align-items: center; /* 수직 중앙 정렬 */
+  min-width: 30px;
+  height: 100%;
+  display: flex;
+  align-items: center;
   justify-content: flex-end; /* 오른쪽 정렬 */
   padding: 0 !important;
   margin: 0 !important;
@@ -526,67 +893,38 @@ body.dark-mode .unit-won {
   color: #aaa;
 }
 
-/* 모달 입력창 디자인 개선 */
-.modal input {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  font-size: 14px;
-  background: #f5f5f5;
-  border: 1px solid transparent;
-  outline: none;
-  box-sizing: border-box;
-  transition: border 0.2s;
-  text-align: center;
-}
-
-body.dark-mode .modal input {
-  background: #2c2c2c !important;
-  color: #ffffff;
-}
-
-.modal input:focus {
-  border: 1px solid #0077B6; /* 포커스 시 포인트 컬러 */
-}
-
-/* 버튼 컨테이너 (버튼들을 가로로 나란히) */
+/* 버튼 컨테이너 (가로로 나란히) */
 .modal-footer-btns {
   display: flex;
-  gap: 8px;
-  margin-top: 20px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+  padding-bottom: 10px;
+  width: 100%;
 }
 
-/* 저장/삭제 버튼 공통 스타일 */
-.save-btn, .del-btn {
-  flex: 1; /* 버튼 너비를 동일하게 배분 */
-  font-size: 15px;
+/* 삭제 텍스트 버튼 */
+.delete-text-btn {
+  font-size: 10px;
   font-weight: 700;
-  padding: 12px;
-  border-radius: 10px;
+  color: #f7d1d1;
+  position: fixed;
+  bottom: 15px;
+  width: auto;
+  height: auto;
+  padding: 2px 6px;
+  border-radius: 20px;
+  background-color: rgb(255, 124, 124);
   border: none;
   cursor: pointer;
-  margin-left: 0 !important; /* 기존 여백 제거 */
-  transition: opacity 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.save-btn {
-  background: #4ECDC4;
-  color: white;
-}
-
-.del-btn {
-  background: #f0f0f0; /* 삭제 버튼을 덜 공격적인 색상으로 변경 */
-  color: #E63946;
-}
-
-body.dark-mode .del-btn {
-  background: #3a3a3a;
-}
-
-.save-btn:active, .del-btn:active {
-  transform: scale(0.98);
-  opacity: 0.9;
+.delete-text-btn:active {
+  opacity: 0.3;
 }
 
 /* 컬러 피커 컨테이너 너비 조정 */
@@ -595,12 +933,12 @@ body.dark-mode .del-btn {
   margin-top: 10px;
 }
 
-/* 체크박스 한 줄 정렬 (도림~쿤이, 아침~공복) */
+/* 체크박스 한 줄 정렬*/
 .checkbox-line {
   display: flex;
   justify-content: space-between; /* 양 끝으로 균등 분배 */
   gap: 2px; /* 간격을 좁게 해서 한 줄에 들어가도록 함 */
-  margin-top: 2px;
+  margin-top: 10px;
   width: 100%;
 }
 
@@ -614,8 +952,8 @@ body.dark-mode .del-btn {
 }
 
 .checkbox-label-text {
-  font-size: 12.5px; /* 글자 크기를 살짝 줄여서 한 줄 확보 */
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   color: #222222;
   letter-spacing: -0.3px;
   cursor: pointer;
@@ -629,26 +967,28 @@ body.dark-mode .checkbox-label-text {
 input[type="checkbox"] {
   -webkit-appearance: none;
   appearance: none;
-  background-color: rgba(128, 128, 128, 0.08); /* 체크 전: 아주 연한 회색 바탕 */
+  background-color: #eeeeee;
   margin: 0;
   cursor: pointer;
-  
-  width: 24px;  /* 크기를 살짝 키워 터치하기 편하게 */
-  height: 24px;
-  border: 1px solid rgba(128, 128, 128, 0.2); /* 체크 전: 부드러운 테두리 */
-  border-radius: 8px; /* 요즘 스타일의 둥근 사각형 */
+  width: 25px;
+  height: 25px;
+  border-radius: 8px;
   display: inline-grid;
   place-content: center;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* 부드러운 애니메이션 */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   vertical-align: middle;
 }
 
+body.dark-mode input[type="checkbox"] {
+  border: none !important;
+}
+
 /* 1. 체크되었을 때: 낮/밤 상관없이 선명한 민트색 */
 input[type="checkbox"]:checked {
-  background-color: #4ECDC4 !important; /* 강제 적용 */
-  border-color: #4ECDC4 !important;
-  box-shadow: 0 2px 6px rgba(78, 205, 196, 0.3); /* 살짝 빛나는 효과 */
+  background-color: #4ECDC4 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
 }
 
 /* 2. 체크 표시(V) 디자인 */
@@ -666,57 +1006,39 @@ input[type="checkbox"]:checked::before {
   transform: scale(1); /* 체크 시 V자가 뿅 나타남 */
 }
 
-/* 마우스 기기에서만 호버 효과를 주고, 모바일(터치)에서는 무시하도록 설정 */
-@media (hover: hover) {
-  input[type="checkbox"]:hover {
-    border-color: #4ECDC4;
-    background-color: rgba(78, 205, 196, 0.05);
-  }
-}
-
-/* 4. 다크모드 전용 보정 (체크 안 됐을 때만) */
-.dark-mode input[type="checkbox"] {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
 /* 다크모드에서도 체크되면 민트색 유지 */
 .dark-mode input[type="checkbox"]:checked {
   background-color: #4ECDC4 !important;
   border-color: #4ECDC4 !important;
+  box-shadow: none !important;
 }
 
 /* 월별 비용 모달 헤더 */
 .cost-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 5px 5px;
-  margin-bottom: 0px;
-  border-bottom: 1px solid var(--calendar-line);
+  justify-content: space-between;
+  padding: 15px 20px !important;
+  min-height: 60px;
+  box-sizing: border-box;
 }
 
 #monthlyCostContent {
-  margin-top: 20px;
   display: flex;
   flex-direction: column;
+  padding: 20px 20px 40px 20px;
 }
 
-.cost-title {
+.monthlyCostTitle {
   font-size: 18px;
   font-weight: 700;
-}
-
-/* 월별 비용 모달 내부 디자인 업그레이드 */
-#monthlyCostModal .modal {
-  width: 260px; /* 조금 더 넓게 조정 */
 }
 
 .cost-item {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 12px;
+  margin-bottom: 18px;
   padding: 0 10px;
 }
 
@@ -724,7 +1046,7 @@ input[type="checkbox"]:checked::before {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -733,51 +1055,45 @@ input[type="checkbox"]:checked::before {
   width: 100%;
   height: 6px;
   background: #e0e0e0;
-  border-radius: 3px;
+  border-radius: 6px;
   overflow: hidden;
 }
 
 .cost-bar-fill {
   height: 100%;
-  border-radius: 3px;
+  border-radius: 6px;
   transition: width 0.3s ease;
 }
 
 .total-cost-wrapper {
   margin-top: 15px;
-  padding-top: 12px;
+  padding-top: 30px;
   border-top: 1px solid var(--calendar-line);
   text-align: center;
   padding-right: 6px;
 }
 
 .total-cost-label {
-  font-size: 12px;
-  opacity: 0.7;
+  font-size: 13px;
   display: block;
+  text-align: center;
+  margin-bottom: 6px;
 }
 
 .total-cost-amount {
-  font-size: 20px;
-  font-weight: 800;
-  color: #0077B6;
+  font-size: 21px;
+  font-weight: 700;
+  text-align: center;
+  color: #1c85ca;
 }
 
 body.dark-mode .total-cost-amount {
-  color: #72cdf4;
+  color: #88e7ff;
 }
 
 /* 숫자 입력란 정렬 최적화 */
 input[type="number"], .total-cost-amount, .stats-count-text {
   font-variant-numeric: tabular-nums;
-}
-
-/* ==== 복용 체크 모달 스타일 ==== */
-.taken-modal {
-  width: 280px;
-  max-height: 80vh;
-  padding: 15px !important;
-  overflow-y: auto;
 }
 
 /* 복용 체크 모달 커스텀 */
@@ -786,21 +1102,32 @@ input[type="number"], .total-cost-amount, .stats-count-text {
   flex-direction: column;
   gap: 10px;
   padding: 10px 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .taken-sup-section {
-  background: var(--card-bg, rgba(255, 255, 255, 0.05));
-  border-radius: 12px;
-  padding: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(128, 128, 128, 0.1);
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 25px;
+  margin-bottom: 15px;
+  border-bottom: none;
+  background-color: rgba(128, 128, 128, 0.05);
+  border-radius: 50px;
+}
+
+/* 밤 모드일 때의 배경색 대응을 위해 아래 내용도 교체/추가하세요 */
+body.dark-mode .taken-sup-section {
+  border-bottom: none;
+  background-color: rgb(37, 37, 37); /* 어두운 화면에 맞는 배경 */
 }
 
 .taken-sup-title {
-  font-size: 14px;
+  font-size: 17px;
   font-weight: 700;
-  margin-bottom: 8px;
-  gap: 8px;
+  margin-bottom: 12px;
+  gap: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -808,12 +1135,12 @@ input[type="number"], .total-cost-amount, .stats-count-text {
 }
 
 .sup-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%; /* 완벽한 원형 */
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
   display: inline-block;
   flex-shrink: 0; /* 크기 고정 */
-  box-shadow: inset 0 0 2px rgba(0,0,0,0.1); /* 입체감 살짝 */
+  box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
 }
 
 .sup-name-text {
@@ -822,12 +1149,13 @@ input[type="number"], .total-cost-amount, .stats-count-text {
 }
 
 .extend-btn {
-  background: rgba(187, 184, 184, 0.1);
+  color: var(--text-color);
+  background: rgba(173, 170, 170, 0.1);
   border: none;
-  border-radius: 8px;
-  padding: 2px 4px;
+  border-radius: 10px;
+  padding: 4px 6px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 12px;
   transition: transform 0.2s;
 }
 
@@ -837,25 +1165,26 @@ input[type="number"], .total-cost-amount, .stats-count-text {
 
 .taken-table {
   width: 100%;
-  border-collapse: separate;
-  border-spacing: 0 4px;
+  border-collapse: collapse;
+  border-spacing: 0;
 }
 
 .taken-table th {
   font-size: 12px;
   font-weight: 700;
-  opacity: 0.6;
-  padding-bottom: 4px;
+  padding: 8px 0;
   text-align: center;
+  border-bottom: 1.5px solid rgba(194, 194, 194, 0.2);
 }
 
 .taken-table td {
   text-align: center;
-  padding: 4px 2px;
-  background: rgba(90, 89, 89, 0.05);
-  background-color: rgba(90, 89, 89, 0.05); 
+  padding: 14px 2px;
+  background: transparent !important;
+  background-color: transparent !important;
   border-radius: 8px;
-  transition: background-color 0.3s, transform 0.1s;
+  transition: transform 0.1s;
+  border-bottom: 1.5px solid rgba(194, 194, 194, 0.2);
 }
 
 /* 체크박스 클릭 시 칸이 살짝 눌리는 느낌 추가 */
@@ -874,50 +1203,22 @@ input[type="number"], .total-cost-amount, .stats-count-text {
   border-radius: 0 8px 8px 8;
 }
 
-/* 모달 하단 푸터 영역 */
-.modal-footer {
-  margin-top: 5px;
-  padding-top: 5px;
-  display: flex;
-  justify-content: center;
-}
-
-/* 닫기 버튼 스타일 */
-.modal-close-btn {
-  width: 100%;
-  padding: 10px;
-  background-color: var(--primary-color, #4ECDC4);
-  color: white;
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
-}
-
-.modal-close-btn:active {
-  transform: scale(0.98);
-  opacity: 0.9;
-}
-
-/* 다크모드에서 버튼이 너무 밝다면 조정 */
-.dark-mode .modal-close-btn {
-  background-color: #3cb3ab;
+.taken-table tr:last-child td {
+  border-bottom: none;
 }
 
 /* 통계 그래프 스타일 */
 .stats-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  margin-left: 32px;
+  gap: 20px;
+  margin-bottom: 15px;
+  margin-left: 65px;
 }
 
 .pie-chart {
-  width: 30px;
-  height: 30px;
+  width: 35px;
+  height: 35px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -928,17 +1229,13 @@ input[type="number"], .total-cost-amount, .stats-count-text {
 }
 
 .stats-product-name {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .stats-count-text {
   font-size: 12px;
   opacity: 0.8;
-}
-
-.stats-modal .modal-header h3 {
-  margin-left: 20px;
 }
 
 .stats-btn {
@@ -953,23 +1250,52 @@ input[type="number"], .total-cost-amount, .stats-count-text {
   opacity: 0.8;
 }
 
-.stats-modal {
-  width: 240px;
-  max-height: 55vh;
-  display: flex;
-  flex-direction: column;
+#statsFilters {
+  background-color: transparent;
+  padding-top: 10px;
 }
 
 .family-buttons {
   display: flex;
   justify-content: space-around;
-  margin-top: 5px;
+  padding: 5px 0;
+  background-color: transparent;
+  position: sticky;
+  top: 75px;
+  z-index: 1001;
+  margin-top: 0;
 }
 
 .family-btn {
-  padding: 6px 9px;
+  padding: 8px 16px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
+  margin-bottom: 15px;
+  border: none;
+  outline: none;
+  background-color: rgba(128, 128, 128, 0.1);
+  border-radius: 20px;
+  color: var(--text-color);
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s;
+}
+
+/* 밤 모드일 때 평소 버튼 배경색 (추가) */
+body.dark-mode .family-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 선택된 버튼 - 낮/밤 모드 별로 */
+body:not(.dark-mode) .family-btn.selected {
+  background-color: #4ECDC4 !important; /* 배경색 강제 적용 */
+  color: white !important;
+  display: inline-block;
+}
+
+body.dark-mode .family-btn.selected {
+  background-color: #4ECDC4 !important;
+  color: #242323 !important;
+  display: inline-block;
 }
 
 #statsContent {
@@ -977,13 +1303,10 @@ input[type="number"], .total-cost-amount, .stats-count-text {
   font-size: 14px;
   font-weight: 600;
   padding-left: 10%;
-  padding: 0 5%;
-  /* 핵심: 높이 제한과 스크롤 설정 */
-  max-height: 350px;    /* 모바일 화면에서 적절한 높이 (조절 가능) */
-  overflow-y: auto;     /* 내용이 많아지면 세로 스크롤 생성 */
-  overflow-x: hidden;   /* 가로 스크롤 방지 */
-  
-  /* 스크롤바 숨기기 (기존 스타일 유지) */
+  padding: 0 5% 40px 5%;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
   scrollbar-width: none; 
   -ms-overflow-style: none;
 }
@@ -992,74 +1315,79 @@ input[type="number"], .total-cost-amount, .stats-count-text {
   display: none;
 }
 
-/* 선택된 버튼 - 낮/밤 모드 별로 */
-body:not(.dark-mode) .family-btn.selected {
-  background-color: #0077B6; /* 낮 모드 선택 배경 */
-  color: white;
-  border-radius: 4px;
-}
-
-body.dark-mode .family-btn.selected {
-  background-color: #4ECDC4; /* 밤 모드 선택 배경 */
-  color: #242323;
-  border-radius: 4px;
-}
-
-/* 텍스트 그림자만 적용 */
-.fab-add-btn {
+/* 플로팅 버튼 디자인 - 모달 닫기 버튼과 완벽 통일 */
+.fab-today-btn, .fab-add-btn {
   position: fixed;
   bottom: 10px;
-  right: 10px;
-
-  background: none;
+  width: auto;
+  height: auto;
+  padding: 9px 13px;
+  border-radius: 20px;
   border: none;
+  
+  /* 낮 모드 가독성을 위한 배경 및 테두리 */
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  box-shadow: 
+    inset 0 0 0 0.5px rgba(165, 164, 164, 0.1),
+    0 0 0 0.5px rgba(158, 156, 156, 0.05);
+  
+  font-size: 15px;
+  font-weight: 700;
 
-  font-size: 40px;
-  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   z-index: 1000;
-
-  text-shadow: 2px 2px 4px rgba(56, 56, 56, 0.4);
+  color: var(--text-color);
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* 1) 포커스 아웃라인 제거 */
-.fab-add-btn:focus {
-  outline: none !important;
-  box-shadow: none !important;
+.fab-today-btn { left: 17px;  }
+.fab-add-btn { right: 17px; position: fixed }
+
+/* 다크모드 시 배경색 반전 */
+.dark-mode .fab-today-btn, 
+.dark-mode .fab-add-btn {
+   background-color: rgba(32, 32, 32, 0.863);
+   backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+   box-shadow: 
+    inset 0 0 0 0.5px rgba(83, 83, 83, 0.1),
+    0 0 0 0.5px rgba(83, 83, 83, 0.05);
 }
 
-/* 2) -webkit- 터치/클릭 하이라이트 제거 */
-.fab-add-btn, .fab-add-btn * {
-  -webkit-tap-highlight-color: transparent !important;
-  -webkit-touch-callout: none !important;
+/* 클릭 시 반응 */
+.fab-today-btn:active, .fab-add-btn:active {
+  background-color: rgba(128, 128, 128, 0.25);
+  transform: scale(0.95);
 }
 
-/* 3) 모바일에서 선택시 생기는 배경 하이라이트 제거 */
-.fab-add-btn {
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
+/* 더하기 버튼 내부의 둥근 모서리 (+) 막대 구현 */
+.fab-add-btn::before,
+.fab-add-btn::after {
+  content: "";
+  position: absolute;
+  background-color: var(--text-color);
+  border-radius: 10px;
 }
 
-.fab-add-btn:active {
-  transform: scale(0.9);
+/* 가로 막대 */
+.fab-add-btn::before {
+  width: 15.5px;
+  height: 3.5px;
 }
 
-/* 다크 모드 그림자 */
-body.dark-mode .fab-add-btn {
-  text-shadow: 2px 2px 4px rgba(129, 126, 126, 0.6);
+/* 세로 막대 */
+.fab-add-btn::after {
+  width: 3.5px;
+  height: 15.5px;
 }
 
-/* 눌렀을 때 약간 작아지는 효과 */
-.fab-add-btn:active {
-  transform: scale(0.9);
-}
-
-.plus-btn {
-  display: none;
-}
-
-/* ===== 하단 백업/복원 링크 ===== */
+/* 하단 백업/복원 링크 */
 .footer-backup-area {
   text-align: center;
   font-size: 12px;
@@ -1075,45 +1403,23 @@ body.dark-mode .fab-add-btn {
   text-decoration: none;
 }
 
-/* 백업/복원 메뉴 모달 */
-.backup-menu-modal {
-  width: 120px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 11px;
-}
-
 .menu-btn {
-  font-size: 14px;
+  font-size: 17px;
   padding: 6px;
+  margin-top: 20px;
+  margin-bottom: 10px;
   background: #0077b6;
   color: white;
   border: none;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 10px;
 }
 
 .cancel-btn {
   background: #555;
 }
 
-/* 모달 오픈 시 배경 스크롤 잠금 */
-body.modal-open {
-  overflow: hidden !important;
-  touch-action: none !important;
-  position: fixed; /* 안드로이드에서 뒷 배경 스크롤을 완전히 막는 가장 확실한 방법 */
-  width: 100%;
-}
-
-/* 모달 내부(스크롤 영역) */
-.modal {
-  max-height: 80vh;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* 전체 스크롤바 숨기기 - 모든 스크롤바 숨김 */
+/* 전체 스크롤바 숨기기 */
 *::-webkit-scrollbar {
   width: 0 !important;
   height: 0 !important;
@@ -1224,6 +1530,5 @@ body.dark-mode .onboarding-header h1 { color: white; }
 
 /* 하단 영역이 너무 좁지 않게 최소한의 높이만 확보 */
 footer {
-  /* 아이폰 전용 padding-bottom: 30px 대신 아래 방식을 추천합니다 */
   padding-bottom: calc(env(safe-area-inset-bottom) + 15px);
 }
