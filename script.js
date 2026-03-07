@@ -1,5 +1,5 @@
 
-const APP_VERSION = "03.07c";
+const APP_VERSION = "03.07d";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -210,17 +210,25 @@ function deleteSupplementFromDB(id) {
   });
 }
 
-// ====================
+function updateThemeColor(isDark) {
+  const color = isDark ? "#1c1c1e" : "#ffffff"; // 헤더와 어울리는 배경색
+  let meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = "theme-color";
+    document.head.appendChild(meta);
+  }
+  meta.setAttribute('content', color);
+}
+
 // 테마
-// ====================
 themeToggleBtn.addEventListener("click", () => {
   const isDark = document.body.classList.toggle("dark-mode");
   localStorage.setItem("darkMode", isDark);
+  updateThemeColor(isDark);
 });
 
-// ====================
 // 월별 비용
-// ====================
 monthlyCostBtn.addEventListener("click", () => {
   const year = dt.getFullYear();
   const month = dt.getMonth() + 1;

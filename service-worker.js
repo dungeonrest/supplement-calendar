@@ -1,5 +1,5 @@
 // ===== 버전 관리 캐시 이름
-const CACHE_VERSION = "03.07c";
+const CACHE_VERSION = "03.07d";
 const CACHE_NAME = `supplement-calendar-cache-${CACHE_VERSION}`;
 
 // ===== 설치 시 반드시 캐싱할 필수 리소스

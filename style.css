@@ -30,6 +30,7 @@ body {
   font-family: "Apple SD Gothic Neo", "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
+  padding-top: env(safe-area-inset-top);
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: none;
   -webkit-tap-highlight-color: transparent;
@@ -66,10 +67,15 @@ input, textarea {
 
   position: sticky;
   top: 0;
-  z-index: 1001;
-  background-color: var(--header-blur-bg);
+  z-index: 1000;
+  padding-top: env(safe-area-inset-top); 
+  background-color: rgba(255, 255, 255, 0.8); /* 라이트 모드 */
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.dark-mode .calendar-header {
+  background-color: #121212;
 }
 
 .month-display {
