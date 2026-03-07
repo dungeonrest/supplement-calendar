@@ -1,7 +1,9 @@
 
-const APP_VERSION = "03.06a";
+const APP_VERSION = "03.06b";
 let deferredPrompt;
-
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
 // 공휴일 리스트 (예: 2026년)
 const koreaHolidays2026 = [
   "2026-01-01",
@@ -16,14 +18,6 @@ const koreaHolidays2026 = [
   "2026-10-03","2026-10-05","2026-10-09",
   "2026-12-25"
 ];
-
-function disableBackgroundScroll() {
-  document.body.classList.add("modal-open");
-}
-
-function enableBackgroundScroll() {
-  document.body.classList.remove("modal-open");
-}
 
 document.addEventListener("DOMContentLoaded", () => {
   // 저장된 dark-mode 값 불러오기
@@ -66,7 +60,6 @@ document.addEventListener("change", (e) => {
 function openSupplementModal(sup) {
   currentEditId = sup.id;
   modalOverlay.classList.add("active");
-  document.body.classList.add("modal-open");
 
   inputDate.value = selectedDateForList || (sup.schedule && sup.schedule[0]) || "";
   inputProduct.value = sup.productName;
@@ -290,12 +283,10 @@ const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
 
   monthlyCostContent.innerHTML = costHtml;
   monthlyCostModal.classList.add("active");
-  document.body.classList.add("modal-open");
 });
 
 closeMonthlyCostModal.addEventListener("click", () => {
   monthlyCostModal.classList.remove("active");
-  document.body.classList.remove("modal-open");
 });
 
 // + 버튼 클릭 //
@@ -303,7 +294,6 @@ addBtn.addEventListener("click", () => {
   currentEditId = null;
   renderFamilyCheckboxes();
   modalOverlay.classList.add("active");
-  document.body.classList.add("modal-open");
   history.pushState({ modal: "add" }, "");
   inputDate.value = selectedDateForList || getTodayKST();
   inputProduct.value = "";
@@ -329,7 +319,6 @@ fabAddBtn.addEventListener("click", () => {
 
 closeModalBtn.addEventListener("click", () => {
   modalOverlay.classList.remove("active");
-  document.body.classList.remove("modal-open");
 });
 
 deleteSupplementBtnModal.addEventListener("click", async () => {
@@ -339,7 +328,6 @@ deleteSupplementBtnModal.addEventListener("click", async () => {
     supplements = supplements.filter(s => s.id !== currentEditId);
     
     modalOverlay.classList.remove("active");
-    document.body.classList.remove("modal-open");
     renderCalendar();
   } else {
     alert("삭제할 영양제가 선택되지 않았습니다.");
@@ -496,7 +484,6 @@ function renderCalendar() {
         // 1. 해당 날짜가 일요일(0)이거나, 
         // 2. 일정의 시작일(`sup.schedule[0]`)인 경우에만 라벨 표시
         if (dayNum === 0 || sup.schedule[0] === fullDate || dateNum === 1) {
-          const labelInBar = document.createElement("span");
           labelInBar.classList.add("supplement-bar-label");
 
           if (fillPercent === 0) {
@@ -624,10 +611,8 @@ saveInfoBtn.addEventListener("click", async () => {
   }
 
     modalOverlay.classList.remove("active");
-    document.body.classList.remove("modal-open");
     selectedDateForList = start;
     renderCalendar();
-    window.scrollTo(0, 0);
 });
 
 // 인자가 있으면 해당 데이터만 저장, 없으면 전체 저장 (복원 시 대비)
@@ -685,8 +670,7 @@ function changeFamilyMemberName(index, newName) {
   location.reload(); // 전체 반영을 위해 리로드
 }
 
-if (todayBtn && typeof todayBtn.addEventListener === 'function' && todayBtn.id === "fabTodayBtn") {
-  if (todayBtn) {
+if (todayBtn) {
   todayBtn.addEventListener("click", () => {
     const now = new Date();
     const y = now.getFullYear();
@@ -697,7 +681,7 @@ if (todayBtn && typeof todayBtn.addEventListener === 'function' && todayBtn.id =
     dt = new Date(y, m, d, 0, 0, 0);
 
     renderCalendar();
-    window.scrollTo(0, 0);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
 }
 
@@ -705,7 +689,6 @@ if (todayBtn && typeof todayBtn.addEventListener === 'function' && todayBtn.id =
     if (e.cancelable) e.preventDefault(); 
     todayBtn.click();
   }, { passive: false });
-}
 
 loadSupplements();
 
@@ -724,14 +707,12 @@ function checkInitialSetup() {
     // 두 조건 모두 만족할 때만 (완전 처음 방문일 때만) 온보딩 표시
     if (overlay) overlay.classList.add("active");
     if (configModal) configModal.classList.add("active");
-    document.body.classList.add("modal-open");
     if (mainContainer) mainContainer.style.display = "none";
   } else {
     // 영양제가 있거나, 혹은 영양제는 없어도 이름 설정은 이미 마친 경우
     if (overlay) overlay.classList.remove("active");
     if (configModal) configModal.classList.remove("active");
     if (mainContainer) mainContainer.style.display = "block";
-    document.body.classList.remove("modal-open");
   }
 }
 
@@ -798,10 +779,9 @@ function openTakenCheckUI(date) {
           extendScheduleFromDate(sup, baseDate, additionalDays);
           await saveAllSupplements(sup); 
           renderCalendar();
-          alert("📅 일정이 연장되었습니다!");
+          alert("일정이 연장되었습니다!");
           // 연장 후 모달을 닫아주거나 새로고침 할 수 있습니다.
           modal.classList.remove("active");
-          document.body.classList.remove("modal-open");
         }
       });
       
@@ -865,7 +845,6 @@ function openTakenCheckUI(date) {
   }
 
   modal.classList.add("active");
-  document.body.classList.add("modal-open");
 }
 
 // ❌ 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
@@ -873,8 +852,6 @@ document.getElementById("closeTakenCheckBtn")
   .addEventListener("click", async () => {
     // 개별 저장 로직이 이미 chk.addEventListener에 있으므로 전체 저장은 생략합니다.
     document.getElementById("takenCheckModal").classList.remove("active");
-    document.body.classList.remove("modal-open");
-    renderCalendar();
   });
 
   // ===== 통계 모달 요소
@@ -888,9 +865,7 @@ const periodEnd = document.getElementById("periodEnd");
 
 // 통계 모달 열기
 statsBtn.addEventListener("click", () => {
-  if (statsContent) statsContent.scrollTop = 0;
   statsModal.classList.add("active");
-  document.body.classList.add("modal-open");
   history.pushState({ modal: "stats" }, "");
   // 기본 기간: 올해
   const year = new Date().getFullYear();
@@ -903,46 +878,40 @@ statsBtn.addEventListener("click", () => {
 });
 
 // 2. 통계 모달 닫기
-// 변수(closeStatsModal)에 연결하는 대신 ID로 직접 연결하는 게 가장 확실합니다.
 document.getElementById("closeStatsModal").onclick = function() {
-  // 모달 닫기
   statsModal.classList.remove("active");
-  document.body.classList.remove("modal-open");
 
-  // 입력값 및 선택 상태 초기화
   if (periodStart) periodStart.value = "";
   if (periodEnd) periodEnd.value = "";
   
-  // 현재 화면에 있는 모든 가족 버튼의 선택 표시 해제
   document.querySelectorAll(".family-btn").forEach(btn => {
     btn.classList.remove("selected");
   });
 
-  // 내용 비우기
   statsContent.innerHTML = "";
 };
-  
-// 가족 버튼 누르면 통계 갱신
+
 familyBtns.forEach(btn => {
   btn.addEventListener("click", () => {
     const name = btn.dataset.name;
 
-    // 모든 버튼에서 selected 제거
     document.querySelectorAll(".family-btn").forEach(b => b.classList.remove("selected"));
 
-    // 현재 버튼에 selected 추가
     btn.classList.add("selected");
 
-    // 통계 표시
     showStatsForFamily(name);
   });
 });
 
 // 통계 계산
 function showStatsForFamily(name) {
+  const isDark = document.body.classList.contains("dark-mode");
+  const innerBg = isDark ? "#1c1c1e" : "#ffffff";
+  const trackColor = isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.08)";
+
   const start = document.getElementById("periodStart").value;
   const end = document.getElementById("periodEnd").value;
-
+  
   const startStr = `${start}-01`; 
   const endArr = end.split("-");
   const lastDay = new Date(parseInt(endArr[0]), parseInt(endArr[1]), 0).getDate();
@@ -993,18 +962,21 @@ sup.schedule.forEach(dateStr => {
       
       // 원형 그래프와 텍스트 조합
       html += `
-        <div class="stats-item">
-          <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, #e0e0e0 0)"></div>
-          <div class="stats-info">
-            <span class="stats-product-name">${key}</span>
-            <span class="stats-count-text">${percent}% (${Math.round(info.taken)} / ${Math.round(info.target)}회)</span>
-          </div>
-        </div>
-      `;
+  <div class="stats-item">
+    <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
+      <div class="pie-inner" style="background-color: ${innerBg}">
+        <span class="pie-percent">${percent}%</span>
+      </div>
+    </div>
+    <div class="stats-info">
+      <span class="stats-product-name">${key}</span>
+      <span class="stats-count-text">${Math.round(info.taken)} / ${Math.round(info.target)}회</span>
+    </div>
+  </div>
+`;
     }
   }
   statsContent.innerHTML = html;
-  statsContent.scrollTop = 0;
 }
 
 function renderFamilyUI() {
@@ -1145,7 +1117,7 @@ function renderFamilyCheckboxes() {
 
 // 사용자님의 DB 구조를 기반으로 특정 가족 구성원 데이터를 완전히 삭제하는 함수
 async function deleteFamilyMemberFromDB(targetName) {
-  await openDatabase();
+  if (!db) await openDatabase();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(["supplements"], "readwrite");
     const store = transaction.objectStore("supplements");
@@ -1261,16 +1233,13 @@ footerYear.innerText = new Date().getFullYear();
 
 // 백업/복원 메뉴 열기
 footerBackupLink.addEventListener("click", () => {
-  if (backupMenuModal) backupMenuModal.scrollTop = 0;
   backupMenuModal.classList.add("active");
-  document.body.classList.add("modal-open");
   history.pushState({ modal: "backup" }, "");
 });
 
 // 취소/닫기
 closeBackupMenu.addEventListener("click", () => {
   backupMenuModal.classList.remove("active");
-  document.body.classList.remove("modal-open");
 });
 
 // ====================
@@ -1291,7 +1260,6 @@ exportBtn.addEventListener("click", () => {
 
   URL.revokeObjectURL(url);
   backupMenuModal.classList.remove("active");
-  document.body.classList.remove("modal-open");
 });
 
 // ====================
@@ -1359,7 +1327,6 @@ importFileInput.addEventListener("change", async (e) => {
     await saveAllSupplements();
 
     backupMenuModal.classList.remove("active");
-    document.body.classList.remove("modal-open");
     
     alert("백업 데이터를 성공적으로 불러왔습니다!");
     location.reload();
@@ -1578,7 +1545,6 @@ if (saveFamilyConfigBtn) {
 
     // 모달 닫기
     document.getElementById("familyConfigModal").classList.remove("active");
-    document.body.classList.remove("modal-open");
 
     // UI 즉시 반영 후 새로고침
     renderFamilyUI();
@@ -1632,6 +1598,10 @@ async function updateSupplementFamilyName(oldName, newName) {
 }
 
 window.addEventListener("popstate", () => {
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+
   const allModals = [
     modalOverlay,
     statsModal, 
@@ -1644,7 +1614,6 @@ window.addEventListener("popstate", () => {
   allModals.forEach(modal => {
     if (modal) modal.classList.remove("active");
   });
-  document.body.classList.remove("modal-open");
 });
 
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -1664,21 +1633,15 @@ async function triggerInstall() {
   }
 }
 
-// script.js 파일의 맨 마지막 부분에 추가하세요
 document.querySelectorAll(".close-btn").forEach(btn => {
   btn.addEventListener("click", () => {
-    // 1. 모든 모달의 active 클래스 제거 (사용자님이 수정한 애니메이션 적용)
     const modals = [modalOverlay, statsModal, backupMenuModal, 
                     document.getElementById("takenCheckModal"), 
                     document.getElementById("familyConfigModal")];
                     
     modals.forEach(m => {
       if(m) m.classList.remove("active");
-      if (m.querySelector('.modal-body')) m.querySelector('.modal-body').scrollTop = 0;
     });
-
-    // 2. 바디 스크롤 잠금 해제 (사용자님 기존 코드 기반)
-    document.body.classList.remove("modal-open");
 
     // 3. 브라우저 히스토리 관리 (아이폰의 '뒤로가기'와 연동)
     if (window.history.state && window.history.state.modal) {
