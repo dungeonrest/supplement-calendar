@@ -440,9 +440,9 @@ body.modal-open {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+  overscroll-behavior-y: none !important;
   background-color: transparent !important; 
-  padding: 10px 20px;
+  padding: 10px 20px calc(env(safe-area-inset-bottom) + 30px) 20px;
   margin-top: 0;
 }
 
@@ -471,7 +471,7 @@ body.dark-mode #statsContent {
   z-index: 2000;
   touch-action: none;
   pointer-events: auto;
-  background: rgba(0, 0, 0, 0.2);
+  background-color: var(--bg-color) !important;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   visibility: hidden;
@@ -489,6 +489,9 @@ body.dark-mode #statsContent {
   margin-top: 0;
   border-radius: 40px 40px 0 0;
   box-sizing: border-box;
+  box-shadow: none !important;
+  border-top: 1px solid var(--calendar-line) !important;
+  background-color: var(--bg-color) !important;
   transform: translateY(100%);
   transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
   display: flex;
@@ -563,23 +566,18 @@ body.dark-mode .backup-menu-modal {
 /* 모든 모달 헤더에 공통 블러 효과 강제 적용 */
 .modal-header, .cost-header {
   border-bottom: none !important;
-  background-color: rgba(255, 255, 255, 0.6) !important;
+  background-color: rgba(255, 255, 255, 0.3) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
   position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 10;
-  height: 60px;
-  display: flex;
-  border-radius: 40px 40px 0 0;
 }
 
 /* 다크모드일 때 블러 배경색 대응 */
 body.dark-mode .modal-header, 
 body.dark-mode .cost-header {
-  background-color: rgba(18, 18, 18, 0.6) !important;
+  background-color: rgba(18, 18, 18, 0.3) !important;
 }
 
 /* 저장(체크) 버튼 스타일 */
