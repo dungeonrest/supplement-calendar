@@ -1,5 +1,5 @@
 
-const APP_VERSION = "03.06c";
+const APP_VERSION = "03.06";
 let deferredPrompt;
 
 // 공휴일 리스트 (예: 2026년)
@@ -277,7 +277,7 @@ const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
       `;
     });
   } else {
-    costHtml = "<p style='text-align:center; opacity:0.6; font-size:13px; margin-top:80px; padding-bottom:80px;'>이번 달 등록된 비용이 없습니다.</p>";
+    costHtml = "<p style='text-align:center; font-size:15px; font-weight:600; opacity:0.6; margin-top:80px; padding-bottom:80px;'>이번 달 등록된 비용이 없습니다.</p>";
   }
 
   // 총액 표시 영역
@@ -298,9 +298,7 @@ closeMonthlyCostModal.addEventListener("click", () => {
   document.body.classList.remove("modal-open");
 });
 
-// ====================
-// + 버튼 클릭
-// ====================
+// + 버튼 클릭 //
 addBtn.addEventListener("click", () => {
   currentEditId = null;
   renderFamilyCheckboxes();
@@ -314,7 +312,7 @@ addBtn.addEventListener("click", () => {
   if (doseEl) doseEl.value = "";
   inputPrice.value = "";
   updateColorBar("#000000");
-  deleteSupplementBtnModal.style.display = "none"; // 새 추가 시 삭제 버튼 숨김
+  deleteSupplementBtnModal.style.display = "none";
   document.querySelectorAll(".inputFamily").forEach(tb => {
     tb.checked = false;
   });
@@ -326,7 +324,6 @@ addBtn.addEventListener("click", () => {
 const fabAddBtn = document.getElementById("fabAddBtn");
 
 fabAddBtn.addEventListener("click", () => {
-  // 기존 + 버튼 기능 그대로 실행
   addBtn.click();
 });
 
@@ -349,15 +346,13 @@ deleteSupplementBtnModal.addEventListener("click", async () => {
   }
 });
 
-// ====================
-// 달력 렌더
-// ====================
+// 달력 렌더 //
 function renderCalendar() {
   dt.setDate(1);
   const year = dt.getFullYear();
   const month = dt.getMonth();
 
-  monthDisplay.innerText = `${year}. ${String(month+1).padStart(2,"0")}`;
+  monthDisplay.innerText = `${year}. ${String(month+1).padStart(2,"0")}월`;
 
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month+1,0).getDate();
@@ -751,7 +746,7 @@ function openTakenCheckUI(date) {
     body.scrollTop = 0;
   }
 
-  title.innerText = `${date}`;
+  title.innerText = date.replaceAll('-', '.');
   body.innerHTML = ""; // 기존 내용 초기화
 
   // 해당 날짜 영양제들 필터링
@@ -1376,10 +1371,6 @@ importFileInput.addEventListener("change", async (e) => {
   }
   e.target.value = "";
 });
-
-// ===========================================
-// 📌 하단 버전 클릭 → 최신 버전 체크 & 리로드
-// ===========================================
 
 // 하단 텍스트 요소
 const footerVersionEl = document.getElementById("footerVersion");
