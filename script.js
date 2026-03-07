@@ -874,22 +874,32 @@ function openTakenCheckUI(date) {
   document.body.classList.add("modal-open");
 }
 
-// ❌ 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
 document.getElementById("closeTakenCheckBtn")
   .addEventListener("click", async () => {
-    const wrapper = document.getElementById("dates-wrapper");
-    const currentScroll = wrapper ? wrapper.scrollTop : 0;
+    // 1. 현재 스크롤 위치 저장
+    const oldWrapper = document.getElementById("dates-wrapper");
+    const currentScroll = oldWrapper ? oldWrapper.scrollTop : 0;
 
+    // 2. 달력 새로 그리기 (이 과정에서 기존 wrapper는 사라지고 새 wrapper가 생김)
     renderCalendar();
 
+    // 3. 모달 닫기
     document.getElementById("takenCheckModal").classList.remove("active");
     document.body.classList.remove("modal-open");
 
-    if (wrapper) {
-        requestAnimationFrame(() => {
-        wrapper.scrollTop = currentScroll;
-      });
-    }
+    // 4. 저장했던 스크롤 위치로 즉시 복구
+    // 핵심: renderCalendar() 이후에 새로 생성된 'dates-wrapper'를 다시 찾아야 합니다.
+    requestAnimationFrame(() => {
+      const newWrapper = document.getElementById("dates-wrapper");
+      if (newWrapper) {
+        newWrapper.scrollTop = currentScroll;
+        
+        // 만약 그래도 안 된다면 0ms 타이머를 한 번 더 씌웁니다 (브라우저 렌더링 보장)
+        setTimeout(() => {
+          newWrapper.scrollTop = currentScroll;
+        }, 0);
+      }
+    });
   });
 
   // ===== 통계 모달 요소
