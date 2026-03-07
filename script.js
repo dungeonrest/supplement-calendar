@@ -1,5 +1,5 @@
 
-const APP_VERSION = "03.07f";
+const APP_VERSION = "3.7";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -877,11 +877,7 @@ function openTakenCheckUI(date) {
 // ❌ 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
 document.getElementById("closeTakenCheckBtn")
   .addEventListener("click", async () => {
-    const currentScrollY = window.scrollY;
     renderCalendar();
-    requestAnimationFrame(() => {
-        window.scrollTo(0, currentScrollY);
-    });
     document.getElementById("takenCheckModal").classList.remove("active");
     document.body.classList.remove("modal-open");
   });
