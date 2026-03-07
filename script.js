@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.7q";
+const APP_VERSION = "3.7w";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -874,27 +874,12 @@ function openTakenCheckUI(date) {
   document.body.classList.add("modal-open");
 }
 
+// ❌ 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
 document.getElementById("closeTakenCheckBtn")
   .addEventListener("click", async () => {
-    // 1. 현재 스크롤 위치 저장 (전역 변수처럼 사용)
-    const wrapper = document.getElementById("dates-wrapper");
-    const currentScroll = wrapper ? wrapper.scrollTop : 0;
-
-    // 2. 모달 닫기 먼저 수행
+    renderCalendar();
     document.getElementById("takenCheckModal").classList.remove("active");
     document.body.classList.remove("modal-open");
-
-    // 3. 아주 짧은 시간 뒤에 달력을 그리고 스크롤 복구
-    setTimeout(() => {
-      renderCalendar();
-      
-      requestAnimationFrame(() => {
-        const newWrapper = document.getElementById("dates-wrapper");
-        if (newWrapper) {
-          newWrapper.scrollTop = currentScroll;
-        }
-      });
-    }, 50); // 0.05초의 여유를 줌
   });
 
   // ===== 통계 모달 요소

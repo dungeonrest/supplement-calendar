@@ -672,7 +672,7 @@ body.dark-mode .close-btn {
 
 /* 다크모드 대응 */
 body.dark-mode .modal input[type="date"] {
-  background: #3a3939 !important;
+  background-color: rgba(32, 32, 32, 0.863) !important;
   color: #ffffff;
   color-scheme: dark;      /* 아이폰 시스템 달력 팝업도 다크하게 */
 }
@@ -722,7 +722,7 @@ body.dark-mode .modal input {
 }
 
 body.dark-mode .custom-color-bar {
-  background: #3a3939 !important;
+  background-color: rgba(32, 32, 32, 0.863) !important;
   color: #ffffff;
 }
 
@@ -759,7 +759,7 @@ body.dark-mode .custom-color-bar {
   }
 
   body.dark-mode #inputProduct {
-  background: #3a3939 !important;
+  background-color: rgba(32, 32, 32, 0.863) !important;
   }
 
 /* 입력창 그룹 */
@@ -779,7 +779,7 @@ body.dark-mode .custom-color-bar {
 }
 
 body.dark-mode .input-combined-group {
-  background: #3a3939 !important;
+  background-color: rgba(32, 32, 32, 0.863) !important;
 }
 
 /* 실제 숫자 입력 부분 */
@@ -796,7 +796,7 @@ body.dark-mode .input-combined-group {
 }
 
 body.dark-mode .input-combined-group input {
-  background: #3a3939 !important;
+  background-color: rgba(32, 32, 32, 0.863) !important;
 }
 
 /* 3. 내부 단위(Select, Span) 스타일 통일 */
@@ -959,8 +959,7 @@ input[type="checkbox"] {
 }
 
 body.dark-mode input[type="checkbox"] {
-  border: none !important;
-  background-color: #4e4d4d !important;
+  background-color: rgba(32, 32, 32, 0.863) !important;
 }
 
 /* 1. 체크되었을 때: 낮/밤 상관없이 선명한 민트색 */
@@ -1101,7 +1100,7 @@ input[type="number"], .total-cost-amount, .stats-count-text {
 /* 밤 모드일 때의 배경색 대응을 위해 아래 내용도 교체/추가하세요 */
 body.dark-mode .taken-sup-section {
   border-bottom: none;
-  background-color: rgb(37, 37, 37); /* 어두운 화면에 맞는 배경 */
+  background-color: rgba(26, 26, 26, 0.877) !important;
 }
 
 .taken-sup-title {
@@ -1272,6 +1271,7 @@ body.dark-mode .taken-sup-section {
   padding: 8px 16px;
   cursor: pointer;
   font-size: 16px;
+  font-weight: 500;
   margin-bottom: 15px;
   border: none;
   outline: none;
@@ -1284,7 +1284,7 @@ body.dark-mode .taken-sup-section {
 
 /* 밤 모드일 때 평소 버튼 배경색 (추가) */
 body.dark-mode .family-btn {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(32, 32, 32, 0.863) !important;
 }
 
 /* 선택된 버튼 - 낮/밤 모드 별로 */
@@ -1296,7 +1296,7 @@ body:not(.dark-mode) .family-btn.selected {
 
 body.dark-mode .family-btn.selected {
   background-color: #4ECDC4 !important;
-  color: #242323 !important;
+  color: #000000 !important;
   display: inline-block;
 }
 
@@ -1396,12 +1396,13 @@ body.dark-mode .family-btn.selected {
 }
 
 .menu-btn {
-  width: 100%;
+  display: block;
+  margin: 0 auto;
+  width: 50%;
   height: 45px;
   font-size: 17px;
   font-weight: 600;
-  margin-top: 18px;
-  margin-bottom: 14px;
+  margin-top: 30px;
   background: rgba(128, 128, 128, 0.1);
   color: var(--text-color);
   border: none;
@@ -1419,7 +1420,7 @@ body.dark-mode .family-btn.selected {
 
 /* 다크모드 대응 */
 body.dark-mode .menu-btn {
-  background: rgba(255, 255, 255, 0.1);
+  background-color: rgba(32, 32, 32, 0.863) !important;
   color: white;
 }
 
