@@ -424,6 +424,9 @@ body.dark-mode .supplement-bar-label:not(.unTaken) {
 
 /* 모달 오픈 시 배경 스크롤 잠금 */
 body.modal-open {
+  position: fixed; /* 배경을 화면에 박아버림 */
+  width: 100%;
+  height: 100%;
   overflow: hidden !important;
   touch-action: none !important;
 }
@@ -438,12 +441,13 @@ body.modal-open {
 
 #modalBody, #monthlyCostContent, #takenCheckBody, #statsContent {
   flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain !important; 
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: contain !important;
+  touch-action: pan-y !important;
   background-color: transparent !important; 
-  padding: 10px 20px 100px 20px !important; /* 하단 잘림 방지용 패딩 100px */
-  box-sizing: border-box;
+  padding: 10px 20px 150px 20px !important;
+  margin-top: 0;
 }
 
 /* 밤 모드 대응 */
@@ -452,6 +456,13 @@ body.dark-mode #monthlyCostContent,
 body.dark-mode #takenCheckBody, 
 body.dark-mode #statsContent {
   background-color: transparent !important;
+}
+
+.modal-overlay.active {
+  visibility: visible;
+  visibility: visible;
+  opacity: 1;
+  touch-action: none !important;
 }
 
 /* 첫 번째 섹션이 헤더 바로 밑에서 시작하도록 간격 부여 */
@@ -469,9 +480,12 @@ body.dark-mode #statsContent {
   align-items: flex-end;
   justify-content: center;
   z-index: 2000;
+  touch-action: none;
+  pointer-events: auto;
   background-color: var(--bg-color) !important;
   visibility: hidden;
-  transition: visibility 0.3s; 
+  opacity: 1 !important; 
+  transition: none !important;
 }
 
 /* 2. 모든 모달에 일괄 적용 */
@@ -482,16 +496,16 @@ body.dark-mode #statsContent {
   max-height: 99vh !important;
   padding: 0px;
   margin-top: 0;
-   box-sizing: border-box;
-
+  box-sizing: border-box;
   background-color: var(--bg-color) !important;
   border: none !important;
   border-top: 1px solid var(--calendar-line) !important;
   box-shadow: none !important;
   border-radius: 40px 40px 0 0;
-
+  position: relative;
+  touch-action: pan-y !important;
   overflow: hidden !important;
-  overscroll-behavior: contain;
+  overscroll-behavior: contain !important;
   transform: translateY(100%);
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
@@ -503,11 +517,6 @@ body.dark-mode #statsContent {
 .modal-overlay.active .backup-menu-modal {
   transform: translateY(0);
 }
-.modal-overlay.active {
-  visibility: visible;
-}
-
-
 
 /* 헤더 내에서 제목과 수평을 맞추기 위한 설정 */
 .modal-header {
@@ -1079,13 +1088,13 @@ input[type="number"], .total-cost-amount, .stats-count-text {
 
 /* 복용 체크 모달 커스텀 */
 #takenCheckBody {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px 0;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 120px !important; /* 삭제 버튼 위치까지 보장하는 넉넉한 여백 */
+  display: block !important; /* flex 대신 block으로 레이아웃 안정화 */
+  width: 100%;
+  height: auto;
+  min-height: calc(100% + 150px); /* 실제 높이보다 더 길게 공간 확보 */
+  padding: 10px 0 200px 0 !important; /* 하단 가림 방지를 위해 200px 부여 */
+  overflow-y: visible;
+  box-sizing: border-box;
 }
 
 .taken-sup-section {
