@@ -1005,7 +1005,7 @@ input[type="checkbox"]:checked::before {
 #monthlyCostContent {
   display: flex;
   flex-direction: column;
-  padding: 20px 20px 70px 20px !important;
+  padding: 40px 20px 40px 20px !important;
 }
 
 .monthlyCostTitle {
