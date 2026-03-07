@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.7";
+const APP_VERSION = "3.7a";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -877,9 +877,19 @@ function openTakenCheckUI(date) {
 // ❌ 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
 document.getElementById("closeTakenCheckBtn")
   .addEventListener("click", async () => {
+    const wrapper = document.getElementById("dates-wrapper");
+    const currentScroll = wrapper ? wrapper.scrollTop : 0;
+
     renderCalendar();
+
     document.getElementById("takenCheckModal").classList.remove("active");
     document.body.classList.remove("modal-open");
+
+    if (wrapper) {
+        requestAnimationFrame(() => {
+        wrapper.scrollTop = currentScroll;
+      });
+    }
   });
 
   // ===== 통계 모달 요소
@@ -1379,7 +1389,7 @@ footerVersionEl.addEventListener("click", async () => {
     const currentVersion = APP_VERSION;
 
     if (latestVersion !== currentVersion) {
-      if (confirm(`🔄 새로운 버전이 있습니다!\n업데이트하려면 확인을 누르세요.`)) {
+      if (confirm(`새로운 버전이 있습니다!\n업데이트하려면 확인을 누르세요.`)) {
         location.reload();  // 페이지 새로고침
       }
     } else {
