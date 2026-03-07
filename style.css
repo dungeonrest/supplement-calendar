@@ -6,6 +6,7 @@ html, body {
 /* 기본 색상 변수*/
 :root {
   --bg-color: #ffffff;
+  --header-blur-bg: rgba(255, 255, 255, 0.7);
   --text-color: #000000;
   --calendar-line: #dad9d96c;
   --sun-color: #df2222;
@@ -14,6 +15,7 @@ html, body {
 
 body.dark-mode {
   --bg-color: #121212;
+  --header-blur-bg: rgba(18, 18, 18, 0.7);
   --text-color: #e0e0e0;
   --sun-color: #df2222;
   --sat-color: #3767f7;
@@ -61,6 +63,13 @@ input, textarea {
   justify-content: space-between;
   align-items: center;
   padding: calc(10px + env(safe-area-inset-top)) 20px 10px 20px;
+
+  position: sticky;
+  top: 0;
+  z-index: 1001;
+  background-color: var(--header-blur-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
 }
 
 .month-display {
@@ -272,8 +281,11 @@ body.dark-mode .theme-icon::after {
 
 /* 달력이 있는 컨테이너 혹은 body에 추가 */
 #dates-wrapper {
-  touch-action: pan-y; /* 세로 스크롤만 허용하고, 가로 스크롤(시스템 제스처)은 차단 */
-  overscroll-behavior-x: none; /* 가로로 당겼을 때 뒤 배경이 보이는 현상 방지 */
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: none;
+  position: relative;
+  z-index: 1;
 }
 
 .date {
@@ -412,7 +424,6 @@ body.dark-mode .supplement-bar-label:not(.unTaken) {
 
 /* 영양제 종료 주간(Last Week)을 위한 강화된 사선 패턴 */
 .last-week-bar {
-  /* 배경색 위에 진한 흰색 사선을 덧씌움 (라이트 모드용) */
   background-image: repeating-linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.507),
@@ -428,6 +439,7 @@ body.modal-open {
   width: 100%;
   height: 100%;
   overflow: hidden !important;
+  overscroll-behavior: none;
   touch-action: none !important;
 }
 
@@ -896,14 +908,9 @@ body.dark-mode .unit-won {
 .delete-text-btn {
   font-size: 10px;
   font-weight: 700;
-  color: #ffe9e9;
+  color: rgb(250, 90, 90);
   position: fixed;
   bottom: 25px;
-  width: auto;
-  height: auto;
-  padding: 2px 6px;
-  border-radius: 20px;
-  background-color: rgb(250, 90, 90);
   border: none;
   cursor: pointer;
   display: flex;

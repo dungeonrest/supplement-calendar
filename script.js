@@ -1,5 +1,5 @@
 
-const APP_VERSION = "03.07b";
+const APP_VERSION = "03.07c";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -879,7 +879,9 @@ document.getElementById("closeTakenCheckBtn")
   .addEventListener("click", async () => {
     const currentScrollY = window.scrollY;
     renderCalendar();
-    window.scrollTo(0, currentScrollY);
+    requestAnimationFrame(() => {
+        window.scrollTo(0, currentScrollY);
+    });
     document.getElementById("takenCheckModal").classList.remove("active");
     document.body.classList.remove("modal-open");
   });
@@ -1381,7 +1383,6 @@ footerVersionEl.addEventListener("click", async () => {
     const currentVersion = APP_VERSION;
 
     if (latestVersion !== currentVersion) {
-      // 최신 버전이 다르면 리로드 묻기
       if (confirm(`🔄 새로운 버전이 있습니다!\n업데이트하려면 확인을 누르세요.`)) {
         location.reload();  // 페이지 새로고침
       }
@@ -1402,9 +1403,7 @@ function hexToRgb(hex) {
   return `${r}, ${g}, ${b}`;
 }
 
-// ―――――――――――――――――――
 // 스와이프 제스처로 좌우 월 이동 처리 (개선)
-// ―――――――――――――――――――
 let touchStartX = 0;
 let touchStartY = 0;
 let touchEndX = 0;
@@ -1413,16 +1412,13 @@ let touchEndY = 0;
 const minSwipeDistance = 70;
 const swipeRatio = 1.5;
 
-// ―――――――――――――――――――
 // 스와이프 및 가장자리 터치 충돌 개선 로직
-// ―――――――――――――――――――
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
-  // 시작 좌표 저장 (터치 차단 안 함 -> 일요일/토요일 터치 가능)
   touchStartX = e.changedTouches[0].screenX;
   touchStartY = e.changedTouches[0].screenY;
-  // 초기화
+
   touchEndX = touchStartX;
   touchEndY = touchStartY;
 }, { passive: true });
@@ -1434,13 +1430,10 @@ datesWrapper.addEventListener("touchmove", (e) => {
   touchEndY = e.changedTouches[0].screenY;
 
   const diffX = touchEndX - touchStartX;
-  const diffY = touchEndY - touchStartY;
   const absDiffX = Math.abs(diffX);
-  const absDiffY = Math.abs(diffY);
+  const absDiffY = Math.abs(touchEndY - touchStartY);
 
-  // 핵심: 가로 움직임이 감지되는 순간 시스템 제스처(앞으로가기)보다 먼저 점유
-  if (absDiffX > 5 && absDiffX > absDiffY) {
-    // 가로 스와이프 의도가 확실하면 브라우저의 기본 제스처를 즉시 차단
+  if (absDiffX > 2) { 
     if (e.cancelable) e.preventDefault();
   }
 }, { passive: false });
