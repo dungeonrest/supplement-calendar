@@ -1,7 +1,0 @@
-{
-  "name": "supplement-calendar",
-  "version": "1.0.0",
-  "scripts": {
-    "gpm": "git add . && git commit -m 'update app' && git push"
-  }
-}
