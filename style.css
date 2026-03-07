@@ -28,8 +28,6 @@ body {
   font-family: "Apple SD Gothic Neo", "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: none;
   -webkit-tap-highlight-color: transparent;
@@ -444,7 +442,7 @@ body.modal-open {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
   background-color: transparent !important; 
-  padding: 10px 20px calc(env(safe-area-inset-bottom) + 40px) 10px !important;
+  padding: 10px 20px;
   margin-top: 0;
 }
 
@@ -1568,9 +1566,4 @@ body.dark-mode .onboarding-header h1 { color: white; }
   margin: -10px; /* 확장된 공간 때문에 주변 요소가 밀리지 않도록 조정 */
   cursor: pointer;
   -webkit-tap-highlight-color: transparent; /* 터치 시 생기는 하이라이트 제거 */
-}
-
-/* 하단 영역이 너무 좁지 않게 최소한의 높이만 확보 */
-footer {
-  padding-bottom: calc(env(safe-area-inset-bottom) + 15px);
 }
