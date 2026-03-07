@@ -1,5 +1,5 @@
 
-const APP_VERSION = "03.07a";
+const APP_VERSION = "03.07b";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -847,7 +847,11 @@ function openTakenCheckUI(date) {
 
           chk.addEventListener("change", async () => {
             sup.takenStatus[date][`${time}_${member}`] = chk.checked;
+            if (!chk.checked) {
+             delete sup.takenStatus[date][`${time}_${member}_extended`];
+            }
             await saveSupplementToDB(sup);
+            renderCalendar();
             td.style.backgroundColor = chk.checked ? "rgba(78, 205, 196, 0.2)" : "rgba(128, 128, 128, 0.05)";
           });
 
@@ -873,7 +877,9 @@ function openTakenCheckUI(date) {
 // ❌ 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
 document.getElementById("closeTakenCheckBtn")
   .addEventListener("click", async () => {
+    const currentScrollY = window.scrollY;
     renderCalendar();
+    window.scrollTo(0, currentScrollY);
     document.getElementById("takenCheckModal").classList.remove("active");
     document.body.classList.remove("modal-open");
   });
