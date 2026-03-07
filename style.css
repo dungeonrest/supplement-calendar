@@ -23,6 +23,10 @@ body.dark-mode .calendar-wrapper {
   background-color: #121212;
 }
 
+html, body {
+  overscroll-behavior-y: none;
+}
+
 body {
   margin: 0;
   font-family: "Apple SD Gothic Neo", "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -272,8 +276,10 @@ body.dark-mode .theme-icon::after {
 
 /* 달력이 있는 컨테이너 혹은 body에 추가 */
 #dates-wrapper {
-  touch-action: pan-y; /* 세로 스크롤만 허용하고, 가로 스크롤(시스템 제스처)은 차단 */
-  overscroll-behavior-x: none; /* 가로로 당겼을 때 뒤 배경이 보이는 현상 방지 */
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .date {

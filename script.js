@@ -1,5 +1,5 @@
 
-const APP_VERSION = "03.07e";
+const APP_VERSION = "03.07f";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1433,7 +1433,7 @@ datesWrapper.addEventListener("touchmove", (e) => {
   const absDiffX = Math.abs(diffX);
   const absDiffY = Math.abs(touchEndY - touchStartY);
 
-  if (absDiffX > 2) { 
+  if (absDiffX > 5 && absDiffX > absDiffY) { 
     if (e.cancelable) e.preventDefault();
   }
 }, { passive: false });
