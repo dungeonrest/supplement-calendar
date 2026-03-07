@@ -1,5 +1,5 @@
 
-const APP_VERSION = "03.06";
+const APP_VERSION = "03.06a";
 let deferredPrompt;
 
 // 공휴일 리스트 (예: 2026년)

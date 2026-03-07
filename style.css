@@ -663,11 +663,11 @@ body.dark-mode .close-btn {
 
 /* 날짜 입력창 정밀 보정 */
 .modal input[type="date"] {
-  width: 100% !important;
+  width: 48% !important;
   height: 40px;
   padding: 0 10px;
   margin: 10px 0 0 0;
-  border-radius: 30px;
+  border-radius: 50px;
   background: #f5f5f5;
   border: 1px solid transparent;
   font-family: inherit;
@@ -678,10 +678,8 @@ body.dark-mode .close-btn {
   box-sizing: border-box;
   outline: none;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  
+  accent-color: rgb(250, 90, 90);
+  color-scheme: light;
   /* 📌 아이폰/사파리 기본 스타일 제거 및 표준 설정 */
   -webkit-appearance: none; /* 사파리용 */
   -moz-appearance: none;    /* 파이어폭스용 */
@@ -699,14 +697,18 @@ body.dark-mode .modal input[type="date"]::-webkit-date-and-time-value {
   color: #ffffff;
 }
 
+.modal input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(45%) sepia(85%) saturate(1000%) hue-rotate(330deg) brightness(100%) contrast(105%);
+}
+
 /* 모달 입력창 디자인 개선 */
 .modal input {
-  width: 100%;
+  width: 48%;
   margin-top: 12px;
   margin-bottom: 12px;
   padding: 10px;
-  border-radius: 10px;
-  font-size: 17px;
+  border-radius: 50px;
+  font-size: 16px;
   background: #f5f5f5;
   border: 1px solid transparent;
   outline: none;
@@ -722,14 +724,14 @@ body.dark-mode .modal input {
 
 /* 커스텀 바 디자인 */
 .custom-color-bar {
+  width: 48%;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 40px;
-  padding: 0 10px;
   background: #f5f5f5;
   border: 1px solid transparent;
-  border-radius: 30px;
+  border-radius: 50px;
   margin-bottom: 25px;
   cursor: pointer;
   box-sizing: border-box;
@@ -770,7 +772,7 @@ body.dark-mode .custom-color-bar {
   font-weight: 500;
   background: #f5f5f5;
   height: 40px;
-  border-radius: 30px;
+  border-radius: 50px;
   margin-bottom: 16px !important;
   }
 
@@ -780,17 +782,17 @@ body.dark-mode .custom-color-bar {
 
 /* 입력창 그룹 */
 .input-combined-group {
+  width: 48%;
   font-size: 15px;
   font-weight: 700;
   display: flex;
-  align-items: center;
+  align-items: left;
   background: #f5f5f5;
-  border-radius: 30px;
-  padding: 0 12px 0 40px;
+  border-radius: 50px;
+  padding: 0 10px 0 30px;
   margin-bottom: 17px;
   height: 40px;
   box-sizing: border-box;
-  border: 1px solid transparent;
   overflow: hidden;
 }
 
@@ -822,7 +824,7 @@ body.dark-mode .input-combined-group input {
   font-family: -apple-system, Helvetica, Arial, sans-serif !important;
   font-size: 14px;
   font-weight: 700;
-  color: #999797;
+  color: #979494;
   border: none !important;
   background: transparent !important;
   outline: none !important;
@@ -850,6 +852,53 @@ body.dark-mode .unit-won {
   color: #aaa;
 }
 
+/* 1. 부모 컨테이너 설정 */
+#modalBody {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-content: flex-start;
+}
+
+/* 2. 각 요소의 너비 및 마진 통일 (기존 50px 둥근 모서리 디자인 유지) */
+#inputDate, 
+.color-picker-container, 
+#inputProduct, 
+.input-combined-group {
+  width: 48% !important;
+  margin-top: 8px !important;
+  margin-bottom: 8px !important;
+  box-sizing: border-box;
+}
+
+/* 3. 요청하신 정확한 순서 배치 (order 사용) */
+#inputDate { order: 1; }                /* 날짜 (1열 1행) */
+.color-picker-container { order: 2; }    /* 색상 (1열 2행) */
+#inputProduct { order: 3; }             /* 제품명 (2열 1행) */
+
+/* .input-combined-group이 HTML에 나타나는 순서대로 번호를 매깁니다 */
+/* 1번째 그룹(제공량), 2번째 그룹(복용량), 3번째 그룹(가격) 기준 */
+
+.input-combined-group:nth-of-type(3) { order: 4; } /* 가격 (2열 2행) */
+.input-combined-group:nth-of-type(1) { order: 5; } /* 제공량 (3열 1행) */
+.input-combined-group:nth-of-type(2) { order: 6; } /* 복용량 (3열 2행) */
+
+/* 4. 기존 디자인 디테일 보정 */
+.custom-color-bar {
+  width: 100% !important; 
+  margin-bottom: 0 !important;
+}
+
+.color-picker-container {
+  margin-top: 8px !important; /* 날짜 입력창과 높이 맞춤 */
+}
+
+/* 체크박스 영역과 하단 버튼은 다시 전체 너비 사용 */
+.checkbox-line, .modal-footer-btns {
+  width: 100% !important;
+  order: 10;
+}
+
 /* 버튼 컨테이너 (가로로 나란히) */
 .modal-footer-btns {
   display: flex;
@@ -864,24 +913,22 @@ body.dark-mode .unit-won {
 .delete-text-btn {
   font-size: 10px;
   font-weight: 700;
-  color: #f7d1d1;
+  color: #ffe9e9;
   position: fixed;
-  bottom: 15px;
+  bottom: 25px;
   width: auto;
   height: auto;
   padding: 2px 6px;
   border-radius: 20px;
-  background-color: rgb(255, 124, 124);
+  background-color: rgb(250, 90, 90);
   border: none;
   cursor: pointer;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: left;
+  justify-content: left;
   flex-shrink: 0;
-}
-
-.delete-text-btn:active {
-  opacity: 0.3;
+  left: 25px;
+  transform: none;
 }
 
 /* 컬러 피커 컨테이너 너비 조정 */
@@ -927,9 +974,9 @@ input[type="checkbox"] {
   background-color: #eeeeee;
   margin: 0;
   cursor: pointer;
-  width: 25px;
-  height: 25px;
-  border-radius: 8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 10px;
   display: inline-grid;
   place-content: center;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -939,6 +986,7 @@ input[type="checkbox"] {
 
 body.dark-mode input[type="checkbox"] {
   border: none !important;
+  background-color: #4e4d4d !important;
 }
 
 /* 1. 체크되었을 때: 낮/밤 상관없이 선명한 민트색 */
@@ -1032,6 +1080,7 @@ input[type="checkbox"]:checked::before {
 
 .total-cost-label {
   font-size: 13px;
+  font-weight: 600;
   display: block;
   text-align: center;
   margin-bottom: 6px;
@@ -1041,11 +1090,11 @@ input[type="checkbox"]:checked::before {
   font-size: 21px;
   font-weight: 700;
   text-align: center;
-  color: #1c85ca;
+  color: #000000;
 }
 
 body.dark-mode .total-cost-amount {
-  color: #88e7ff;
+  color: #ffffff;
 }
 
 /* 숫자 입력란 정렬 최적화 */
@@ -1092,8 +1141,8 @@ body.dark-mode .taken-sup-section {
 }
 
 .sup-dot {
-  width: 19px;
-  height: 19px;
+  width: 21px;
+  height: 21px;
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0; /* 크기 고정 */
@@ -1281,7 +1330,9 @@ body.dark-mode .family-btn.selected {
   padding: 9px 13px;
   border-radius: 20px;
   border: none;
-  background-color: rgba(243, 243, 243, 0.829);
+  background-color: rgba(243, 243, 243, 0.788);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
   font-size: 15px;
   font-weight: 700;
    display: flex;
@@ -1300,7 +1351,9 @@ body.dark-mode .family-btn.selected {
 /* 다크모드 시 배경색 반전 */
 .dark-mode .fab-today-btn, 
 .dark-mode .fab-add-btn {
-   background-color: rgba(32, 32, 32, 0.836);
+   background-color: rgba(32, 32, 32, 0.788);
+   backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
 }
 
 /* 클릭 시 반응 */
