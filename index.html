@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="style.css" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="영양제 달력">
   <link rel="apple-touch-icon" href="icons/192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
@@ -24,7 +25,7 @@
 
 <header class="calendar-header no-double-tap-zoom">
   <span id="monthDisplay" class="month-display"></span>
-  <div class="header-right-group no-double-tap-zoom">
+  <div class="header-right-group no-double-tap-zoom" tabindex="0">
     <button id="monthlyCostBtn" class="monthly-cost-btn icon-btn">
   <span class="won-icon"></span>
 </button>
@@ -172,10 +173,6 @@
           <span class="checkbox-label-text">공복</span>
         </label>
       </div>
-
-    <div class="modal-footer-btns">
-  <span id="deleteSupplement" class="delete-text-btn">삭제</span>
-</div>
 </div>
   </div>
 </div> </div>
@@ -229,6 +226,17 @@
     </div>
 
     <div id="statsContent"></div>
+  </div>
+</div>
+
+<div id="yearlyModal" class="modal-overlay hidden yearly-mode">
+  <div class="modal yearly-modal">
+    <div class="modal-header">
+      <h3 id="yearlyTitle">2026년</h3>
+      <button id="closeYearlyModal" class="close-btn right"></button>
+    </div>
+    <div id="yearlyContent" class="yearly-grid">
+      </div>
   </div>
 </div>
 

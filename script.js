@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.7e";
+const APP_VERSION = "3.7r";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -27,6 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+document.addEventListener("touchstart", function() {}, true);
+
 // ====================
 // DOM 요소
 // ====================
@@ -44,7 +46,6 @@ const inputDose = document.getElementById("inputDose");
 const inputPrice = document.getElementById("inputPrice");
 const inputColor = document.getElementById("inputColor");
 const saveInfoBtn = document.getElementById("saveInfo");
-const deleteSupplementBtnModal = document.getElementById("deleteSupplement");
 const monthlyCostBtn = document.getElementById("monthlyCostBtn");
 const monthlyCostModal = document.getElementById("monthlyCostModal");
 const monthlyCostContent = document.getElementById("monthlyCostContent");
@@ -75,8 +76,6 @@ function openSupplementModal(sup) {
   const unitDisplay = document.getElementById("unitDisplay");
   if (unitSelect) unitSelect.value = unitVal;
   if (unitDisplay) unitDisplay.innerText = unitVal;
-  
-  deleteSupplementBtnModal.style.display = "block";
 
   // [수정 핵심] 실시간 객체인 inputFamily 대신 
   // 현재 모달에 새로 생성된 체크박스들을 직접 쿼리해서 대조합니다.
@@ -305,7 +304,6 @@ addBtn.addEventListener("click", () => {
   if (doseEl) doseEl.value = "";
   inputPrice.value = "";
   updateColorBar("#000000");
-  deleteSupplementBtnModal.style.display = "none";
   document.querySelectorAll(".inputFamily").forEach(tb => {
     tb.checked = false;
   });
@@ -323,20 +321,6 @@ fabAddBtn.addEventListener("click", () => {
 closeModalBtn.addEventListener("click", () => {
   modalOverlay.classList.remove("active");
   document.body.classList.remove("modal-open");
-});
-
-deleteSupplementBtnModal.addEventListener("click", async () => {
-  if (currentEditId) {
-    if (!confirm("복용 기록도 모두 사라집니다.\n삭제할까요?")) return;
-    await deleteSupplementFromDB(currentEditId);
-    supplements = supplements.filter(s => s.id !== currentEditId);
-    
-    modalOverlay.classList.remove("active");
-    document.body.classList.remove("modal-open");
-    renderCalendar();
-  } else {
-    alert("삭제할 영양제가 선택되지 않았습니다.");
-  }
 });
 
 // 달력 렌더 //
@@ -541,10 +525,48 @@ listArea.appendChild(bar);
   }
 }
 
-// ====================
+// 저장 버튼 롱 프레스 삭제 로직 (가족 버튼 로직 기반)
+let saveTimer;
+let isSaveLongPress = false;
+
+const startSavePress = () => {
+  isSaveLongPress = false;
+  if (!currentEditId) return;
+
+  saveTimer = setTimeout(async () => {
+    isSaveLongPress = true;
+    const productName = inputProduct.value.trim() || "이 영양제";
+
+    if (confirm(`'${productName}'의 복용 기록이 모두 사라집니다.\n정말 삭제할까요?`)) {
+      await deleteSupplementFromDB(currentEditId);
+      supplements = supplements.filter(s => s.id !== currentEditId);
+      
+      modalOverlay.classList.remove("active");
+      document.body.classList.remove("modal-open");
+      renderCalendar();
+      
+      if (window.history.state && window.history.state.modal) {
+        window.history.back();
+      }
+    }
+  }, 1000);
+};
+
+const endSavePress = () => clearTimeout(saveTimer);
+
+saveInfoBtn.addEventListener("touchstart", startSavePress, { passive: true });
+saveInfoBtn.addEventListener("touchend", endSavePress);
+saveInfoBtn.addEventListener("mousedown", startSavePress);
+saveInfoBtn.addEventListener("mouseup", endSavePress);
+saveInfoBtn.addEventListener("mouseleave", endSavePress);
+
 // 저장
-// ====================
-saveInfoBtn.addEventListener("click", async () => {
+saveInfoBtn.addEventListener("click", async (e) => {
+  if (isSaveLongPress) {
+    // 롱 프레스가 발생했다면 일반 클릭(저장)은 실행하지 않음
+    isSaveLongPress = false; 
+    return;
+  }
   const start = inputDate.value;
   const product = inputProduct.value.trim();
   const totalCaps = parseInt(inputTotal.value) || 0;
@@ -769,13 +791,14 @@ function openTakenCheckUI(date) {
         const baseDate = date;
         const leftUnTakenSlots = calculateLeftUnTakenSlotsBefore(sup, baseDate);
         const additionalDays = calculateAdditionalDays(sup, baseDate, leftUnTakenSlots);
+        const formattedDate = baseDate.replaceAll('-', '.');
 
         if (additionalDays === 0) {
           alert("📍 연장할 일정이 없습니다.");
           return;
         }
 
-        let confirmMsg = `📍 ${baseDate}\n\n` +
+        let confirmMsg = `📍 ${formattedDate}\n\n` +
           `미복용 체크 슬롯: ${leftUnTakenSlots}개\n` +
           `예상 추가 일정: ${additionalDays}일\n\n` +
           `이대로 연장할까요?`;
@@ -1046,7 +1069,7 @@ function renderFamilyUI() {
             alert(`'${name}' 님이 '${trimmed}' 님으로 변경되었습니다.`);
             location.reload();
           }
-        }, 500);
+        }, 1000);
       };
       
       const endPress = () => clearTimeout(timer);
@@ -1664,3 +1687,80 @@ document.querySelectorAll(".close-btn").forEach(btn => {
     }
   });
 });
+
+// 연간 달력 관련 로직 시작
+const yearlyModal = document.getElementById("yearlyModal");
+const closeYearlyModal = document.getElementById("closeYearlyModal");
+
+// 2026년 표시 클릭 시 호출
+if (monthDisplay) {
+  monthDisplay.style.cursor = "pointer";
+  monthDisplay.onclick = () => {
+    const year = dt.getFullYear(); 
+    document.getElementById("yearlyTitle").innerText = `${year}년`;
+    renderYearlyCalendar(year);
+    yearlyModal.classList.remove("hidden");
+    document.body.classList.add("stop-scroll");
+  setTimeout(() => {
+    yearlyModal.classList.add("active");
+  }, 10);
+}
+}
+
+if (closeYearlyModal) {
+  closeYearlyModal.onclick = () => {
+    yearlyModal.classList.remove("active");
+    document.body.classList.remove("stop-scroll");
+    setTimeout(() => {
+      yearlyModal.classList.add("hidden");
+    }, 400);
+  };
+}
+
+function renderYearlyCalendar(year) {
+  const container = document.getElementById("yearlyContent");
+  if (!container) return;
+  container.innerHTML = "";
+  
+  const todayKST = getTodayKST(); // 사용자님이 정의한 함수 사용
+  const now = new Date();
+  const currentMonthIdx = (now.getFullYear() === year) ? now.getMonth() : -1;
+
+  for (let m = 0; m < 12; m++) {
+    const monthDiv = document.createElement("div");
+    monthDiv.className = "mini-month-container";
+    if (m === currentMonthIdx) monthDiv.classList.add("current-month");
+
+    monthDiv.innerHTML = `<div class="mini-month-title">${m + 1}월</div>`;
+    
+    const daysGrid = document.createElement("div");
+    daysGrid.className = "mini-days-grid";
+
+    const firstDay = new Date(year, m, 1).getDay();
+    const lastDate = new Date(year, m + 1, 0).getDate();
+
+    // 1일 앞의 빈칸
+    for (let i = 0; i < firstDay; i++) {
+      daysGrid.innerHTML += `<div></div>`;
+    }
+
+    // 날짜 렌더링
+    for (let d = 1; d <= lastDate; d++) {
+      const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      
+      // 사용자님의 supplements 배열에서 해당 날짜 스케줄 확인
+      const dayData = supplements.filter(s => s.schedule && s.schedule.includes(dateStr));
+      
+      let style = "";
+      if (dayData.length > 0) {
+        // 데이터가 있으면 첫 번째 영양제 색상 적용
+        style = `background-color: ${dayData[0].circleColor}; color: #fff;`;
+      }
+
+      daysGrid.innerHTML += `<div class="mini-day" style="${style}">${d}</div>`;
+    }
+    
+    monthDiv.appendChild(daysGrid);
+    container.appendChild(monthDiv);
+  }
+}
