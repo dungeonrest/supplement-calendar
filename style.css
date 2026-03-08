@@ -441,6 +441,16 @@ body.modal-open {
   -webkit-overflow-scrolling: touch;
 }
 
+#modalBody {
+  flex: none !important;
+  height: auto !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
+  align-content: flex-start !important;
+  margin-bottom: 0 !important;
+}
+
 #modalBody, #monthlyCostContent, #takenCheckBody, #statsContent {
   flex: 1;
   overflow-y: auto !important;
@@ -448,7 +458,7 @@ body.modal-open {
   overscroll-behavior: contain !important;
   touch-action: pan-y !important;
   background-color: transparent !important; 
-  padding: 10px 20px 150px 20px !important;
+  padding: 20px 20px 20px 20px !important;
   margin-top: 0;
 }
 
@@ -473,7 +483,6 @@ body.dark-mode #statsContent {
   margin-top: 10px;
 }
 
-/* 1. 오버레이 설정 보정 */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -489,7 +498,6 @@ body.dark-mode #statsContent {
   transition: none !important;
 }
 
-/* 2. 모든 모달에 일괄 적용 */
 .modal, .taken-modal, .stats-modal, .backup-menu-modal {
   width: 100% !important; 
   height: 99vh !important;
@@ -648,7 +656,7 @@ body.dark-mode .close-btn {
 
 /* 날짜 입력창 정밀 보정 */
 .modal input[type="date"] {
-  width: 48% !important;
+  width: 48%;
   height: 40px;
   padding: 0 10px;
   margin: 10px 0 0 0;
@@ -657,12 +665,14 @@ body.dark-mode .close-btn {
   border: 1px solid transparent;
   font-family: inherit;
   color: #333;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
   margin-bottom: 3px;
   box-sizing: border-box;
   outline: none;
   display: flex;
+  align-items: center;
+  justify-content: center;
 
   /* 📌 아이폰/사파리 기본 스타일 제거 및 표준 설정 */
   -webkit-appearance: none; /* 사파리용 */
@@ -688,16 +698,13 @@ body.dark-mode .modal input[type="date"]::-webkit-date-and-time-value {
 /* 모달 입력창 디자인 개선 */
 .modal input {
   width: 48%;
-  margin-top: 12px;
-  margin-bottom: 12px;
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
   padding: 10px;
   border-radius: 50px;
-  font-size: 16px;
   background: #f5f5f5;
-  border: 1px solid transparent;
   outline: none;
   box-sizing: border-box;
-  transition: border 0.2s;
   text-align: center;
 }
 
@@ -708,13 +715,12 @@ body.dark-mode .modal input {
 
 /* 커스텀 바 디자인 */
 .custom-color-bar {
-  width: 48%;
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 40px;
   background: #f5f5f5;
-  border: 1px solid transparent;
   border-radius: 50px;
   cursor: pointer;
   box-sizing: border-box;
@@ -730,7 +736,7 @@ body.dark-mode .custom-color-bar {
 .color-info {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 /* 색상 점 */
@@ -752,9 +758,9 @@ body.dark-mode .custom-color-bar {
 
 #inputProduct {
   font-size: 17px;
-  font-weight: 500;
   background: #f5f5f5;
   height: 40px;
+  border: none;
   border-radius: 50px;
   }
 
@@ -764,17 +770,14 @@ body.dark-mode .custom-color-bar {
 
 /* 입력창 그룹 */
 .input-combined-group {
-  width: 48%;
-  font-size: 15px;
-  font-weight: 700;
   display: flex;
-  align-items: left;
+  align-items: center;
   background: #f5f5f5;
   border-radius: 50px;
-  padding: 0 10px 0 30px;
-  margin-bottom: 17px;
+  padding: 0 10px 0 35px;
   height: 40px;
   box-sizing: border-box;
+  border: none;
   overflow: hidden;
 }
 
@@ -786,13 +789,14 @@ body.dark-mode .input-combined-group {
 .input-combined-group input {
   flex: 1;
   border: none !important;
+  outline: none;
+  color: inherit;
+  text-align: center;
   background: transparent !important;
   padding: 0 !important;
   margin: 0 !important;
   font-size: 17px;
   height: 100%;
-  outline: none;
-  color: inherit;
 }
 
 body.dark-mode .input-combined-group input {
@@ -834,48 +838,15 @@ body.dark-mode .unit-won {
   color: #aaa;
 }
 
-/* 1. 부모 컨테이너 설정 */
-#modalBody {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  justify-content: space-between !important;
-  align-content: flex-start !important;
-}
-
-/* 2. 각 요소의 너비 및 마진 통일 (기존 50px 둥근 모서리 디자인 유지) */
 #inputDate, 
 .color-picker-container, 
 #inputProduct, 
 .input-combined-group {
   width: 48% !important;
-  margin-top: 12px !important;
-  margin-bottom: 12px !important;
+  margin-top: 15px !important;
+  margin-bottom: 15px !important;
   box-sizing: border-box;
   flex-shrink: 0;
-}
-
-/* 3. 요청하신 정확한 순서 배치 (order 사용) */
-#inputDate { order: 1; }                /* 날짜 (1열 1행) */
-.color-picker-container { order: 2; }    /* 색상 (1열 2행) */
-#inputProduct { order: 3; }             /* 제품명 (2열 1행) */
-
-/* .input-combined-group이 HTML에 나타나는 순서대로 번호를 매깁니다 */
-/* 1번째 그룹(제공량), 2번째 그룹(복용량), 3번째 그룹(가격) 기준 */
-
-.input-combined-group:nth-of-type(3) { order: 4; } /* 가격 (2열 2행) */
-.input-combined-group:nth-of-type(1) { order: 5; } /* 제공량 (3열 1행) */
-.input-combined-group:nth-of-type(2) { order: 6; } /* 복용량 (3열 2행) */
-
-/* 4. 기존 디자인 디테일 보정 */
-.custom-color-bar {
-  width: 100% !important; 
-  margin-bottom: 0 !important;
-}
-
-/* 체크박스 영역과 하단 버튼은 다시 전체 너비 사용 */
-.checkbox-line, .modal-footer-btns {
-  width: 100% !important;
-  order: 10;
 }
 
 /* 버튼 컨테이너 (가로로 나란히) */
@@ -907,7 +878,7 @@ body.dark-mode .unit-won {
 
 /* 컬러 피커 컨테이너 너비 조정 */
 .color-picker-container {
-  width: 100%;
+  width: 48%;
   margin-top: 10px;
 }
 
@@ -1100,7 +1071,7 @@ input[type="number"], .total-cost-amount, .stats-count-text {
 /* 밤 모드일 때의 배경색 대응을 위해 아래 내용도 교체/추가하세요 */
 body.dark-mode .taken-sup-section {
   border-bottom: none;
-  background-color: rgba(26, 26, 26, 0.877) !important;
+  background-color: rgba(29, 29, 29, 0.863) !important;
 }
 
 .taken-sup-title {
@@ -1383,6 +1354,7 @@ body.dark-mode .family-btn.selected {
 .footer-backup-area {
   text-align: center;
   font-size: 12px;
+  font-weight: 600;
   padding: 8px 0;
   color: var(--text-color);
   opacity: 0.7;
@@ -1390,6 +1362,7 @@ body.dark-mode .family-btn.selected {
 
 .footer-backup-link {
   margin-left: 6px;
+  font-weight: 600;
   text-decoration: underline;
   cursor: pointer;
   text-decoration: none;

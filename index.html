@@ -104,35 +104,34 @@
       <button id="closeModal" class="close-btn right"></button>
     </div>
     <div id="modalBody">
-      <input type="date" id="inputDate" class="my-date input-date">
-      <input type="text" id="inputProduct" placeholder="제품명" class="product-name input-product">
-      <div class="input-combined-group">
-  <input type="text" id="inputTotal" placeholder="제공량" inputmode="numeric">
-  <select id="inputUnit" class="unit-select-inside">
-    <option value="캡슐">캡슐</option>
-    <option value="정">정</option>
-    <option value="g">g</option>
-  </select>
-</div>
-
-<div class="input-combined-group">
-  <input type="text" id="inputDose" placeholder="복용량" inputmode="numeric">
-  <span id="unitDisplay">캡슐</span>
-</div>
-
-<div class="input-combined-group">
-  <input type="text" id="inputPrice" placeholder="가격" inputmode="numeric">
-  <span class="unit-won">원</span>
-</div>
-      <div class="color-picker-container">
-      <div id="colorBar" class="custom-color-bar" style="position: relative;">
+  <input type="date" id="inputDate" class="my-date input-date">
+  <div class="color-picker-container">
+    <div id="colorBar" class="custom-color-bar" style="position: relative;">
       <div class="color-info">
-      <div id="colorDot" class="color-dot"></div>
-      <span id="colorHexText">자동 색상</span>
+        <div id="colorDot" class="color-dot"></div>
+        <span id="colorHexText">자동 색상</span>
       </div>
-          
-      <input type="color" id="inputColor" 
-       style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+      <input type="color" id="inputColor" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
+    </div>
+  </div>
+
+  <input type="text" id="inputProduct" placeholder="제품명" class="product-name input-product">
+  <div class="input-combined-group">
+    <input type="text" id="inputPrice" placeholder="가격" inputmode="numeric">
+    <span class="unit-won">원</span>
+  </div>
+
+  <div class="input-combined-group">
+    <input type="text" id="inputTotal" placeholder="제공량" inputmode="numeric">
+    <select id="inputUnit" class="unit-select-inside">
+      <option value="캡슐">캡슐</option>
+      <option value="정">정</option>
+      <option value="g">g</option>
+    </select>
+  </div>
+  <div class="input-combined-group">
+    <input type="text" id="inputDose" placeholder="복용량" inputmode="numeric">
+    <span id="unitDisplay">캡슐</span>
   </div>
 </div>
 
