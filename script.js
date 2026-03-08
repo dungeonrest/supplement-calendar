@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.7r";
+const APP_VERSION = "3.8";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -473,7 +473,6 @@ function renderCalendar() {
         // 1. 해당 날짜가 일요일(0)이거나, 
         // 2. 일정의 시작일(`sup.schedule[0]`)인 경우에만 라벨 표시
         if (dayNum === 0 || sup.schedule[0] === fullDate || dateNum === 1) {
-          labelInBar.classList.add("supplement-bar-label");
 
           if (fillPercent === 0) {
             labelInBar.classList.add("unTaken");
