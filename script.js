@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.8v";
+const APP_VERSION = "3.9";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -100,6 +100,11 @@ function openSupplementModal(sup) {
   const currentTimeCheckboxes = document.querySelectorAll(".inputTime");
   currentTimeCheckboxes.forEach(tb => {
     tb.checked = sup.times && sup.times.includes(tb.value);
+    
+  const memos = sup.memos || ["", "", ""];
+  document.getElementById("memoLine1").value = memos[0] || "";
+  document.getElementById("memoLine2").value = memos[1] || "";
+  document.getElementById("memoLine3").value = memos[2] || "";
   });
 
   updateColorBar(sup.circleColor);
@@ -314,6 +319,9 @@ addBtn.addEventListener("click", () => {
   document.querySelectorAll(".inputTime").forEach(tb => {
     tb.checked = false;
   });
+  document.getElementById("memoLine1").value = "";
+  document.getElementById("memoLine2").value = "";
+  document.getElementById("memoLine3").value = "";
 });
 
 const fabAddBtn = document.getElementById("fabAddBtn");
@@ -564,7 +572,9 @@ saveInfoBtn.addEventListener("click", async (e) => {
   const price = parseInt(inputPrice.value.toString().replace(/,/g, "")) || 0;
   const family = [...document.querySelectorAll(".inputFamily")].filter(cb => cb.checked).map(cb => cb.value);
   const times = [...document.querySelectorAll(".inputTime")].filter(tb => tb.checked).map(tb => tb.value);
-
+  const memo1 = document.getElementById("memoLine1").value;
+  const memo2 = document.getElementById("memoLine2").value;
+  const memo3 = document.getElementById("memoLine3").value;
   if (!start || !product || !totalCaps || !dose || family.length === 0 || times.length === 0) {
     alert("모든 정보를 입력해주세요.");
     return;
@@ -591,6 +601,7 @@ saveInfoBtn.addEventListener("click", async (e) => {
       family,
       times,
       schedule,
+      memos: [memo1, memo2, memo3],
       circleColor: document.getElementById('inputColor').value
     });
     await saveSupplementToDB(found);
@@ -619,6 +630,7 @@ saveInfoBtn.addEventListener("click", async (e) => {
       family,
       times,
       schedule,
+      memos: [memo1, memo2, memo3],
       circleColor: assignedColor,
       takenStatus: {}
     };
@@ -1052,7 +1064,7 @@ function renderFamilyUI() {
             alert(`'${name}' 님이 '${trimmed}' 님으로 변경되었습니다.`);
             location.reload();
           }
-        }, 1000);
+        }, 900);
       };
       
       const endPress = () => clearTimeout(timer);

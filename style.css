@@ -754,6 +754,52 @@ body.dark-mode .yearly-modal {
     border-radius: 10px;
 }
 
+.memo-container {
+  margin-top: 25px;
+  padding: 0 25px;
+  display: block !important;
+}
+
+.memo-paper-group {
+  background: rgba(192, 192, 192, 0.2) !important;
+  border-radius: 30px;
+  overflow: hidden; /* 테두리 밖으로 선이 나가지 않게 */
+  width: 100% !important; /* 부모 너비 꽉 채우기 */
+  display: block !important;
+}
+
+body.dark-mode .memo-paper-group {
+  background: #2C2C2E !important;
+}
+
+.memo-line {
+  width: 100% !important;
+  height: 40px;
+  padding: 0 20px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  color: var(--text-color);
+  font-family: inherit;
+  display: block;
+
+  background: transparent !important; 
+  border: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+
+.memo-divider {
+  height: 0.8px;
+  background-color: rgba(128, 128, 128, 0.15);
+  margin: 0 15px; /* 선이 양끝에서 살짝 떨어지게 */
+}
+
+body.dark-mode .memo-divider {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
 /* 버튼을 하단 중앙에 배치하는 컨테이너 */
 .delete-btn-container {
   display: flex;
@@ -980,7 +1026,7 @@ body.dark-mode .close-btn::before {
 body.dark-mode .modal input,
 body.dark-mode .modal select,
 body.dark-mode #colorHexText {
-    color: #ffffff !important;
+    color: #e0e0e0 !important;
 }
 
 .modal input[type="date"] {
@@ -1008,9 +1054,6 @@ body.dark-mode .modal input[type="date"] {
   color-scheme: dark;      /* 아이폰 시스템 달력 팝업도 다크하게 */
 }
 
-.modal input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(45%) sepia(85%) saturate(1000%) hue-rotate(330deg) brightness(100%) contrast(105%);
-}
 
 /* 모달 입력창 디자인 개선 */
 .modal input {
