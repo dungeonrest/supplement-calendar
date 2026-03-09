@@ -72,6 +72,8 @@ document.addEventListener("change", (e) => {
 
 function openSupplementModal(sup) {
   currentEditId = sup.id;
+  const deleteContainer = document.querySelector(".delete-btn-container");
+  if (deleteContainer) deleteContainer.style.display = "flex";
   modalOverlay.classList.add("active");
   document.body.classList.add("modal-open");
   inputDate.value = selectedDateForList || (sup.schedule && sup.schedule[0]) || "";
@@ -89,11 +91,9 @@ function openSupplementModal(sup) {
   if (unitSelect) unitSelect.value = unitVal;
   if (unitDisplay) unitDisplay.innerText = unitVal;
 
-  // [수정 핵심] 실시간 객체인 inputFamily 대신 
-  // 현재 모달에 새로 생성된 체크박스들을 직접 쿼리해서 대조합니다.
   const currentFamilyCheckboxes = document.querySelectorAll(".inputFamily");
   currentFamilyCheckboxes.forEach(cb => {
-    // 해당 영양제(sup.family)에 이름이 있을 때만 체크되도록 명시적 설정
+  
     cb.checked = sup.family && sup.family.includes(cb.value);
   });
 
@@ -295,6 +295,8 @@ closeMonthlyCostModal.addEventListener("click", () => {
 // + 버튼 클릭 //
 addBtn.addEventListener("click", () => {
   currentEditId = null;
+  const deleteContainer = document.querySelector(".delete-btn-container");
+  if (deleteContainer) deleteContainer.style.display = "none";
   renderFamilyCheckboxes();
   modalOverlay.classList.add("active");
   document.body.classList.add("modal-open");
@@ -525,48 +527,35 @@ listArea.appendChild(bar);
   }
 }
 
-// 저장 버튼 롱 프레스 삭제 로직 (가족 버튼 로직 기반)
-let saveTimer;
-let isSaveLongPress = false;
+// 삭제 버튼 클릭 시 실행될 로직
+const deleteInfoBtn = document.getElementById("deleteInfoBtn");
 
-const startSavePress = () => {
-  isSaveLongPress = false;
+deleteInfoBtn.addEventListener("click", async () => {
   if (!currentEditId) return;
 
-  saveTimer = setTimeout(async () => {
-    isSaveLongPress = true;
-    const productName = inputProduct.value.trim() || "이 영양제";
+  const productName = inputProduct.value.trim() || "이 영양제";
 
-    if (confirm(`'${productName}'의 복용 기록이 모두 사라집니다.\n정말 삭제할까요?`)) {
-      await deleteSupplementFromDB(currentEditId);
-      supplements = supplements.filter(s => s.id !== currentEditId);
-      
-      modalOverlay.classList.remove("active");
-      document.body.classList.remove("modal-open");
-      renderCalendar();
-      
-      if (window.history.state && window.history.state.modal) {
-        window.history.back();
-      }
+  if (confirm(`'${productName}'의 복용 기록이 모두 사라집니다.\n정말 삭제할까요?`)) {
+    // DB에서 삭제
+    await deleteSupplementFromDB(currentEditId);
+    
+    // 메모리(배열)에서 삭제
+    supplements = supplements.filter(s => s.id !== currentEditId);
+    
+    // 모달 닫기 및 화면 갱신
+    modalOverlay.classList.remove("active");
+    document.body.classList.remove("modal-open");
+    renderCalendar();
+    
+    // 브라우저 뒤로가기 기록이 있다면 처리
+    if (window.history.state && window.history.state.modal) {
+      window.history.back();
     }
-  }, 1000);
-};
-
-const endSavePress = () => clearTimeout(saveTimer);
-
-saveInfoBtn.addEventListener("touchstart", startSavePress, { passive: true });
-saveInfoBtn.addEventListener("touchend", endSavePress);
-saveInfoBtn.addEventListener("mousedown", startSavePress);
-saveInfoBtn.addEventListener("mouseup", endSavePress);
-saveInfoBtn.addEventListener("mouseleave", endSavePress);
+  }
+});
 
 // 저장
 saveInfoBtn.addEventListener("click", async (e) => {
-  if (isSaveLongPress) {
-    // 롱 프레스가 발생했다면 일반 클릭(저장)은 실행하지 않음
-    isSaveLongPress = false; 
-    return;
-  }
   const start = inputDate.value;
   const product = inputProduct.value.trim();
   const totalCaps = parseInt(inputTotal.value) || 0;

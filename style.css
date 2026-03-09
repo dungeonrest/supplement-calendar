@@ -87,6 +87,7 @@ button,
 .check-btn, 
 .extend-btn,
 .supplement-bar,
+.delete-glass-btn,
 .month-display {
   transition: transform 0.3s ease-out,
               filter 0.3s ease-out;
@@ -105,6 +106,7 @@ button:active,
 .close-btn:active,
 .check-btn:active,
 .extend-btn:active,
+.delete-glass-btn:active,
 .month-display:active {
   transform: scale(1.2) !important;
   filter: contrast(1.15) saturate(1.1);
@@ -752,7 +754,72 @@ body.dark-mode .yearly-modal {
     border-radius: 10px;
 }
 
-/* 저장(체크) 및 삭제(롱 프레스)버튼 스타일 */
+/* 버튼을 하단 중앙에 배치하는 컨테이너 */
+.delete-btn-container {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+  padding: 15px 0;
+  width: 100%;
+}
+
+/* 삭제 버튼 */
+.delete-glass-btn {
+  position: relative;
+  padding: 12px 13px;
+  border: none;
+  border-radius: 30px;
+  background-color: rgba(192, 192, 192, 0.2);
+  color: #ff4646;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+body.dark-mode .delete-glass-btn {
+  background-color: #19191B;
+  color: #ff4646;
+}
+
+.delete-glass-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  padding: 0.8px;
+  background: conic-gradient(
+    from 180deg,
+    rgba(128, 128, 128, 0.4) 0deg,
+    rgba(128, 128, 128, 0) 60deg,
+    rgba(128, 128, 128, 0.4) 120deg,
+    rgba(128, 128, 128, 0.4) 180deg,
+    rgba(128, 128, 128, 0) 240deg,
+    rgba(128, 128, 128, 0.4) 300deg,
+    rgba(128, 128, 128, 0.4) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* 다크모드 테두리 빛 반사 */
+body.dark-mode .delete-glass-btn::before {
+  background: conic-gradient(
+    from 180deg,
+    rgba(255, 255, 255, 0.3) 0deg,
+    rgba(255, 255, 255, 0) 60deg,
+    rgba(255, 255, 255, 0.3) 120deg,
+    rgba(255, 255, 255, 0.3) 180deg,
+    rgba(255, 255, 255, 0) 240deg,
+    rgba(255, 255, 255, 0.3) 300deg,
+    rgba(255, 255, 255, 0.3) 360deg
+  );
+}
+
+/* 저장(체크) 버튼 */
 .check-btn {
   width: 36px;
   height: 36px;
