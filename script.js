@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.8";
+const APP_VERSION = "3.8q";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -29,9 +29,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
 document.addEventListener("touchstart", function() {}, true);
 
-// ====================
+const closeBottomSheet = (modalId) => {
+  const modalElement = document.getElementById(modalId);
+  if (!modalElement) return;
+  modalElement.classList.remove("active");
+  setTimeout(() => {
+    modalElement.classList.add("hidden"); 
+    
+    const anyActive = document.querySelector('.modal-overlay.active, .modal.active');
+    if (!anyActive) {
+      document.body.classList.remove("modal-open", "stop-scroll");
+    }
+  }, 400);
+};
+
 // DOM 요소
-// ====================
 const datesContainer = document.getElementById("dates");
 const monthDisplay = document.getElementById("monthDisplay");
 const todayBtn = document.getElementById("fabTodayBtn");
@@ -93,9 +105,7 @@ function openSupplementModal(sup) {
   updateColorBar(sup.circleColor);
 }
 
-// ====================
 // 상태
-// ====================
 let dt = new Date();
 let supplements = [];
 let familyMembers = JSON.parse(localStorage.getItem("familyMembers")) || ["도림", "뚜임", "진이", "쿤이"];
@@ -119,7 +129,6 @@ const colorList = [
   "#c96a3f",
   ];
 
-// ====================
 // 한국 시간 기준 오늘 날짜 문자열 (YYYY-MM-DD)
 function getTodayKST() {
   const options = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
@@ -133,9 +142,7 @@ function getTodayKST() {
   return `${year}-${month}-${day}`;
 }
 
-// ====================
 // IndexedDB
-// ====================
 const DB_NAME = "supplementCalendarDB";
 const DB_VERSION = 1;
 const STORE_NAME = "supplements";
@@ -209,22 +216,18 @@ function deleteSupplementFromDB(id) {
   });
 }
 
-// ====================
 // 테마
-// ====================
 themeToggleBtn.addEventListener("click", () => {
   const isDark = document.body.classList.toggle("dark-mode");
   localStorage.setItem("darkMode", isDark);
 });
 
-// ====================
 // 월별 비용
-// ====================
 monthlyCostBtn.addEventListener("click", () => {
   const year = dt.getFullYear();
   const month = dt.getMonth() + 1;
 
-  document.getElementById("monthlyCostTitle").innerText = `${year}.${String(month).padStart(2,"0")}`;
+  document.getElementById("monthlyCostTitle").innerText = `비용`;
 
   let totalCost = 0;
   const monthlyItems = [];
@@ -286,8 +289,7 @@ const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
 });
 
 closeMonthlyCostModal.addEventListener("click", () => {
-  monthlyCostModal.classList.remove("active");
-  document.body.classList.remove("modal-open");
+  closeBottomSheet("monthlyCostModal");
 });
 
 // + 버튼 클릭 //
@@ -319,8 +321,7 @@ fabAddBtn.addEventListener("click", () => {
 });
 
 closeModalBtn.addEventListener("click", () => {
-  modalOverlay.classList.remove("active");
-  document.body.classList.remove("modal-open");
+  closeBottomSheet("modalOverlay");
 });
 
 // 달력 렌더 //
@@ -896,13 +897,11 @@ function openTakenCheckUI(date) {
   document.body.classList.add("modal-open");
 }
 
-// ❌ 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
-document.getElementById("closeTakenCheckBtn")
-  .addEventListener("click", async () => {
-    renderCalendar();
-    document.getElementById("takenCheckModal").classList.remove("active");
-    document.body.classList.remove("modal-open");
-  });
+// 복용체크모달 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
+document.getElementById("closeTakenCheckBtn").addEventListener("click", async () => {
+  renderCalendar();
+  closeBottomSheet("takenCheckModal");
+});
 
   // ===== 통계 모달 요소
 const statsBtn = document.getElementById("statsBtn");
@@ -930,16 +929,12 @@ statsBtn.addEventListener("click", () => {
 
 // 2. 통계 모달 닫기
 document.getElementById("closeStatsModal").onclick = function() {
-  statsModal.classList.remove("active");
-  document.body.classList.remove("modal-open");
-
+  closeBottomSheet("statsModal");
   if (periodStart) periodStart.value = "";
   if (periodEnd) periodEnd.value = "";
-  
-  document.querySelectorAll(".family-btn").forEach(btn => {
+    document.querySelectorAll(".family-btn").forEach(btn => {
     btn.classList.remove("selected");
   });
-
   statsContent.innerHTML = "";
 };
 
@@ -1285,7 +1280,7 @@ footerBackupLink.addEventListener("click", () => {
 
 // 취소/닫기
 closeBackupMenu.addEventListener("click", () => {
-  backupMenuModal.classList.remove("active");
+  closeBottomSheet("backupMenuModal");
 });
 
 // ====================
@@ -1305,7 +1300,7 @@ exportBtn.addEventListener("click", () => {
   a.click();
 
   URL.revokeObjectURL(url);
-  backupMenuModal.classList.remove("active");
+  closeBottomSheet("backupMenuModal");
 });
 
 // ====================
@@ -1372,7 +1367,7 @@ importFileInput.addEventListener("change", async (e) => {
     await openDatabase();
     await saveAllSupplements();
 
-    backupMenuModal.classList.remove("active");
+    closeBottomSheet("backupMenuModal");
     alert("백업 데이터를 성공적으로 불러왔습니다!");
     location.reload();
 
@@ -1671,19 +1666,25 @@ async function triggerInstall() {
 
 document.querySelectorAll(".close-btn").forEach(btn => {
   btn.addEventListener("click", () => {
-    const modals = [modalOverlay, statsModal, backupMenuModal, 
-                    document.getElementById("takenCheckModal"), 
-                    document.getElementById("familyConfigModal")];
-                    
-    modals.forEach(m => {
-      if(m) m.classList.remove("active");
-      document.body.classList.remove("modal-open");
-    });
+    const activeOverlay = document.querySelector(".modal-overlay.active");
+    const activeModal = document.querySelector(".modal.active, .stats-modal.active, .backup-menu-modal.active, .yearly-modal.active");
 
-    // 3. 브라우저 히스토리 관리 (아이폰의 '뒤로가기'와 연동)
-    if (window.history.state && window.history.state.modal) {
-      window.history.back();
-    }
+    if (activeOverlay) activeOverlay.classList.remove("active");
+    if (activeModal) activeModal.classList.remove("active");
+
+    setTimeout(() => {
+      document.body.classList.remove("modal-open");
+      
+      const yearlyModal = document.getElementById("yearlyModal");
+      if (yearlyModal) {
+        yearlyModal.classList.add("hidden");
+        document.body.classList.remove("stop-scroll");
+      }
+
+      if (window.history.state && window.history.state.modal) {
+        window.history.back();
+      }
+    }, 400);
   });
 });
 
@@ -1708,11 +1709,8 @@ if (monthDisplay) {
 
 if (closeYearlyModal) {
   closeYearlyModal.onclick = () => {
-    yearlyModal.classList.remove("active");
+    closeBottomSheet("yearlyModal");
     document.body.classList.remove("stop-scroll");
-    setTimeout(() => {
-      yearlyModal.classList.add("hidden");
-    }, 400);
   };
 }
 
