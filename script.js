@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.8z";
+const APP_VERSION = "3.8x";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
