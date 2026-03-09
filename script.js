@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.8x";
+const APP_VERSION = "3.8v";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -227,7 +227,7 @@ monthlyCostBtn.addEventListener("click", () => {
   const year = dt.getFullYear();
   const month = dt.getMonth() + 1;
 
-  document.getElementById("monthlyCostTitle").innerText = `비용`;
+  document.getElementById("monthlyCostTitle").innerText = `${year}년 ${month}월`;
 
   let totalCost = 0;
   const monthlyItems = [];
@@ -272,7 +272,7 @@ const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
       `;
     });
   } else {
-    costHtml = "<p style='text-align:center; font-size:15px; font-weight:600; opacity:0.6; margin-top:80px; padding-bottom:80px;'>이번 달 등록된 비용이 없습니다.</p>";
+    costHtml = "<p style='text-align:center; font-size:20px; font-weight:bold; margin-top:100px; padding-bottom:80px;'>비용 없음</p>";
   }
 
   // 총액 표시 영역
@@ -330,7 +330,7 @@ function renderCalendar() {
   const year = dt.getFullYear();
   const month = dt.getMonth();
 
-  monthDisplay.innerText = `${year}. ${String(month+1).padStart(2,"0")}월`;
+  monthDisplay.innerText = `${year}. ${String(month+1).padStart(2,"0")}`;
 
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month+1,0).getDate();
@@ -924,7 +924,7 @@ statsBtn.addEventListener("click", () => {
 
   renderFamilyUI();
 
-  statsContent.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:150px;'>가족 이름을 선택하면<br>올해의 복용 통계가 표시됩니다.</p>";
+  statsContent.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:180px;'>이름을 길게 누르면<br>변경/삭제가 가능합니다</p>";
 });
 
 // 2. 통계 모달 닫기
@@ -1275,6 +1275,7 @@ footerYear.innerText = new Date().getFullYear();
 // 백업/복원 메뉴 열기
 footerBackupLink.addEventListener("click", () => {
   backupMenuModal.classList.add("active");
+  document.body.classList.add("modal-open");
   history.pushState({ modal: "backup" }, "");
 });
 
@@ -1700,9 +1701,9 @@ if (monthDisplay) {
     document.getElementById("yearlyTitle").innerText = `${year}년`;
     renderYearlyCalendar(year);
     yearlyModal.classList.remove("hidden");
-    document.body.classList.add("stop-scroll");
   setTimeout(() => {
     yearlyModal.classList.add("active");
+    document.body.classList.add("modal-open");
   }, 10);
 }
 }
@@ -1710,7 +1711,6 @@ if (monthDisplay) {
 if (closeYearlyModal) {
   closeYearlyModal.onclick = () => {
     closeBottomSheet("yearlyModal");
-    document.body.classList.remove("stop-scroll");
   };
 }
 
