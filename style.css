@@ -13,14 +13,10 @@ html, body {
 }
 
 body.dark-mode {
-  --bg-color: #121212;
+  --bg-color: #000000;
   --text-color: #e0e0e0;
   --sun-color: #df2222;
   --sat-color: #3767f7;
-}
-
-body.dark-mode .calendar-wrapper {
-  background-color: #121212;
 }
 
 body {
@@ -154,7 +150,7 @@ button:active,
 
   /* 다크모드 상자 대응 */
   body.dark-mode .header-right-group {
-   background-color: rgba(32, 32, 32, 0.863);
+   background-color: #141414;
 }
 
 .theme-btn {
@@ -605,6 +601,15 @@ body.dark-mode #statsContent {
   transform: translateY(0);
 }
 
+body.dark-mode .modal, 
+body.dark-mode .taken-modal, 
+body.dark-mode .stats-modal, 
+body.dark-mode .backup-menu-modal, 
+body.dark-mode .yearly-modal {
+  background-color: #1C1C1E !important;
+  border-top: 1px solid #3a3a3c !important;
+}
+
 /* 헤더 내에서 제목과 수평을 맞추기 위한 설정 */
 .modal-header {
   display: flex;
@@ -742,7 +747,7 @@ body.dark-mode #statsContent {
   width: 35px;
   height: 35px;
   border-radius: 50%;
-  background-color: rgb(253, 77, 77);
+  background-color: #EB504B;
   border: none;
   cursor: pointer;
   position: relative;
@@ -770,13 +775,13 @@ body.dark-mode #statsContent {
 }
 
 body:not(.dark-mode) .check-btn::before {
-  border-color: rgb(255, 183, 183);
-  filter: brightness(1.2);
+  border-color: #F7D0D2;
+  filter: brightness(1.1);
 }
 
 body.dark-mode .check-btn::before {
-  border-color: #ffa3a3;
-  filter: brightness(1.2);
+  border-color: #F7D0D2;
+  filter: brightness(1.1);
 }
 
 /* 닫기 버튼(우측) */
