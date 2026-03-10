@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.9q";
+const APP_VERSION = "3.9w";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -120,14 +120,14 @@ let currentEditId = null;
 const colorList = [
   "#E84855",
   "#1976D2",
-  "#ceaa1a",
+  "#ffD516",
   "#388E3C",
   "#8E44AD",
   "#F57C00",
   "#118AB2",
   "#D32F2F",
   "#97aa44",
-  "#8E24AA",
+  "#D700BB",
   "#FF9F1C",
   "#16A085",
   "#3498DB",

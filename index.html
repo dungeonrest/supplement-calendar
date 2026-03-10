@@ -103,93 +103,90 @@
       <h3>영양제 정보</h3>
       <button id="closeModal" class="close-btn right"><span></span></button>
     </div>
+    
     <div id="modalBody">
-  <input type="date" id="inputDate" class="my-date input-date">
-  <div class="color-picker-container">
-    <div id="colorBar" class="custom-color-bar" style="position: relative;">
-      <div class="color-info">
-        <div id="colorDot" class="color-dot"></div>
-        <span id="colorHexText">자동 색상</span>
+      <div class="memo-paper-group info-group">
+        <div class="info-row split">
+          <div class="info-col">
+            <input type="date" id="inputDate" class="memo-line-style">
+          </div>
+          <div class="info-divider-vertical"></div>
+          <div class="info-col">
+            <div id="colorBar" class="custom-color-bar">
+              <div class="color-info">
+                <div id="colorDot" class="color-dot"></div>
+                <span id="colorHexText">자동 색상</span>
+              </div>
+              <input type="color" id="inputColor">
+            </div>
+          </div>
+        </div>
+        <div class="memo-divider"></div>
+
+        <div class="info-row">
+          <span class="row-label">제품명</span>
+          <input type="text" id="inputProduct" class="memo-line-style" placeholder="제품명 입력">
+          <span class="unit-placeholder"></span>
+        </div>
+        <div class="memo-divider"></div>
+
+        <div class="info-row">
+          <span class="row-label">가격</span>
+          <input type="text" id="inputPrice" class="memo-line-style" placeholder="0" inputmode="numeric">
+          <span class="unit-text">원</span>
+        </div>
+        <div class="memo-divider"></div>
+
+        <div class="info-row">
+          <span class="row-label">제공량</span>
+          <input type="text" id="inputTotal" class="memo-line-style" placeholder="0" inputmode="numeric">
+          <select id="inputUnit" class="unit-select-inside">
+            <option value="캡슐">캡슐</option>
+            <option value="정">정</option>
+            <option value="g">g</option>
+          </select>
+        </div>
+        <div class="memo-divider"></div>
+
+        <div class="info-row">
+          <span class="row-label">복용량</span>
+          <input type="text" id="inputDose" class="memo-line-style" placeholder="0" inputmode="numeric">
+          <span id="unitDisplay" class="unit-text">캡슐</span>
+        </div>
       </div>
-      <input type="color" id="inputColor" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;">
-    </div>
-  </div>
 
-  <input type="text" id="inputProduct" placeholder="제품명" class="product-name input-product">
-  <div class="input-combined-group">
-    <input type="text" id="inputPrice" placeholder="가격" inputmode="numeric">
-    <span class="unit-won">원</span>
-  </div>
-
-  <div class="input-combined-group">
-    <input type="text" id="inputTotal" placeholder="제공량" inputmode="numeric">
-    <select id="inputUnit" class="unit-select-inside">
-      <option value="캡슐">캡슐</option>
-      <option value="정">정</option>
-      <option value="g">g</option>
-    </select>
-  </div>
-  <div class="input-combined-group">
-    <input type="text" id="inputDose" placeholder="복용량" inputmode="numeric">
-    <span id="unitDisplay">캡슐</span>
-  </div>
-</div>
-
-      <div class="checkbox-line">
-        <label class="checkbox-item">
-          <input type="checkbox" class="inputFamily" value="도림">
-          <span class="checkbox-label-text">도림</span>
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" class="inputFamily" value="뚜임">
-          <span class="checkbox-label-text">뚜임</span>
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" class="inputFamily" value="진이">
-          <span class="checkbox-label-text">진이</span>
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" class="inputFamily" value="쿤이">
-          <span class="checkbox-label-text">쿤이</span>
-        </label>
-      </div>
-
-      <div class="checkbox-line">
-        <label class="checkbox-item">
-          <input type="checkbox" class="inputTime" value="아침">
-          <span class="checkbox-label-text">아침</span>
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" class="inputTime" value="점심">
-          <span class="checkbox-label-text">점심</span>
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" class="inputTime" value="저녁">
-          <span class="checkbox-label-text">저녁</span>
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" class="inputTime" value="공복">
-          <span class="checkbox-label-text">공복</span>
-        </label>
+      <label class="input-label" style="margin-top: 25px;">대상 및 시간</label>
+      <div class="memo-paper-group checkbox-group">
+        <div class="checkbox-line-row">
+          <label class="checkbox-item"><input type="checkbox" class="inputFamily" value="도림"><span class="checkbox-label-text">도림</span></label>
+          <label class="checkbox-item"><input type="checkbox" class="inputFamily" value="뚜임"><span class="checkbox-label-text">뚜임</span></label>
+          <label class="checkbox-item"><input type="checkbox" class="inputFamily" value="진이"><span class="checkbox-label-text">진이</span></label>
+          <label class="checkbox-item"><input type="checkbox" class="inputFamily" value="쿤이"><span class="checkbox-label-text">쿤이</span></label>
+        </div>
+        <div class="memo-divider"></div>
+        <div class="checkbox-line-row">
+          <label class="checkbox-item"><input type="checkbox" class="inputTime" value="아침"><span class="checkbox-label-text">아침</span></label>
+          <label class="checkbox-item"><input type="checkbox" class="inputTime" value="점심"><span class="checkbox-label-text">점심</span></label>
+          <label class="checkbox-item"><input type="checkbox" class="inputTime" value="저녁"><span class="checkbox-label-text">저녁</span></label>
+          <label class="checkbox-item"><input type="checkbox" class="inputTime" value="공복"><span class="checkbox-label-text">공복</span></label>
+        </div>
       </div>
 
       <div class="memo-container">
-  <label class="input-label"></label>
-  <div class="memo-paper-group">
-    <input type="text" id="memoLine1" class="memo-line" placeholder="" autocomplete="off">
-    <div class="memo-divider"></div>
-    <input type="text" id="memoLine2" class="memo-line" placeholder="" autocomplete="off">
-    <div class="memo-divider"></div>
-    <input type="text" id="memoLine3" class="memo-line" placeholder="" autocomplete="off">
-  </div>
-</div>
+        <label class="input-label">메모</label>
+        <div class="memo-paper-group">
+          <input type="text" id="memoLine1" class="memo-line" placeholder="" autocomplete="off">
+          <div class="memo-divider"></div>
+          <input type="text" id="memoLine2" class="memo-line" placeholder="" autocomplete="off">
+          <div class="memo-divider"></div>
+          <input type="text" id="memoLine3" class="memo-line" placeholder="" autocomplete="off">
+        </div>
+      </div>
 
       <div class="delete-btn-container">
-  <button id="deleteInfoBtn" class="delete-glass-btn">영양제 삭제</button>
-</div>
-</div>
-  </div>
-</div> </div>
+        <button id="deleteInfoBtn" class="delete-glass-btn">영양제 삭제</button>
+      </div>
+    </div> </div> </div>
 
 <div id="monthlyCostModal" class="modal-overlay hidden">
   <div class="modal">

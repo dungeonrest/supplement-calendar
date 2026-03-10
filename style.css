@@ -125,7 +125,10 @@ button:active,
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: calc(10px + env(safe-area-inset-top)) 20px 10px 20px;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 10px 10px 10px 10px;
 }
 
 .month-display {
@@ -133,7 +136,6 @@ button:active,
   font-weight: 700;
   color: var(--text-color);
   letter-spacing: -0.5px;
-  padding-left: 1px;
   cursor: default;
   user-select: none;
 }
@@ -147,7 +149,6 @@ button:active,
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 2px 4px;
   border-radius: 50px;
   border: none;
   background-color: rgba(216, 213, 213, 0.171);
@@ -517,12 +518,18 @@ body.modal-open {
   touch-action: none !important;
 }
 
-/* 모달 내부(스크롤 영역) */
 .modal {
+  width: 100% !important; 
+  height: 99vh !important;
+  max-width: none !important;
+  max-height: 99vh !important;
+  background-color: var(--bg-color) !important;
+  border-radius: 35px 35px 0 0;
   display: flex;
-  flex-direction: column; /* 헤더와 바디 분리 */
-  overflow: hidden !important; /* 모달 자체 스크롤은 막음 */
-  -webkit-overflow-scrolling: touch;
+  flex-direction: column; /* 헤더 고정, 바디 스크롤 구조 */
+  overflow: hidden !important; /* 내부 바디만 스크롤하기 위해 전체는 숨김 */
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
 #modalBody {
@@ -533,17 +540,6 @@ body.modal-open {
   justify-content: space-between !important;
   align-content: flex-start !important;
   margin-bottom: 0 !important;
-}
-
-#modalBody, #monthlyCostContent, #takenCheckBody, #statsContent {
-  flex: 1;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  overscroll-behavior: contain !important;
-  touch-action: pan-y !important;
-  background-color: transparent !important; 
-  padding: 20px 10px 20px 10px !important;
-  margin-top: 0;
 }
 
 /* 밤 모드 대응 */
@@ -563,7 +559,8 @@ body.dark-mode #statsContent {
 
 .modal-overlay {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -573,6 +570,7 @@ body.dark-mode #statsContent {
   visibility: hidden;
   pointer-events: none;
   transition: visibility 0.4s;
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-overlay.active {
@@ -582,27 +580,7 @@ body.dark-mode #statsContent {
   transition: none;
 }
 
-.modal, .taken-modal, .stats-modal, .backup-menu-modal, .yearly-modal {
-  width: 100% !important; 
-  height: 99vh !important;
-  max-width: none !important;
-  max-height: 99vh !important;
-  padding: 0px;
-  margin-top: 0;
-  box-sizing: border-box;
-  background-color: var(--bg-color) !important;
-  border: none !important;
-  border-top: 1px solid var(--calendar-line) !important;
-  box-shadow: none !important;
-  border-radius: 35px 35px 0 0;
-  position: relative;
-  touch-action: pan-y !important;
-  overflow: hidden !important;
-  overscroll-behavior: contain !important;
-  transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
-  will-change: transform;
-}
+
 
 /* 3. 모달이 열릴 때 위로 슬라이드 */
 .modal-overlay.active .modal,
@@ -613,29 +591,6 @@ body.dark-mode #statsContent {
   transform: translateY(0);
 }
 
-body.dark-mode .modal, 
-body.dark-mode .taken-modal, 
-body.dark-mode .stats-modal, 
-body.dark-mode .backup-menu-modal, 
-body.dark-mode .yearly-modal {
-  background-color: #1C1C1E !important;
-}
-
-/* 헤더 내에서 제목과 수평을 맞추기 위한 설정 */
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 15px 20px;
-  position: sticky;
-  top: 0;
-  width: 100%;
-  z-index: 1000; /* 컨텐츠보다 위에 위치 */
-  box-sizing: border-box; /* 패딩이 너비를 넘지 않게 함 */
-  border-radius: 35px 35px 0 0;
-}
-
-
 /* 제목이 정확히 가운데 오도록 보정 */
 .modal-header h3 {
   position: absolute;
@@ -645,23 +600,6 @@ body.dark-mode .yearly-modal {
   font-size: 17px;
   font-weight: 700;
   pointer-events: none;
-}
-
-.modal-header, .cost-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  height: 60px;
-}
-
-.yearly-modal .modal-header {
-    display: flex !important;
-    justify-content: flex-start !important;
-    align-items: center !important;
-    padding: calc(20px + env(safe-area-inset-top)) 10px 10px 20px !important;
-    position: relative !important;
-    height: auto !important;
-    border: none !important;
 }
 
 .yearly-modal .modal-header h3 {
@@ -677,6 +615,9 @@ body.dark-mode .yearly-modal {
 
 .yearly-grid {
     display: grid !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
     grid-template-columns: repeat(3, 1fr) !important;
     column-gap: 0 !important;
     row-gap: 10px !important;
@@ -696,7 +637,7 @@ body.dark-mode .yearly-modal {
 }
 
 .mini-month-title {
-    font-size: 17px;
+    font-size: 16px;
     font-weight: bold;
     margin-bottom: 4px;
     color: var(--text-color);
@@ -713,7 +654,7 @@ body.dark-mode .yearly-modal {
 }
 
 .mini-day {
-    font-size: clamp(9px, 0.8vw, 14px) !important;
+    font-size: 8px !important;
     font-weight: bold !important;
     width: 100% !important;
     aspect-ratio: 1/1 !important;
@@ -745,58 +686,275 @@ body.dark-mode .yearly-modal {
     top: -8px !important;
 }
 
-.modal-overlay.yearly-mode::-webkit-scrollbar {
+.yearly-grid::-webkit-scrollbar {
     width: 5px;
 }
 
-.modal-overlay.yearly-mode::-webkit-scrollbar-thumb {
+.yearly-grid::-webkit-scrollbar-thumb {
     background-color: rgba(128, 128, 128, 0.3);
     border-radius: 10px;
 }
 
+/* 공통 입력창 스타일 초기화 */
+.modal input, .modal select {
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+  outline: none;
+  border: none;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+/* 모든 입력란 중앙 정렬 */
+.center-input {
+  text-align: center !important;
+  padding-right: 0;
+}
+
+/* 메모 스타일을 적용한 입력란 공통 */
+.memo-line-style {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-size: 15px !important;
+  font-weight: bold !important;
+  color: var(--text-color);
+  text-align: center !important; 
+  background: transparent;
+}
+
+body.dark-mode .memo-line-style { color: #e0e0e0 !important; }
+
+/* 정보 행 레이아웃 */
+.info-row {
+  display: flex;
+  align-items: center;
+  height: 45px;
+  padding: 0 0px;
+  box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+  width: 100%;
+}
+
+/* 1행(날짜/색상) 특수 레이아웃 */
+.info-row.split {
+  display: flex;
+  padding: 0;
+}
+
+.info-row.split #inputDate {
+  text-align: left;
+  width: 50%;
+}
+
+.info-col {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 45px;
+}
+
+/* 수직 구분선 (선택사항: 1행의 날짜와 색상 사이를 살짝 나누고 싶을 때) */
+.info-divider-vertical {
+  width: 1px;
+  height: 20px;
+  background-color: rgba(128, 128, 128, 0.15);
+  align-self: center;
+}
+
+.color-picker-container {
+  width: 50%;
+  position: relative;
+}
+
+.custom-color-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+#inputColor {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer;
+}
+
+.color-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid white;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+#colorHexText {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+/* 왼쪽 고정 라벨 (제품명, 가격 등) */
+.row-label {
+  font-size: 14px;
+  color: #888;
+  font-weight: normal;
+  width: 55px;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+body.dark-mode .row-label { color: #98989E; }
+
+.row-label, .unit-text, .unit-select-inside, .unit-placeholder {
+  min-width: 60px; /* 양 끝 요소의 너비를 동일하게 맞춰야 중앙이 정확함 */
+  font-size: 14px;
+}
+
+.unit-placeholder {
+  display: inline-block;
+}
+
+/* 오른쪽 단위 텍스트 */
+.unit-text, .unit-select-inside, .unit-placeholder {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: #979494 !important;
+  width: 55px;
+  text-align: right;
+  flex-shrink: 0;
+  background: transparent;
+}
+
+/* 단위 선택기(Select) 아이폰 전용 여백 제거 */
+select.unit-select-inside {
+  padding: 0;
+  margin: 0;
+  direction: rtl;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* 체크박스 그룹용 행 */
+.checkbox-line-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 50px;
+}
+
+/* 기존 체크박스 스타일 유지 및 보정 */
+input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+  border-radius: 10px;
+  background-color: #eeeeee;
+  display: inline-grid;
+  place-content: center;
+}
+
+body.dark-mode input[type="checkbox"] { background-color: #313136 !important; }
+
+input[type="checkbox"]:checked { background-color: #67CE67 !important; }
+body.dark-mode input[type="checkbox"]:checked { background-color: #67CE67 !important; }
+
+input[type="checkbox"]::before {
+  content: "";
+  width: 11px;
+  height: 11px;
+  transform: scale(0);
+  background-color: #e0ffe7;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+  transition: 150ms transform;
+}
+
+input[type="checkbox"]:checked::before { transform: scale(1); }
+
+.checkbox-label-text {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--text-color);
+  margin-left: 5px;
+}
+
+/* 아이폰 날짜 선택기 중앙 정렬 강제 */
+#inputDate {
+  width: 100%;
+  text-align: center !important;
+}
+
+#inputDate::-webkit-date-and-time-value {
+  text-align: center !important;
+  width: 100%;
+  display: block;
+}
+
 .memo-container {
-  width: 75%;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 25px;
-  padding: 10px 30px 10px 30px;
   display: block !important;
+  width: 100%;
 }
 
 .memo-paper-group {
+  width: 92% !important;
+  margin: 0 auto !important;
+  padding: 5px 15px !important;
   background: rgba(192, 192, 192, 0.2) !important;
-  border-radius: 30px;
+  border-radius: 25px;
   overflow: hidden; /* 테두리 밖으로 선이 나가지 않게 */
-  width: 100% !important; /* 부모 너비 꽉 채우기 */
-  display: block !important;
+  box-sizing: border-box;
 }
 
 body.dark-mode .memo-paper-group {
   background: #2C2C2E !important;
 }
 
+.input-label {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 3px;
+  gap: 3px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-color);
+
+  width: 90% !important;
+  margin: 25px auto 5px !important;
+  padding: 0 10px !important;
+  box-sizing: border-box;
+}
+
+body.dark-mode .input-label {
+  color: #98989E !important;
+}
+
 .memo-line {
   width: 100% !important;
-  height: 40px;
-  padding: 0 20px;
+  height: 45px;
   background: transparent;
   border: none;
   outline: none;
   font-size: 15px;
+  font-weight: bold;
   color: var(--text-color);
   font-family: inherit;
-  display: block;
-
+  text-align: center;
   background: transparent !important; 
   border: none !important;
-  border-radius: 0 !important;
-  margin: 0 !important;
 }
 
 .memo-divider {
   height: 0.8px;
   background-color: rgba(128, 128, 128, 0.15);
-  margin: 0 15px; /* 선이 양끝에서 살짝 떨어지게 */
 }
 
 body.dark-mode .memo-divider {
@@ -807,8 +965,7 @@ body.dark-mode .memo-divider {
 .delete-btn-container {
   display: flex;
   justify-content: center;
-  margin-top: auto;
-  padding: 15px 0;
+  padding: 40px 0 20px;
   width: 100%;
 }
 
@@ -996,339 +1153,6 @@ body.dark-mode .close-btn::before {
   transform: translate(-50%, -50%) rotate(-45deg);
 }
 
-.modal input, 
-.modal select, 
-.modal button {
-  /* 📌 아이폰/사파리 기본 스타일 제거 및 표준 설정 */
-  -webkit-appearance: none; /* 사파리용 */
-  -moz-appearance: none;    /* 파이어폭스용 */
-  appearance: none;         /* 표준 설정 */
-  font-family: inherit;      /* 부모의 폰트 계승 */
-  -webkit-text-size-adjust: 100%; /* 아이폰에서 폰트 크기 제멋대로 변하는 것 방지 */
-}
-
-/* 아이폰 인풋창 클릭 시 확대 방지 (iOS는 폰트가 16px 미만이면 자동 확대됨) */
-@media screen and (max-width: 768px) {
-    .modal input, .modal select {
-        font-size: 16px !important; 
-    }
-}
-
-/* 모든 입력창의 글자 스타일 통일 */
-.modal input[type="text"],
-.modal input[type="date"],
-.custom-color-bar,
-.input-combined-group input {
-    font-size: 16px !important;    /* 크기 통일 */
-    font-weight: bold !important;
-    color: #333 !important;
-    text-align: center;
-}
-
-/* 다크모드 글자색 통일 */
-body.dark-mode .modal input,
-body.dark-mode .modal select,
-body.dark-mode #colorHexText {
-    color: #e0e0e0 !important;
-}
-
-.modal input[type="date"] {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 40px;
-    line-height: normal;
-    border: none;
-}
-
-/* 아이폰 사파리에서 date 텍스트 위치 보정 */
-.modal input[type="date"]::-webkit-date-and-time-value {
-    margin: 0;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* 다크모드 대응 */
-body.dark-mode .modal input[type="date"] {
-  background-color: #2C2C2E !important;
-  color: #ffffff;
-  color-scheme: dark;      /* 아이폰 시스템 달력 팝업도 다크하게 */
-}
-
-
-/* 모달 입력창 디자인 개선 */
-.modal input {
-  width: 50%;
-  margin-top: 0px !important;
-  margin-bottom: 0px !important;
-  padding: 10px;
-  border-radius: 50px;
-  background: #f5f5f5;
-  outline: none;
-  box-sizing: border-box;
-  text-align: center;
-}
-
-/* 커스텀 바 디자인 */
-.custom-color-bar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 40px;
-  background: #f5f5f5;
-  border-radius: 50px;
-  cursor: pointer;
-  box-sizing: border-box;
-  transition: background 0.2s ease;
-}
-
-body.dark-mode .custom-color-bar {
-  background-color: #2C2C2E !important;
-  color: #ffffff;
-}
-
-/* 왼쪽 정보 영역 (점 + 텍스트) */
-.color-info {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-/* 색상 점 */
-.color-dot {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: #000;
-  border: 2px solid white;
-  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
-}
-
-#inputProduct {
-  background: #f5f5f5;
-  height: 40px;
-  border: none;
-  border-radius: 50px;
-  }
-
-  body.dark-mode #inputProduct {
-  background-color: #2C2C2E !important;
-  }
-
-/* 입력창 그룹 */
-.input-combined-group {
-  display: flex;
-  align-items: center;
-  background: #f5f5f5;
-  border-radius: 50px;
-  padding: 0 10px 0 35px;
-  height: 40px;
-  box-sizing: border-box;
-  border: none;
-  overflow: hidden;
-}
-
-body.dark-mode .input-combined-group {
-  background-color: #2C2C2E !important;
-}
-
-/* 실제 숫자 입력 부분 */
-.input-combined-group input {
-  flex: 1;
-  border: none !important;
-  outline: none;
-  color: inherit;
-  text-align: center;
-  background: transparent !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  height: 100%;
-}
-
-body.dark-mode .input-combined-group input {
-  background-color: #2c2c2e00 !important;
-}
-
-/* 3. 내부 단위(Select, Span) 스타일 통일 */
-.unit-select-inside, 
-#unitDisplay, 
-.unit-won {
-  font-family: -apple-system, Helvetica, Arial, sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  color: #979494 !important;
-  opacity: 1 !important;
-  text-align: right;
-  min-width: 30px;
-  height: 100%;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-end; /* 오른쪽 정렬 */
-  padding: 0 !important;
-  margin: 0 !important;
-  line-height: 1;
-
-  border: none !important;
-  background: transparent !important;
-  outline: none !important;
-  appearance: none !important;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  -webkit-font-smoothing: antialiased;
-}
-
-select.unit-select-inside {
-  width: auto;
-  min-width: 35px;
-  -webkit-font-smoothing: antialiased;
-  font-size: 14px !important;
-  color: #979494 !important;
-  -webkit-text-fill-color: #979494 !important; /* 사파리 전용 글자색 채우기 */
-  cursor: pointer;
-  line-height: normal; /* 라인 높이 초기화 */
-  direction: rtl;      /* 텍스트를 오른쪽으로 밀기 */
-}
-
-body.dark-mode .unit-select-inside option {
-    background-color: #2C2C2E !important;
-    color: #ffffff !important;
-    text-align: center;
-}
-
-#inputDate, 
-.color-picker-container, 
-#inputProduct, 
-.input-combined-group {
-  width: 48% !important;
-  margin-top: 25px !important;
-  margin-bottom: 0px !important;
-  box-sizing: border-box;
-  flex-shrink: 0;
-}
-
-/* 버튼 컨테이너 (가로로 나란히) */
-.modal-footer-btns {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 40px;
-  padding-bottom: 10px;
-  width: 100%;
-}
-
-.checkbox-line {
-  display: flex;
-  justify-content: space-between; /* PC에서는 시원하게 양 끝으로 배치 */
-  align-items: center;
-  margin-top: 35px;
-  width: 100%;
-  padding: 0 20px; /* 양 옆에 약간의 숨통만 틔워줌 */
-  box-sizing: border-box;
-}
-
-.checkbox-item {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;                     /* 체크박스와 글자 사이 간격 */
-  cursor: pointer;
-  min-width: 0;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* 2. 모바일 설정 (아이폰 15 Pro 포함, 화면 너비 768px 이하일 때) */
-@media screen and (max-width: 768px) {
-  .checkbox-line {
-    justify-content: center;    /* 아이폰에서는 가운데로 옹기종기 모음 */
-    gap: 25px;                  /* 👈 여기서 아이폰 전용 간격을 조절하세요! */
-    margin-top: 10px;
-    margin-bottom: 0;
-    padding: 0;
-  }
-
-  .checkbox-item {
-    flex: none;                 /* 아이폰에서는 글자 크기만큼만 차지 */
-    width: auto;
-    padding: 5px 2px;
-  }
-}
-
-.checkbox-label-text {
-  font-size: 15px;
-  font-weight: bold;
-  line-height: 1;
-  color: #222222;
-  letter-spacing: -0.5px;
-  cursor: pointer;
-}
-
-body.dark-mode .checkbox-label-text {
-  color: #ccc;
-}
-
-/* [통합] 세련된 플랫 & 컬러 체크박스 */
-input[type="checkbox"] {
-  -webkit-appearance: none;
-  appearance: none;
-  background-color: #eeeeee;
-  margin: 0;
-  cursor: pointer;
-  width: 22px;
-  height: 22px;
-  border-radius: 10px;
-  display: inline-grid;
-  place-content: center;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  vertical-align: middle;
-}
-
-body.dark-mode input[type="checkbox"] {
-  background-color: #313136 !important;
-}
-
-input[type="checkbox"]:checked {
-  background-color: #67CE67 !important;
-  border-color: transparent !important;
-  box-shadow: none !important;
-}
-
-/* 2. 체크 표시(V) 디자인 */
-input[type="checkbox"]::before {
-  content: "";
-  width: 11px;
-  height: 11px;
-  transform: scale(0);
-  transition: 150ms transform cubic-bezier(0.18, 0.89, 0.32, 1.28); /* 튕기는 듯한 효과 */
-  background-color: #e0ffe7; 
-  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-}
-
-input[type="checkbox"]:checked::before {
-  transform: scale(1); /* 체크 시 V자가 뿅 나타남 */
-}
-
-/* 다크모드에서도 체크되면 민트색 유지 */
-.dark-mode input[type="checkbox"]:checked {
-  background-color: #67CE67 !important;
-  border-color: #67CE67 !important;
-  box-shadow: none !important;
-}
-
-/* 월별 비용 모달 헤더 */
-.cost-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 15px 20px !important;
-  min-height: 60px;
-  box-sizing: border-box;
-}
-
 #monthlyCostContent {
   display: flex;
   flex-direction: column;
@@ -1420,7 +1244,7 @@ input[type="number"], .total-cost-amount, .stats-count-text {
   margin-right: auto;
   padding: 5px 20px 5px 20px;
   margin-bottom: 20px;
-  background-color: rgba(128, 128, 128, 0.05);
+  background: rgba(192, 192, 192, 0.2);
   border-radius: 25px;
 }
 
@@ -1588,7 +1412,6 @@ body.dark-mode .extend-btn {
   padding: 5px 0;
   background-color: transparent;
   position: sticky;
-  top: 75px;
   z-index: 1001;
   margin-top: 0;
 }
@@ -1623,23 +1446,6 @@ body.dark-mode .family-btn.selected {
   background-color: #67CE67 !important;
   display: inline-block;
   color: black;
-}
-
-#statsContent {
-  margin-top: 15px;
-  font-size: 14px;
-  font-weight: 600;
-  padding-left: 10%;
-  padding: 0 5% 40px 5%;
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  scrollbar-width: none; 
-  -ms-overflow-style: none;
-}
-
-#statsContent::-webkit-scrollbar {
-  display: none;
 }
 
 /* 플로팅 버튼 디자인 */
@@ -1741,12 +1547,7 @@ body.dark-mode .menu-btn {
   color: white;
 }
 
-/* CSS 하단에 추가 */
-.backup-menu-modal {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
+
 
 /* 전체 스크롤바 숨기기 */
 *::-webkit-scrollbar {
@@ -1842,11 +1643,61 @@ body.dark-mode .menu-btn {
 body.dark-mode #familyInput { border-bottom-color: #333; color: white; }
 body.dark-mode .onboarding-header h1 { color: white; }
 
-/* 텍스트 스타일은 유지하고 클릭 범위(공간)만 확장 */
 #footerBackupLink, #footerVersion {
   display: inline-block; 
-  padding: 20px; /* 사방으로 20px만큼 클릭 가능한 투명 공간을 만듭니다 */
-  margin: -10px; /* 확장된 공간 때문에 주변 요소가 밀리지 않도록 조정 */
+  padding: 20px;
+  margin: -10px;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent; /* 터치 시 생기는 하이라이트 제거 */
+}
+
+.modal, .taken-modal, .stats-modal, .backup-menu-modal, .yearly-modal {
+    background-color: transparent !important; 
+    border: none !important;
+}
+
+.modal-header, .cost-header, .yearly-modal .modal-header {
+    position: sticky !important;
+    top: 0 !important;
+    width: 100%;
+    padding: 15px 20px;
+    z-index: 2000 !important;
+    height: 70px !important;
+    box-sizing: border-box;
+    
+    background-color: transparent !important; 
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    
+    display: flex !important;
+    align-items: center !important;
+    border: none !important;
+    justify-content: space-between;
+}
+
+#modalBody, #monthlyCostContent, #takenCheckBody, #statsContent, .yearly-grid, .backup-menu-modal {
+    margin-top: -70px !important; 
+    padding-top: 80px !important; 
+    flex: 1 !important;
+    background-color: var(--bg-color) !important; 
+
+    border-top: 1px solid var(--calendar-line) !important;
+    border-top: 1px solid var(--calendar-line) !important;
+    border-radius: 35px 35px 0 0 !important;
+    
+    min-height: 100% !important; 
+    box-sizing: border-box !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+body.dark-mode #modalBody, 
+body.dark-mode #monthlyCostContent, 
+body.dark-mode #takenCheckBody, 
+body.dark-mode #statsContent,
+body.dark-mode .yearly-grid,
+body.dark-mode .backup-menu-modal {
+    background-color: #1C1C1E !important;
+    border-top: 1px solid var(--calendar-line) !important;
+    border-radius: 35px 35px 0 0 !important;
 }
