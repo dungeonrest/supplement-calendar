@@ -95,7 +95,6 @@ button,
   -webkit-tap-highlight-color: transparent; /* 기본 회색 하이라이트 제거 */
 }
 
-/* 앱 내 모든 주요 버튼에 대한 롱프레스(Active) 공통 효과 */
 button:active, 
 .header-right-group:active,
 .fab-today-btn:active, 
@@ -120,7 +119,6 @@ button:active,
   transition: all 0.3s ease;
 }
 
-/* 헤더 */
 .calendar-header {
   display: flex;
   justify-content: space-between;
@@ -140,7 +138,6 @@ button:active,
   user-select: none;
 }
 
-/* 다크모드 시 가독성 유지 */
 .dark-mode .month-display {
   color: #ffffff;
 }
@@ -154,7 +151,6 @@ button:active,
   background-color: rgba(216, 213, 213, 0.171);
   }
 
-  /* 다크모드 상자 대응 */
   body.dark-mode .header-right-group {
    background-color: #141414;
 }
@@ -281,7 +277,7 @@ body.dark-mode .theme-icon::after {
 
 .stats-btn {
   display: flex;
-  align-items: flex-end; /* 핵심: 모든 막대를 바닥으로 정렬 */
+  align-items: flex-end;
   justify-content: center;
   gap: 3px;
   height: 32px;
@@ -308,7 +304,6 @@ body.dark-mode .theme-icon::after {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 요일 레이블 */
 .day-labels {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -335,7 +330,6 @@ body.dark-mode .theme-icon::after {
   gap: 0;
 }
 
-/* 달력이 있는 컨테이너 혹은 body에 추가 */
 #dates-wrapper {
   touch-action: pan-y;
   overscroll-behavior-x: none;
@@ -435,13 +429,11 @@ body.dark-mode .theme-icon::after {
   }
 }
 
-/* 밤모드에서 미복용 상태의 라벨만 반투명 */
 body.dark-mode .supplement-bar-label.unTaken {
   opacity: 0.4;
   color: #e2e2e2;
 }
 
-/* 밤모드에서 복용이 있거나 완전 복용된 라벨은 뚜렷하게 */
 body.dark-mode .supplement-bar-label:not(.unTaken) {
   opacity: 1;
   color: #ffffff;
@@ -450,8 +442,6 @@ body.dark-mode .supplement-bar-label:not(.unTaken) {
 /* 날짜셀 안에 영양제 리스트 공간 */
 .supplement-list {
   width: 100%;
-  max-height: 120px;  /* 이 영역을 넘으면 스크롤 생김 */
-  overflow-y: auto;
   padding-top: 0px;
 }
 
@@ -472,8 +462,6 @@ body.dark-mode .supplement-bar-label:not(.unTaken) {
 
 .date.sun span.number { color: var(--sun-color); }
 .date.sat span.number { color: var(--sat-color); }
-
-/* 공휴일(한국 빨간날) */
 .date.holiday span.number { color: var(--sun-color); }
 
 /* 이전/다음달 날짜는 흐리게 표시 */
@@ -482,13 +470,10 @@ body.dark-mode .supplement-bar-label:not(.unTaken) {
   pointer-events: none; /* 클릭 안 되게 */
 }
 
-/* 비활성 상태에서도 요일 색 유지 */
 .date.inactive.sun span.number { color: var(--sun-color); }
 .date.inactive.sat span.number { color: var(--sat-color); }
 
-/* 영양제 종료 주간(Last Week)을 위한 강화된 사선 패턴 */
 .last-week-bar {
-  /* 배경색 위에 진한 흰색 사선을 덧씌움 (라이트 모드용) */
   background-image: repeating-linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.507),
@@ -499,7 +484,6 @@ body.dark-mode .supplement-bar-label:not(.unTaken) {
 }
 
 body.dark-mode .last-week-bar {
-  /* 배경색 위에 진한 흰색 사선을 덧씌움 (라이트 모드용) */
   background-image: repeating-linear-gradient(
     135deg,
     rgba(0, 0, 0, 0.507),
@@ -542,7 +526,6 @@ body.modal-open {
   margin-bottom: 0 !important;
 }
 
-/* 밤 모드 대응 */
 body.dark-mode #modalBody, 
 body.dark-mode #monthlyCostContent, 
 body.dark-mode #takenCheckBody, 
@@ -580,9 +563,6 @@ body.dark-mode #statsContent {
   transition: none;
 }
 
-
-
-/* 3. 모달이 열릴 때 위로 슬라이드 */
 .modal-overlay.active .modal,
 .modal-overlay.active .taken-modal,
 .modal-overlay.active .stats-modal,
@@ -591,7 +571,6 @@ body.dark-mode #statsContent {
   transform: translateY(0);
 }
 
-/* 제목이 정확히 가운데 오도록 보정 */
 .modal-header h3 {
   position: absolute;
   left: 50%;
@@ -730,7 +709,7 @@ body.dark-mode .memo-line-style { color: #e0e0e0 !important; }
 .info-row {
   display: flex;
   align-items: center;
-  height: 45px;
+  height: 40px;
   padding: 0 0px;
   box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
   width: 100%;
@@ -753,16 +732,9 @@ body.dark-mode .memo-line-style { color: #e0e0e0 !important; }
   justify-content: center;
   align-items: center;
   position: relative;
-  height: 45px;
+  height: 40px;
 }
 
-/* 수직 구분선 (선택사항: 1행의 날짜와 색상 사이를 살짝 나누고 싶을 때) */
-.info-divider-vertical {
-  width: 1px;
-  height: 20px;
-  background-color: rgba(128, 128, 128, 0.15);
-  align-self: center;
-}
 
 .color-picker-container {
   width: 50%;
@@ -799,7 +771,7 @@ body.dark-mode .memo-line-style { color: #e0e0e0 !important; }
 }
 
 #colorHexText {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: bold;
 }
 
@@ -816,7 +788,7 @@ body.dark-mode .memo-line-style { color: #e0e0e0 !important; }
 body.dark-mode .row-label { color: #98989E; }
 
 .row-label, .unit-text, .unit-select-inside, .unit-placeholder {
-  min-width: 60px; /* 양 끝 요소의 너비를 동일하게 맞춰야 중앙이 정확함 */
+  min-width: 60px;
   font-size: 14px;
 }
 
@@ -849,20 +821,19 @@ select.unit-select-inside {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  height: 50px;
+  height: 40px;
 }
 
-/* 기존 체크박스 스타일 유지 및 보정 */
 input[type="checkbox"] {
-  width: 22px;
-  height: 22px;
+  width: 21px;
+  height: 21px;
   border-radius: 10px;
-  background-color: #eeeeee;
+  background-color: #dddddd;
   display: inline-grid;
   place-content: center;
 }
 
-body.dark-mode input[type="checkbox"] { background-color: #313136 !important; }
+body.dark-mode input[type="checkbox"] { background-color: #3b3b41 !important; }
 
 input[type="checkbox"]:checked { background-color: #67CE67 !important; }
 body.dark-mode input[type="checkbox"]:checked { background-color: #67CE67 !important; }
@@ -874,13 +845,13 @@ input[type="checkbox"]::before {
   transform: scale(0);
   background-color: #e0ffe7;
   clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-  transition: 150ms transform;
+  transition: 350ms transform;
 }
 
 input[type="checkbox"]:checked::before { transform: scale(1); }
 
 .checkbox-label-text {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: bold;
   color: var(--text-color);
   margin-left: 5px;
@@ -906,7 +877,7 @@ input[type="checkbox"]:checked::before { transform: scale(1); }
 .memo-paper-group {
   width: 92% !important;
   margin: 0 auto !important;
-  padding: 5px 15px !important;
+  padding: 0px 15px !important;
   background: rgba(192, 192, 192, 0.2) !important;
   border-radius: 25px;
   overflow: hidden; /* 테두리 밖으로 선이 나가지 않게 */
@@ -939,7 +910,7 @@ body.dark-mode .input-label {
 
 .memo-line {
   width: 100% !important;
-  height: 45px;
+  height: 40px;
   background: transparent;
   border: none;
   outline: none;
