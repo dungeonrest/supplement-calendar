@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.9e";
+const APP_VERSION = "3.9r";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -33,6 +33,10 @@ const closeBottomSheet = (modalId) => {
   const modalElement = document.getElementById(modalId);
   if (!modalElement) return;
   modalElement.classList.remove("active");
+  const scrollableElements = modalElement.querySelectorAll('div'); 
+  scrollableElements.forEach(el => {
+    if (el.scrollTop > 0) el.scrollTop = 0;
+  });
   setTimeout(() => {
     modalElement.classList.add("hidden"); 
     
@@ -637,7 +641,7 @@ saveInfoBtn.addEventListener("click", async (e) => {
     supplements.push(newSup);
     await saveSupplementToDB(newSup);
   }
-
+    
     modalOverlay.classList.remove("active");
     selectedDateForList = start;
     renderCalendar();
@@ -1691,17 +1695,19 @@ document.querySelectorAll(".close-btn").forEach(btn => {
   });
 });
 
-// 연간 달력 관련 로직 시작
 const yearlyModal = document.getElementById("yearlyModal");
 const closeYearlyModal = document.getElementById("closeYearlyModal");
 
-// 2026년 표시 클릭 시 호출
 if (monthDisplay) {
   monthDisplay.style.cursor = "pointer";
   monthDisplay.onclick = () => {
     const year = dt.getFullYear(); 
     document.getElementById("yearlyTitle").innerText = `${year}년`;
     renderYearlyCalendar(year);
+    const container = document.getElementById("yearlyContent");
+    if (container) {
+      container.scrollTop = 0; 
+    }
     yearlyModal.classList.remove("hidden");
   setTimeout(() => {
     yearlyModal.classList.add("active");
@@ -1721,7 +1727,7 @@ function renderYearlyCalendar(year) {
   if (!container) return;
   container.innerHTML = "";
   
-  const todayKST = getTodayKST(); // 사용자님이 정의한 함수 사용
+  const todayKST = getTodayKST();
   const now = new Date();
   const currentMonthIdx = (now.getFullYear() === year) ? now.getMonth() : -1;
 
@@ -1738,24 +1744,20 @@ function renderYearlyCalendar(year) {
     const firstDay = new Date(year, m, 1).getDay();
     const lastDate = new Date(year, m + 1, 0).getDate();
 
-    // 1일 앞의 빈칸
     for (let i = 0; i < firstDay; i++) {
       daysGrid.innerHTML += `<div></div>`;
     }
 
-    // 날짜 렌더링
     for (let d = 1; d <= lastDate; d++) {
       const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       
-      // 사용자님의 supplements 배열에서 해당 날짜 스케줄 확인
       const dayData = supplements.filter(s => s.schedule && s.schedule.includes(dateStr));
       
       let style = "";
       if (dayData.length > 0) {
-        // 데이터가 있으면 첫 번째 영양제 색상 적용
         style = `background-color: ${dayData[0].circleColor}; color: #fff;`;
       }
-
+      
       daysGrid.innerHTML += `<div class="mini-day" style="${style}">${d}</div>`;
     }
     
