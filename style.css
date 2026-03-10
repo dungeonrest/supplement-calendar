@@ -21,7 +21,7 @@ body.dark-mode {
 
 body {
   margin: 0;
-  font-family: "Apple SD Gothic Neo", "Noto Sans KR", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
   -webkit-font-smoothing: antialiased;
@@ -542,7 +542,7 @@ body.modal-open {
   overscroll-behavior: contain !important;
   touch-action: pan-y !important;
   background-color: transparent !important; 
-  padding: 20px 20px 20px 20px !important;
+  padding: 20px 10px 20px 10px !important;
   margin-top: 0;
 }
 
@@ -755,8 +755,11 @@ body.dark-mode .yearly-modal {
 }
 
 .memo-container {
+  width: 75%;
+  margin-left: auto;
+  margin-right: auto;
   margin-top: 25px;
-  padding: 0 25px;
+  padding: 10px 30px 10px 30px;
   display: block !important;
 }
 
@@ -1057,7 +1060,7 @@ body.dark-mode .modal input[type="date"] {
 
 /* 모달 입력창 디자인 개선 */
 .modal input {
-  width: 48%;
+  width: 50%;
   margin-top: 0px !important;
   margin-bottom: 0px !important;
   padding: 10px;
@@ -1402,44 +1405,52 @@ input[type="number"], .total-cost-amount, .stats-count-text {
 
 /* 복용 체크 모달 커스텀 */
 #takenCheckBody {
-  display: block !important; /* flex 대신 block으로 레이아웃 안정화 */
+  display: block !important;
   width: 100%;
   height: auto;
-  min-height: calc(100% + 150px); /* 실제 높이보다 더 길게 공간 확보 */
-  padding: 10px 0 250px 0 !important; /* 하단 가림 방지를 위해 200px 부여 */
+  min-height: calc(100% + 150px);
+  padding: 10px 0 220px 0 !important;
   overflow-y: visible;
   box-sizing: border-box;
 }
 
 .taken-sup-section {
-  width: 75%;
+  width: 80%;
   margin-left: auto;
   margin-right: auto;
-  padding: 25px;
-  margin-bottom: 15px;
-  border-bottom: none;
+  padding: 5px 20px 5px 20px;
+  margin-bottom: 20px;
   background-color: rgba(128, 128, 128, 0.05);
-  border-radius: 50px;
+  border-radius: 25px;
 }
+
 body.dark-mode .taken-sup-section {
-  border-bottom: none;
   background-color: #2C2C2E !important;
 }
 
 .taken-sup-title {
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  gap: 10px;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 3px;
+  gap: 3px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--text-color);
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 5px 30px 5px 30px;
+}
+
+body.dark-mode .taken-sup-title,
+body.dark-mode .taken-sup-title .sup-dot,
+body.dark-mode .taken-sup-title .sup-name-text {
+  color: #98989E !important;
 }
 
 .sup-dot {
-  width: 21px;
-  height: 21px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   display: inline-block;
   flex-shrink: 0; /* 크기 고정 */
@@ -1452,14 +1463,18 @@ body.dark-mode .taken-sup-section {
 }
 
 .extend-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--text-color);
   background: rgba(173, 170, 170, 0.1);
   border: none;
   border-radius: 10px;
-  padding: 4px 6px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: bold;
+  padding: 3px 5px;
+  line-height: 1
 }
 
 body.dark-mode .extend-btn {
@@ -1473,37 +1488,25 @@ body.dark-mode .extend-btn {
 }
 
 .taken-table th {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 8px 0;
+  font-size: 13px;
+  font-weight: bold;
+  padding: 12px 0;
   text-align: center;
   border-bottom: 1.5px solid rgba(194, 194, 194, 0.2);
 }
 
 .taken-table td {
   text-align: center;
-  padding: 14px 2px;
+  padding: 12px 0px;
   background: transparent !important;
   background-color: transparent !important;
-  border-radius: 8px;
-  transition: transform 0.1s;
   border-bottom: 1.5px solid rgba(194, 194, 194, 0.2);
 }
 
-/* 체크박스 클릭 시 칸이 살짝 눌리는 느낌 추가 */
-.taken-table td:active {
-  transform: scale(0.95);
-}
-
 .taken-table tr td:first-child {
-  border-radius: 8px 0 0 8px;
-  font-weight: 600;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: bold;
   width: 40px;
-}
-
-.taken-table tr td:last-child {
-  border-radius: 0 8px 8px 8;
 }
 
 .taken-table tr:last-child td {

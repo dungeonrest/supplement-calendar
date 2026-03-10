@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.9";
+const APP_VERSION = "3.9q";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -765,11 +765,12 @@ function openTakenCheckUI(date) {
     body.innerHTML = "<p>해당 날짜의 영양제가 없습니다.</p>";
   } else {
     matchedSupps.forEach(sup => {
-      // 1. 섹션 카드 생성
+      const wrapper = document.createElement("div");
+      wrapper.classList.add("taken-sup-wrapper");
+
       const section = document.createElement("div");
       section.classList.add("taken-sup-section");
 
-      // 2. 제목 컨테이너 (Dot + 이름 + 연장버튼)
       const titleContainer = document.createElement("div");
       titleContainer.classList.add("taken-sup-title");
 
@@ -787,7 +788,6 @@ function openTakenCheckUI(date) {
       extendBtn.classList.add("extend-btn");
       extendBtn.innerText = "연장";
       
-      // [중요!] 연장 버튼 클릭 이벤트 (함수 내부로 이동)
       extendBtn.addEventListener("click", async () => {
         const baseDate = date;
         const leftUnTakenSlots = calculateLeftUnTakenSlotsBefore(sup, baseDate);
@@ -832,7 +832,7 @@ function openTakenCheckUI(date) {
       });
       
       titleContainer.appendChild(extendBtn);
-      section.appendChild(titleContainer);
+      wrapper.appendChild(titleContainer);
 
       // 3. 복용 체크 테이블 생성
       const table = document.createElement("table");
@@ -890,7 +890,8 @@ function openTakenCheckUI(date) {
       });
 
       section.appendChild(table);
-      body.appendChild(section);
+      wrapper.appendChild(section);
+      body.appendChild(wrapper);
     }); // 루프 끝
   }
 
@@ -925,7 +926,7 @@ statsBtn.addEventListener("click", () => {
 
   renderFamilyUI();
 
-  statsContent.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:180px;'>이름을 길게 누르면<br>변경/삭제가 가능합니다</p>";
+  statsContent.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:180px;'>이름을 길게 누르면<br>변경/삭제 가능합니다</p>";
 });
 
 // 2. 통계 모달 닫기
