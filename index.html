@@ -218,23 +218,28 @@
 <div id="statsModal" class="modal-overlay hidden">
   <div class="modal stats-modal">
     <div class="modal-header">
-      <h3>통계</h3>
-      <div style="width:35px;"></div>
+      <div class="tab-container" id="statsTabContainer">
+        <div class="tab-slider"></div>
+        <button class="tab-btn active" onclick="switchStatsTab('stats')">통계</button>
+        <button class="tab-btn" onclick="switchStatsTab('period')">기간</button>
+      </div>
       <button id="closeStatsModal" class="close-btn right"><span></span></button>
     </div>
 
     <div id="statsFilters">
-      <div class="family-buttons">
-        <button class="family-btn" data-name="도림">도림</button>
-        <button class="family-btn" data-name="뚜임">뚜임</button>
-        <button class="family-btn" data-name="진이">진이</button>
-        <button class="family-btn" data-name="쿤이">쿤이</button>
-      </div>
+      <div id="familyBtnsWrapper" class="family-buttons">
+        </div>
 
-      <!-- 기간 선택: 월 선택 UI -->
-      <div class="period-select" style="display: none;">
-        <input type="month" id="periodStart" />
-        <input type="month" id="periodEnd" />
+      <div id="periodWrapper" class="period-select-container" style="display: none;">
+        <div class="period-input-group">
+          <label>시작</label>
+          <input type="month" id="periodStart" />
+        </div>
+        <div class="period-input-group">
+          <label>종료</label>
+          <input type="month" id="periodEnd" />
+        </div>
+        <p class="period-info">기간을 설정한 후 다시 '통계' 탭을 눌러주세요.</p>
       </div>
     </div>
 

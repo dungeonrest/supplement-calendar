@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.10";
+const APP_VERSION = "3.1q";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1014,7 +1014,7 @@ sup.schedule.forEach(dateStr => {
 
   let html = "";
   if (Object.keys(stats).length === 0) {
-    html = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:150px;'>기록이 없습니다.</p>";
+    html = "<p style='text-align:center; font-size:20px; font-weight:bold; margin-top:150px;'>기록 없음</p>";
   } else {
     for (const key in stats) {
       const info = stats[key];
@@ -1037,6 +1037,7 @@ sup.schedule.forEach(dateStr => {
     }
   }
   statsContent.innerHTML = html;
+  statsContent.scrollTop = 0;
 }
 
 function renderFamilyUI() {
@@ -1143,6 +1144,50 @@ function renderFamilyUI() {
     });
   }
 }
+
+function switchStatsTab(tab) {
+  const container = document.getElementById('statsTabContainer');
+  const familyWrapper = document.getElementById('familyBtnsWrapper');
+  const periodWrapper = document.getElementById('periodWrapper');
+  const statsContent = document.getElementById('statsContent');
+  const btns = container.querySelectorAll('.tab-btn');
+  const slider = container.querySelector('.tab-slider');
+
+  if (tab === 'stats') {
+    // 슬라이더 이동 및 활성화 상태 변경
+    slider.style.transform = 'translateX(0)';
+    btns[0].classList.add('active');
+    btns[1].classList.remove('active');
+
+    // 화면 노출 제어
+    familyWrapper.style.display = 'flex';
+    periodWrapper.style.display = 'none';
+    statsContent.style.visibility = 'visible';
+    
+    // 탭을 돌아올 때 현재 선택된 가족의 통계를 다시 보여줌
+    const selectedBtn = familyWrapper.querySelector('.family-btn.selected');
+    if (selectedBtn) {
+      showStatsForFamily(selectedBtn.dataset.name);
+    }
+  } else {
+    // 슬라이더 이동 및 활성화 상태 변경
+    slider.style.transform = 'translateX(100%)';
+    btns[0].classList.remove('active');
+    btns[1].classList.add('active');
+
+    // 화면 노출 제어
+    familyWrapper.style.display = 'none';
+    periodWrapper.style.display = 'flex';
+    statsContent.style.visibility = 'hidden'; // 기간 설정 중엔 그래프 숨김
+  }
+}
+
+// 모달을 닫을 때 탭 위치 초기화 (추가 권장)
+const originalCloseStatsModal = document.getElementById("closeStatsModal").onclick;
+document.getElementById("closeStatsModal").onclick = function() {
+    originalCloseStatsModal(); // 기존 닫기 로직 실행
+    switchStatsTab('stats');   // 다시 열 때를 위해 '통계' 탭으로 초기화
+};
 
 function renderFamilyCheckboxes() {
   const familyGroup = document.querySelector(".input-group.family-group");
