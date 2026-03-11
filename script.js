@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.9r";
+const APP_VERSION = "3.10";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -391,25 +391,32 @@ function renderCalendar() {
     if (dayOfWeek === 6) div.classList.add("sat");
 
     const fullDate = `${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
-    
-    if (koreaHolidays2026.includes(fullDate)) {
-      div.classList.add("holiday");
-    }
-   if (fullDate === getTodayKST()) {
-      div.classList.add("today-date");
+    const todayStr = getTodayKST();
+
+    if (fullDate === todayStr) {
+        div.classList.add("today-date");
     }
 
-    div.innerHTML = `<span class="number">${i}</span>`;
-    
     if (fullDate === selectedDateForList) {
-      div.classList.add("selected");
+        div.classList.add("selected");
     }
 
+    const spanNumber = document.createElement("span");
+    spanNumber.classList.add("number");
+    spanNumber.innerText = i;
+    div.appendChild(spanNumber);
 
     div.addEventListener("click", () => {
       selectedDateForList = fullDate;
       inputDate.value = fullDate;
       renderCalendar();
+      });
+
+      spanNumber.addEventListener("click", (e) => {
+        e.stopPropagation();
+        
+        selectedDateForList = fullDate;
+        renderCalendar();
 
     const hasSupps = supplements.some(sup => sup.schedule.includes(fullDate));
     if (hasSupps) {
@@ -1044,7 +1051,7 @@ function renderFamilyUI() {
       btn.innerText = name;
       
       let timer;
-      let isLongPress = false; // 롱 프레스 상태 확인
+      let isLongPress = false;
 
       // [수정된 롱 프레스 로직]
       const startPress = () => {
@@ -1053,7 +1060,6 @@ function renderFamilyUI() {
           isLongPress = true; 
           const newName = prompt(`'${name}' 님의 이름을 변경하세요.\n(빈칸으로 두면 삭제됩니다.)`, name);
           if (newName === null) return;
-
           const trimmed = newName.trim();
           if (trimmed === "") {
             if (confirm(`'${name}' 님을 삭제할까요?\n복용 데이터도 사라집니다.`)) {
@@ -1071,10 +1077,8 @@ function renderFamilyUI() {
           }
         }, 900);
       };
-      
       const endPress = () => clearTimeout(timer);
 
-      // [기존 클릭 로직] 롱 프레스가 아닐 때만 실행
       btn.addEventListener("click", () => {
         if (!isLongPress) {
           document.querySelectorAll(".family-btn").forEach(b => b.classList.remove("selected"));
@@ -1083,17 +1087,14 @@ function renderFamilyUI() {
         }
       });
 
-      // 이벤트 대응
       btn.addEventListener("touchstart", startPress, { passive: true });
       btn.addEventListener("touchend", endPress);
       btn.addEventListener("mousedown", startPress);
       btn.addEventListener("mouseup", endPress);
       btn.addEventListener("mouseleave", endPress);
-
       statsFamilyContainer.appendChild(btn);
     });
 
-    // [복구] 사용자님의 가족 추가 로직 (4명 미만일 때)
     if (familyMembers.length < 4) {
       const addBtn = document.createElement("button");
       addBtn.className = "family-btn";
@@ -1106,7 +1107,6 @@ function renderFamilyUI() {
           familyMembers.push(newName);
           localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
 
-          // [기존 DB 갱신 로직 그대로 유지]
           const transaction = db.transaction(["supplements"], "readwrite");
           const store = transaction.objectStore("supplements");
           
@@ -1120,8 +1120,7 @@ function renderFamilyUI() {
     }
   }
 
-  // 2. [복구] 영양제 입력 모달의 체크박스 교체 (기존 로직 유지)
-  const inputFamilyContainer = document.querySelector(".checkbox-line");
+  const inputFamilyContainer = document.querySelector(".checkbox-group .checkbox-line-row:first-child");
   if (inputFamilyContainer) {
     inputFamilyContainer.innerHTML = ""; 
     familyMembers.forEach(name => {
@@ -1577,13 +1576,12 @@ if (saveFamilyConfigBtn) {
     if (!value) return alert("이름을 입력해주세요.");
 
     const names = value.split(",").map(n => n.trim()).filter(n => n !== "").slice(0, 4);
-    
-    localStorage.setItem("familyMembers", JSON.stringify(names));
-    familyMembers = names; // 메모리 갱신
+    familyMembers = names;
+    localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+  
+    document.getElementById("familyConfigModal").classList.add("hidden");
+    document.body.classList.remove("modal-open");
 
-    // 모달 닫기
-    document.getElementById("familyConfigModal").classList.remove("active");
-    // UI 즉시 반영 후 새로고침
     renderFamilyUI();
     location.reload(); 
   });

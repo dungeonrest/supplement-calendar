@@ -14,7 +14,8 @@ html, body {
 
 body.dark-mode {
   --bg-color: #000000;
-  --text-color: #e0e0e0;
+  --text-color: #ffffff;
+  --calendar-line: #404043;
   --sun-color: #df2222;
   --sat-color: #3767f7;
 }
@@ -130,16 +131,12 @@ button:active,
 }
 
 .month-display {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: bold;
   color: var(--text-color);
   letter-spacing: -0.5px;
   cursor: default;
   user-select: none;
-}
-
-.dark-mode .month-display {
-  color: #ffffff;
 }
 
 .header-right-group {
@@ -345,29 +342,61 @@ body.dark-mode .theme-icon::after {
   padding: 0;
   box-sizing: border-box;
   padding-bottom: 100%;
-  border-bottom: 0.5px solid #b3b1b17a;
+  border-bottom: 0.8px solid var(--calendar-line) !important;
   cursor: pointer;
 }
 
-.date span.number {
-  font-size: 15px;
-  font-weight: 700;
-}
-
-/*오늘 날짜 체크 아이콘 겹쳐 표시 */
-.date.today-date > span.number {
+/* 날짜 숫자 레이아웃 조정 */
+.date .number {
   position: relative;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  width: 21px;
+  height: 21px;
+  min-width: 21px;
+  min-height: 21px;
+  
+  border: 1.5px solid transparent;
+  border-radius: 50%;
+  
+  box-sizing: border-box;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  z-index: 1;
+  margin: 0 auto 4px auto;
 }
 
-.date.today-date > span.number::after {
-  content: "ˇ";
-  position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 27px;
-  color: #f13333;
+.date .number:active {
+    transform: scale(0.7);
+    transition: transform 0.3s;
+}
+
+.date {
+    cursor: default; /* 셀 전체는 기본 포인터로 */
+}
+
+.date.today-date .number {
+  border-color: var(--main-color, #EB504B);
+  color: var(--text-color);
+}
+
+.date.selected .number {
+  background-color: var(--main-color, #EB504B) !important;
+  border-color: var(--main-color, #EB504B) !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .date.selected .number {
+  background-color: var(--main-color, #EB504B) !important;
+  color: #000000 !important;
+}
+
+.date.inactive .number {
+  border: none !important;
+  background-color: transparent !important;
 }
 
 /*날짜셀 고정 높이 */
@@ -389,6 +418,7 @@ body.dark-mode .theme-icon::after {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   width: 80%;
   height: 9px;
   margin: 1px auto;
@@ -586,7 +616,7 @@ body.dark-mode #statsContent {
     transform: none !important;
     margin: 0 !important;
     text-align: left !important;
-    font-size: 30px !important;
+    font-size: 28px !important;
     font-weight: bold !important;
     flex: 1 !important;
     color: var(--text-color) !important;
@@ -634,7 +664,7 @@ body.dark-mode #statsContent {
 
 .mini-day {
     font-size: 8px !important;
-    font-weight: bold !important;
+    font-weight: normal !important;
     width: 100% !important;
     aspect-ratio: 1/1 !important;
     display: flex !important;
@@ -697,19 +727,18 @@ body.dark-mode #statsContent {
   min-width: 0;
   height: 100%;
   font-size: 15px !important;
-  font-weight: bold !important;
+  font-weight: normal !important;
+  font-family: inherit;
   color: var(--text-color);
-  text-align: center !important; 
+  text-align: left !important; 
   background: transparent;
 }
-
-body.dark-mode .memo-line-style { color: #e0e0e0 !important; }
 
 /* 정보 행 레이아웃 */
 .info-row {
   display: flex;
   align-items: center;
-  height: 40px;
+  height: 42px;
   padding: 0 0px;
   box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
   width: 100%;
@@ -718,7 +747,9 @@ body.dark-mode .memo-line-style { color: #e0e0e0 !important; }
 /* 1행(날짜/색상) 특수 레이아웃 */
 .info-row.split {
   display: flex;
-  padding: 0;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .info-row.split #inputDate {
@@ -732,7 +763,7 @@ body.dark-mode .memo-line-style { color: #e0e0e0 !important; }
   justify-content: center;
   align-items: center;
   position: relative;
-  height: 40px;
+  height: 42px;
 }
 
 
@@ -772,20 +803,22 @@ body.dark-mode .memo-line-style { color: #e0e0e0 !important; }
 
 #colorHexText {
   font-size: 14px;
-  font-weight: bold;
+  font-weight: normal;
 }
 
 /* 왼쪽 고정 라벨 (제품명, 가격 등) */
 .row-label {
-  font-size: 14px;
-  color: #888;
+  font-size: 16px;
+  color: #56565e;
   font-weight: normal;
   width: 55px;
   text-align: left;
   flex-shrink: 0;
 }
 
-body.dark-mode .row-label { color: #98989E; }
+body.dark-mode .row-label {
+  color: #9E9EA4;
+}
 
 .row-label, .unit-text, .unit-select-inside, .unit-placeholder {
   min-width: 60px;
@@ -799,8 +832,8 @@ body.dark-mode .row-label { color: #98989E; }
 /* 오른쪽 단위 텍스트 */
 .unit-text, .unit-select-inside, .unit-placeholder {
   font-size: 14px !important;
-  font-weight: 600 !important;
-  color: #979494 !important;
+  font-weight: normal !important;
+  color: #9E9EA4 !important;
   width: 55px;
   text-align: right;
   flex-shrink: 0;
@@ -821,7 +854,7 @@ select.unit-select-inside {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  height: 40px;
+  height: 42px;
 }
 
 input[type="checkbox"] {
@@ -852,7 +885,7 @@ input[type="checkbox"]:checked::before { transform: scale(1); }
 
 .checkbox-label-text {
   font-size: 14px;
-  font-weight: bold;
+  font-weight: normal;
   color: var(--text-color);
   margin-left: 5px;
 }
@@ -875,11 +908,11 @@ input[type="checkbox"]:checked::before { transform: scale(1); }
 }
 
 .memo-paper-group {
-  width: 92% !important;
-  margin: 0 auto !important;
-  padding: 0px 15px !important;
+  width: 92%;
+  margin: 0 auto;
+  padding: 0 16px;
   background: rgba(192, 192, 192, 0.2) !important;
-  border-radius: 25px;
+  border-radius: 22px;
   overflow: hidden; /* 테두리 밖으로 선이 나가지 않게 */
   box-sizing: border-box;
 }
@@ -888,19 +921,21 @@ body.dark-mode .memo-paper-group {
   background: #2C2C2E !important;
 }
 
+.memo-paper-group + .memo-paper-group {
+  margin-top: 20px;
+}
+
 .input-label {
   font-size: 14px;
   font-weight: bold;
-  margin-bottom: 3px;
-  gap: 3px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: var(--text-color);
+  color: #56565e;
 
   width: 90% !important;
-  margin: 25px auto 5px !important;
-  padding: 0 10px !important;
+  margin: 25px auto 8px !important;
+  padding: 0 8px !important;
   box-sizing: border-box;
 }
 
@@ -910,26 +945,25 @@ body.dark-mode .input-label {
 
 .memo-line {
   width: 100% !important;
-  height: 40px;
+  height: 42px;
   background: transparent;
   border: none;
   outline: none;
   font-size: 15px;
-  font-weight: bold;
+  font-weight: normal;
   color: var(--text-color);
-  font-family: inherit;
-  text-align: center;
+  text-align: left;
   background: transparent !important; 
   border: none !important;
 }
 
 .memo-divider {
   height: 0.8px;
-  background-color: rgba(128, 128, 128, 0.15);
+  background-color: var(--calendar-line);
 }
 
 body.dark-mode .memo-divider {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--calendar-line);
 }
 
 /* 버튼을 하단 중앙에 배치하는 컨테이너 */
@@ -1216,7 +1250,7 @@ input[type="number"], .total-cost-amount, .stats-count-text {
   padding: 5px 20px 5px 20px;
   margin-bottom: 20px;
   background: rgba(192, 192, 192, 0.2);
-  border-radius: 25px;
+  border-radius: 22px;
 }
 
 body.dark-mode .taken-sup-section {
@@ -1224,7 +1258,7 @@ body.dark-mode .taken-sup-section {
 }
 
 .taken-sup-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: bold;
   margin-bottom: 3px;
   gap: 3px;
@@ -1234,7 +1268,7 @@ body.dark-mode .taken-sup-section {
   width: 80%;
   margin-left: auto;
   margin-right: auto;
-  padding: 5px 30px 5px 30px;
+  padding: 5px 25px 5px 25px;
 }
 
 body.dark-mode .taken-sup-title,
@@ -1284,10 +1318,10 @@ body.dark-mode .extend-btn {
 
 .taken-table th {
   font-size: 13px;
-  font-weight: bold;
+  font-weight: normal;
   padding: 12px 0;
   text-align: center;
-  border-bottom: 1.5px solid rgba(194, 194, 194, 0.2);
+  border-bottom: 1px solid var(--calendar-line);
 }
 
 .taken-table td {
@@ -1295,12 +1329,12 @@ body.dark-mode .extend-btn {
   padding: 12px 0px;
   background: transparent !important;
   background-color: transparent !important;
-  border-bottom: 1.5px solid rgba(194, 194, 194, 0.2);
+  border-bottom: 1px solid var(--calendar-line);
 }
 
 .taken-table tr td:first-child {
   font-size: 13px;
-  font-weight: bold;
+  font-weight: normal;
   width: 40px;
 }
 
@@ -1622,7 +1656,7 @@ body.dark-mode .onboarding-header h1 { color: white; }
   -webkit-tap-highlight-color: transparent; /* 터치 시 생기는 하이라이트 제거 */
 }
 
-.modal, .taken-modal, .stats-modal, .backup-menu-modal, .yearly-modal {
+.modal, .taken-modal, .stats-modal, .yearly-modal {
     background-color: transparent !important; 
     border: none !important;
 }
@@ -1646,14 +1680,11 @@ body.dark-mode .onboarding-header h1 { color: white; }
     justify-content: space-between;
 }
 
-#modalBody, #monthlyCostContent, #takenCheckBody, #statsContent, .yearly-grid, .backup-menu-modal {
+#modalBody, #monthlyCostContent, #takenCheckBody, .yearly-grid {
     margin-top: -70px !important; 
     padding-top: 80px !important; 
     flex: 1 !important;
-    background-color: var(--bg-color) !important; 
-
-    border-top: 1px solid var(--calendar-line) !important;
-    border-top: 1px solid var(--calendar-line) !important;
+    background-color: #f8f8f8 !important;
     border-radius: 35px 35px 0 0 !important;
     
     min-height: 100% !important; 
@@ -1664,53 +1695,19 @@ body.dark-mode .onboarding-header h1 { color: white; }
 
 body.dark-mode #modalBody, 
 body.dark-mode #monthlyCostContent, 
-body.dark-mode #takenCheckBody, 
-body.dark-mode #statsContent,
+body.dark-mode #takenCheckBody,
 body.dark-mode .yearly-grid,
 body.dark-mode .backup-menu-modal {
     background-color: #1C1C1E !important;
-    border-top: 1px solid var(--calendar-line) !important;
     border-radius: 35px 35px 0 0 !important;
 }
 
-/* 1. 통계 모달 전체 레이아웃 (다른 모달과 통일) */
-#statsModal .stats-modal {
-  display: flex;
-  flex-direction: column;
-  height: 99vh !important;
-  max-height: 99vh !important;
-  transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-  background-color: transparent !important;
-  border: none !important;
+#statsModal .stats-modal, .backup-menu-modal {
+ background-color: #f8f8f8 !important;
+    border-radius: 35px 35px 0 0 !important;
 }
 
-/* 2. 활성화 시 상단으로 이동 */
-#statsModal.active .stats-modal {
-  transform: translateY(0) !important;
-}
-
-/* 3. 헤더 바로 밑의 필터 영역부터 배경색과 둥근 테두리 시작 */
-#statsFilters {
-  margin-top: -70px !important; /* 헤더 위치까지 올림 */
-  padding-top: 80px !important; /* 헤더 아래 공간 확보 */
-  background-color: var(--bg-color) !important;
-  border-top: 1px solid var(--calendar-line) !important;
-  border-radius: 35px 35px 0 0 !important;
-  z-index: 1; /* 헤더(z-index: 2000)보다 아래 */
-}
-
-/* 4. 본문 영역: 남은 공간 모두 차지 및 스크롤 */
-#statsContent {
-  flex: 1;
-  background-color: var(--bg-color);
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 30px;
-}
-
-/* 다크모드 통합 관리 */
-body.dark-mode #statsFilters,
-body.dark-mode #statsContent {
-  background-color: #1C1C1E !important;
+body.dark-mode #statsModal .stats-modal {
+ background-color: #1C1C1E !important;
+    border-radius: 35px 35px 0 0 !important;
 }
