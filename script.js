@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.1q";
+const APP_VERSION = "3.11";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -916,7 +916,7 @@ document.getElementById("closeTakenCheckBtn").addEventListener("click", async ()
   closeBottomSheet("takenCheckModal");
 });
 
-  // ===== 통계 모달 요소
+// ===== 통계 모달 요소
 const statsBtn = document.getElementById("statsBtn");
 const statsModal = document.getElementById("statsModal");
 const closeStatsModal = document.getElementById("closeStatsModal");
@@ -980,36 +980,48 @@ function showStatsForFamily(name) {
   const stats = {};
 
   supplements.forEach(sup => {
-    if (!sup.family.includes(name) || !sup.takenStatus) return;
+    // 1. 해당 가족이 포함되지 않았거나 복용 기록 데이터가 아예 없으면 패스
+    if (!sup.family || !sup.family.includes(name)) return;
 
-    // 해당 기간 내 총 복용해야 할 횟수(Target)와 실제 복용 횟수(Taken) 계산
-    let targetForPeriod = 0;
-    let takenForPeriod = 0;
+    // 2. [의도 반영] 고정 목표량(Target) 계산 
+    // 사용자님의 필드명인 'totalCapsules'를 사용합니다.
+    // 연장을 아무리 해도 이 값은 변하지 않으므로 통계가 고정됩니다.
+    const initialTotal = parseFloat(sup.totalCapsules) || 0;
+    if (initialTotal <= 0) return;
 
-    // 수정 방식: 1번 + 1번 + 1번 한 뒤 마지막에 복용량 계산 (정확함)
-sup.schedule.forEach(dateStr => {
-  if (dateStr >= startStr && dateStr <= endStr) {
-    targetForPeriod += sup.dose;
-    const dayStatus = sup.takenStatus?.[dateStr] || {};
-    
-    let takenSlots = 0; // 이 영양제의 해당 날짜 복용 횟수 카운트
-    for (const key in dayStatus) {
-      if (key.includes(`_${name}`) && dayStatus[key]) {
-        takenSlots++; 
-      }
+    const fixedTargetForOne = initialTotal / sup.family.length;
+
+    // 3. [의도 반영] 실제 복용량(Taken) 집계
+    // schedule 배열을 돌지 않고, 실제 체크 데이터인 takenStatus만 확인합니다.
+    let actualTakenAmount = 0;
+
+    if (sup.takenStatus) {
+      Object.keys(sup.takenStatus).forEach(dateStr => {
+        // 설정한 통계 기간 내의 날짜인지 확인
+        if (dateStr >= startStr && dateStr <= endStr) {
+          const dayStatus = sup.takenStatus[dateStr];
+          
+          let takenSlots = 0; 
+          for (const key in dayStatus) {
+            // "아침_도림" 같이 실제 체크된 값만 확인 (연장으로 자동생성된 _extended는 제외됨)
+            // 사용자님의 체크 로직 key 구조인 `${time}_${member}`를 따릅니다.
+            if (key.includes(`_${name}`) && dayStatus[key] === true && !key.includes("_extended")) {
+              takenSlots++; 
+            }
+          }
+          // 실제 복용량 = 체크된 횟수 * (1회당 복용량)
+          actualTakenAmount += (takenSlots * (sup.dose / sup.times.length));
+        }
+      });
     }
-    // 해당 날짜에 먹은 횟수만큼의 용량을 계산해서 더함
-    takenForPeriod += (takenSlots * (sup.dose / sup.times.length));
-  }
-});
 
-    if (targetForPeriod > 0) {
-      stats[sup.productName] = {
-        taken: takenForPeriod,
-        target: targetForPeriod,
-        color: sup.circleColor
-      };
-    }
+    // 4. 통계 객체 생성
+    stats[sup.productName] = {
+      taken: actualTakenAmount,
+      target: fixedTargetForOne,
+      color: sup.circleColor,
+      unit: sup.unit || '회'
+    };
   });
 
   let html = "";
@@ -1018,9 +1030,9 @@ sup.schedule.forEach(dateStr => {
   } else {
     for (const key in stats) {
       const info = stats[key];
-      const percent = Math.round((info.taken / info.target) * 100);
+      let percent = info.target > 0 ? Math.round((info.taken / info.target) * 100) : 0;
+      if (percent > 100) percent = 100;
       
-      // 원형 그래프와 텍스트 조합
       html += `
   <div class="stats-item">
     <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
