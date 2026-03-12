@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>영양제 달력</title>
 
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#ffffff">
   <link rel="stylesheet" href="style.css" />
@@ -76,13 +75,11 @@
   </div>
 </div>
 
-<!-- 하단 작은 백업/복원 링크 -->
 <div id="footerBackupArea" class="footer-backup-area">
   <span id="footerVersion" class="footer-version">© <span id="footerYear"></span> <span id="footerAppVersion"></span></span>
   <span id="footerBackupLink" class="footer-backup-link">백업/복원</span>
 </div>
 
-<!-- 숨겨진 백업/복원 메뉴 -->
 <div id="backupMenuModal" class="modal-overlay hidden">
   <div class="modal backup-menu-modal">
     <div class="modal-header">
@@ -95,7 +92,6 @@
   </div>
 </div>
 
-<!-- 모달들 -->
 <div id="modalOverlay" class="modal-overlay hidden">
   <div class="modal">
     <div class="modal-header">
@@ -190,18 +186,6 @@
       </div>
     </div> </div> </div>
 
-<div id="monthlyCostModal" class="modal-overlay hidden">
-  <div class="modal">
-    <div class="modal-header cost-header">
-      <h3 id="monthlyCostTitle"></h3>
-      <div style="width:35px;"></div>
-      <button id="closeMonthlyCostModal" class="close-btn right"><span></span></button>
-      </div>
-    <div id="monthlyCostContent"></div>
-  </div>
-</div>
-
-<!-- 복용 체크 모달 -->
 <div id="takenCheckModal" class="modal-overlay hidden">
   <div class="modal taken-modal">
     <div class="modal-header">
@@ -214,7 +198,21 @@
   </div>
 </div>
 
-<!-- 통계 모달 -->
+<div id="monthlyCostModal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header cost-header">
+      <div class="tab-container" id="costTabContainer">
+        <div class="tab-slider"></div>
+        <button class="tab-btn active" onclick="switchCostTab('cost')">비용</button>
+        <button class="tab-btn" onclick="switchCostTab('calc')">계산</button>
+      </div>
+      <button id="closeMonthlyCostModal" class="close-btn right"><span></span></button>
+    </div>
+    <div id="monthlyCostContent"></div>
+    <div id="calcTabContent" style="display:none;"></div>
+  </div>
+</div>
+
 <div id="statsModal" class="modal-overlay hidden">
   <div class="modal stats-modal">
     <div class="modal-header">
@@ -258,7 +256,7 @@
   </div>
 </div>
 
-<!-- Floating Add Button -->
+
 <button id="fabTodayBtn" class="fab-today-btn">오늘</button>
 <button id="fabAddBtn" class="fab-add-btn"></button>
 

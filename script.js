@@ -1,10 +1,10 @@
 
-const APP_VERSION = "3.11";
+const APP_VERSION = "3.11a";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
 }
-// 공휴일 리스트 (예: 2026년)
+
 const koreaHolidays2026 = [
   "2026-01-01",
   "2026-02-16","2026-02-17","2026-02-18",
@@ -20,12 +20,68 @@ const koreaHolidays2026 = [
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
-  // 저장된 dark-mode 값 불러오기
   const saved = localStorage.getItem("darkMode") === "true";
   if (saved) {
     document.body.classList.add("dark-mode");
   }
 });
+
+/**
+ * @param {HTMLElement} element
+ * @param {Function} callback
+ */
+function setupIOSButton(element, callback) {
+    if (!element) return;
+
+    let isPressed = false;
+
+    element.addEventListener('pointerdown', (e) => {
+        isPressed = true;
+        element.classList.add('ios-active');
+        element.setPointerCapture(e.pointerId);
+    });
+
+    element.addEventListener('pointermove', (e) => {
+        if (!isPressed) return;
+
+        const rect = element.getBoundingClientRect();
+        const isInside = (
+            e.clientX >= rect.left &&
+            e.clientX <= rect.right &&
+            e.clientY >= rect.top &&
+            e.clientY <= rect.bottom
+        );
+
+        if (isInside) {
+            element.classList.add('ios-active');
+        } else {
+            element.classList.remove('ios-active');
+        }
+    });
+
+    element.addEventListener('pointerup', (e) => {
+        if (!isPressed) return;
+        isPressed = false;
+        
+        const rect = element.getBoundingClientRect();
+        const isInside = (
+            e.clientX >= rect.left && e.clientX <= rect.right &&
+            e.clientY >= rect.top && e.clientY <= rect.bottom
+        );
+
+        element.classList.remove('ios-active');
+        element.releasePointerCapture(e.pointerId);
+
+        if (isInside && callback) {
+            callback(e);
+        }
+    });
+
+    element.addEventListener('pointercancel', () => {
+        isPressed = false;
+        element.classList.remove('ios-active');
+    });
+}
 
 document.addEventListener("touchstart", function() {}, true);
 
@@ -143,8 +199,6 @@ function getTodayKST() {
   const options = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' };
   const formatter = new Intl.DateTimeFormat('ko-KR', options);
   const parts = formatter.formatToParts(new Date());
-  
-  // parts 배열에서 각각의 유형(type)에 맞는 값을 찾습니다.
   const year = parts.find(p => p.type === 'year').value;
   const month = parts.find(p => p.type === 'month').value;
   const day = parts.find(p => p.type === 'day').value;  
@@ -172,7 +226,6 @@ function openDatabase() {
     };
     request.onsuccess = () => { 
       db = request.result; 
-      // 연결이 예기치 않게 끊겼을 때 처리
       db.onversionchange = () => {
         db.close();
         alert("데이터베이스 버전이 변경되었습니다. 앱을 재실행합니다.");
@@ -201,7 +254,6 @@ function getAllSupplements() {
 
 function saveSupplementToDB(sup) {
   return new Promise(async (resolve, reject) => {
-    // await openDatabase();
     const tx = db.transaction([STORE_NAME], "readwrite");
     const store = tx.objectStore(STORE_NAME);
     const req = store.put(sup);
@@ -216,7 +268,6 @@ function saveSupplementToDB(sup) {
 
 function deleteSupplementFromDB(id) {
   return new Promise(async (resolve, reject) => {
-    // await openDatabase();
     const tx = db.transaction([STORE_NAME], "readwrite");
     const store = tx.objectStore(STORE_NAME);
     const req = store.delete(id);
@@ -236,12 +287,12 @@ monthlyCostBtn.addEventListener("click", () => {
   const year = dt.getFullYear();
   const month = dt.getMonth() + 1;
 
-  document.getElementById("monthlyCostTitle").innerText = `${year}년 ${month}월`;
+  initCostModalTabs();
 
   let totalCost = 0;
   const monthlyItems = [];
+  const familyCosts = {};
 
-  // 1. 해당 월에 입력된 데이터 계산
   supplements.forEach(sup => {
     const supInputDate = sup.schedule?.[0] ?? "";
     const [y, m] = supInputDate.split("-").map(x => parseInt(x));
@@ -249,8 +300,7 @@ monthlyCostBtn.addEventListener("click", () => {
     if (y === year && m === month) {
       const totalDays = sup.schedule.length;
       const monthsCount = Math.ceil(totalDays / 30);
-      // ... 내부 로직 중
-const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
+      const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
       
       totalCost += monthlyPart;
       monthlyItems.push({
@@ -258,14 +308,22 @@ const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
         cost: monthlyPart,
         color: sup.circleColor
       });
+
+      if (sup.family && Array.isArray(sup.family) && sup.family.length > 0) {
+        const perPersonCost = Math.round(monthlyPart / sup.family.length);
+        sup.family.forEach(member => {
+          if (!familyCosts[member]) {
+            familyCosts[member] = 0;
+          }
+          familyCosts[member] += perPersonCost;
+        });
+      }
     }
   });
 
-  // 2. HTML 생성
   let costHtml = "";
   if (monthlyItems.length > 0) {
     monthlyItems.forEach(item => {
-      // 해당 제품이 이번 달 전체 비용에서 차지하는 비율 계산
       const ratio = totalCost > 0 ? Math.round((item.cost / totalCost) * 100) : 0;
       
       costHtml += `
@@ -284,21 +342,39 @@ const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
     costHtml = "<p style='text-align:center; font-size:20px; font-weight:bold; margin-top:100px; padding-bottom:80px;'>비용 없음</p>";
   }
 
-  // 총액 표시 영역
+  let familySummaryHtml = "";
+  const names = Object.keys(familyCosts);
+  
+  if (names.length > 0) {
+    familySummaryHtml += `<div class="family-cost-container">`;
+    names.forEach(name => {
+        familySummaryHtml += `
+            <div class="family-cost-card">
+                <span class="family-cost-name">${name}</span>
+                <span class="family-cost-amount">${familyCosts[name].toLocaleString()}원</span>
+            </div>
+        `;
+    });
+    familySummaryHtml += `</div>`;
+    familySummaryHtml += `<div style="width: 100%; height: 1px; background: var(--calendar-line); margin: 0px 0 15px; opacity: 0.6;"></div>`;
+}
+
   costHtml += `
     <div class="total-cost-wrapper">
-      <span class="total-cost-label">총 합계</span>
+      ${familySummaryHtml}
+      <span class="total-cost-label">${month}월 한 달 치 비용</span>
       <span class="total-cost-amount">₩ ${Math.round(totalCost).toLocaleString()}</span>
     </div>
   `;
 
-  monthlyCostContent.innerHTML = costHtml;
+  document.getElementById("monthlyCostContent").innerHTML = costHtml;
   monthlyCostModal.classList.add("active");
   document.body.classList.add("modal-open");
 });
 
 closeMonthlyCostModal.addEventListener("click", () => {
   closeBottomSheet("monthlyCostModal");
+  switchCostTab('cost');
 });
 
 // + 버튼 클릭 //
@@ -359,18 +435,14 @@ function renderCalendar() {
     const div = document.createElement("div");
     div.classList.add("date", "inactive");
 
-    // 1. 이전 달의 정확한 날짜 객체를 먼저 만듭니다. (자바스크립트가 연도/월 전환을 알아서 계산함)
     const prevDateObj = new Date(year, month - 1, dayNum);
     const pY = prevDateObj.getFullYear();
     const pM = String(prevDateObj.getMonth() + 1).padStart(2, "0");
     const pD = String(prevDateObj.getDate()).padStart(2, "0");
-    
-    // 2. 요일(Day of Week) 계산
     const dow = prevDateObj.getDay();
     if (dow === 0) div.classList.add("sun");
     if (dow === 6) div.classList.add("sat");
 
-    // 3. YYYY-MM-DD 형식의 문자열 생성
     const fullDatePrev = `${pY}-${pM}-${pD}`;
     
     if (koreaHolidays2026.includes(fullDatePrev)) {
@@ -414,9 +486,12 @@ function renderCalendar() {
 
       spanNumber.addEventListener("click", (e) => {
         e.stopPropagation();
-        
+
         selectedDateForList = fullDate;
         renderCalendar();
+
+      spanNumber.classList.add('bounce-active');
+      setTimeout(() => spanNumber.classList.remove('bounce-active'), 400);    
 
     const hasSupps = supplements.some(sup => sup.schedule.includes(fullDate));
     if (hasSupps) {
@@ -432,38 +507,31 @@ function renderCalendar() {
     }
 
     supplements.forEach(sup => {
-      // 해당 날짜 일정이 있을 때만 bar 추가
       if (sup.schedule.includes(fullDate)) {
 
         const bar = document.createElement("div");
         bar.classList.add("supplement-bar");
 
-        // 1. 이 영양제가 끝나는 날(마지막 날짜) 가져오기
         const endDateStr = sup.schedule[sup.schedule.length - 1];
         const endDateObj = new Date(endDateStr);
         
-        // 2. 해당 종료일이 포함된 주의 일요일과 토요일 계산
         const endSun = new Date(endDateObj);
-        endSun.setDate(endDateObj.getDate() - endDateObj.getDay()); // 종료 주 일요일
+        endSun.setDate(endDateObj.getDate() - endDateObj.getDay());
         const endSat = new Date(endSun);
-        endSat.setDate(endSun.getDate() + 6); // 종료 주 토요일
+        endSat.setDate(endSun.getDate() + 6);
 
-        // 3. 현재 렌더링 중인 날짜(fullDate)가 이 범위 안에 있는지 확인
         const currDateObj = new Date(fullDate);
         if (currDateObj >= endSun && currDateObj <= endSat) {
-          bar.classList.add("last-week-bar"); // 사선 패턴 클래스 추가
+          bar.classList.add("last-week-bar");
         }
 
-       // 기존 투명도를 약간 높여서 사선이 잘 보이게 배경을 진하게 설정
         const isDark = document.body.classList.contains("dark-mode");
         bar.style.backgroundColor = `rgba(${hexToRgb(sup.circleColor)}, ${isDark ? 0.45 : 0.3})`;
 
-        // 채워진 부분
         const fill = document.createElement("div");
         fill.classList.add("bar-fill");
         fill.style.backgroundColor = sup.circleColor;
 
-        // 복용 체크 상태 읽기
         const dayStatus = sup.takenStatus?.[fullDate] || {};
         let takenSlots = 0;
         for (let t of sup.times) {
@@ -477,23 +545,18 @@ function renderCalendar() {
           ? Math.floor((takenSlots / totalSlots) * 100)
           : 0;
 
-        // 채운 넓이 설정
         fill.style.width = `${fillPercent}%`;
 
-        // 라벨 텍스트
         const labelInBar = document.createElement("span");
         labelInBar.classList.add("supplement-bar-label");
         labelInBar.innerText = sup.productName;
 
         bar.appendChild(fill);
 
-        // 현재 날짜의 요일 (0:일, 1:월...)
         const currDateObjForLabel = new Date(fullDate);
         const dayNum = currDateObjForLabel.getDay();
         const dateNum = currDateObjForLabel.getDate();
 
-        // 1. 해당 날짜가 일요일(0)이거나, 
-        // 2. 일정의 시작일(`sup.schedule[0]`)인 경우에만 라벨 표시
         if (dayNum === 0 || sup.schedule[0] === fullDate || dateNum === 1) {
 
           if (fillPercent === 0) {
@@ -511,7 +574,6 @@ bar.addEventListener("click", (e) => {
   openSupplementModal(sup);
 });
 
-// 날짜셀에 추가
 listArea.appendChild(bar);
 
       }
@@ -530,7 +592,6 @@ listArea.appendChild(bar);
     if (dowNext === 0) div.classList.add("sun");
     if (dowNext === 6) div.classList.add("sat");
 
-    // 다음 달 날짜 객체 생성 (자바스크립트가 연도/월 전환 자동 계산)
     const nextDateObj = new Date(year, month + 1, j);
     const nY = nextDateObj.getFullYear();
     const nM = String(nextDateObj.getMonth() + 1).padStart(2, "0");
@@ -544,6 +605,9 @@ listArea.appendChild(bar);
     div.innerHTML = `<span class="number">${j}</span>`;
     datesContainer.appendChild(div);
   }
+  if (typeof applyIOSButtonEffect === 'function') {
+      applyIOSButtonEffect();
+  }
 }
 
 // 삭제 버튼 클릭 시 실행될 로직
@@ -555,18 +619,15 @@ deleteInfoBtn.addEventListener("click", async () => {
   const productName = inputProduct.value.trim() || "이 영양제";
 
   if (confirm(`'${productName}'의 복용 기록이 모두 사라집니다.\n정말 삭제할까요?`)) {
-    // DB에서 삭제
+
     await deleteSupplementFromDB(currentEditId);
     
-    // 메모리(배열)에서 삭제
     supplements = supplements.filter(s => s.id !== currentEditId);
     
-    // 모달 닫기 및 화면 갱신
     modalOverlay.classList.remove("active");
     document.body.classList.remove("modal-open");
     renderCalendar();
     
-    // 브라우저 뒤로가기 기록이 있다면 처리
     if (window.history.state && window.history.state.modal) {
       window.history.back();
     }
@@ -617,7 +678,7 @@ saveInfoBtn.addEventListener("click", async (e) => {
     });
     await saveSupplementToDB(found);
   } else {
-    // [복구] 사용자님의 원래 색상 순차 부여 로직
+
     const usedColors = supplements.map(s => s.circleColor?.toLowerCase().trim());
     let assignedColor;
     const selectedColor = document.getElementById('inputColor').value?.toLowerCase().trim();
@@ -654,7 +715,6 @@ saveInfoBtn.addEventListener("click", async (e) => {
     renderCalendar();
 });
 
-// 인자가 있으면 해당 데이터만 저장, 없으면 전체 저장 (복원 시 대비)
 async function saveAllSupplements(targetSup) {
   if (targetSup) {
     await saveSupplementToDB(targetSup);
@@ -678,19 +738,17 @@ async function loadSupplements() {
   renderFamilyUI();
 }
 
-// [추가] 이름 변경 처리 함수
+// 이름 변경 처리 함수
 function changeFamilyMemberName(index, newName) {
   const oldName = familyMembers[index];
   familyMembers[index] = newName;
   localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
 
-  // 기존 데이터(supplements) 내의 이름들도 한꺼번에 교체해줘야 통계가 깨지지 않습니다.
   supplements.forEach(sup => {
-    // 1. 가족 명단 수정
+
     if (sup.family.includes(oldName)) {
       sup.family = sup.family.map(f => f === oldName ? newName : f);
     }
-    // 2. 복용 기록(takenStatus) 수정
     if (sup.takenStatus) {
       for (let date in sup.takenStatus) {
         for (let key in sup.takenStatus[date]) {
@@ -702,7 +760,7 @@ function changeFamilyMemberName(index, newName) {
         }
       }
     }
-    saveSupplementToDB(sup); // DB 저장
+    saveSupplementToDB(sup);
   });
 
   alert(`이름이 '${oldName}'에서 '${newName}'으로 변경되었습니다.`);
@@ -736,19 +794,16 @@ function checkInitialSetup() {
   const overlay = document.getElementById("initialOverlay");
   const configModal = document.getElementById("familyConfigModal");
   const mainContainer = document.querySelector(".container");
-
-  // 조건 1: 등록된 영양제가 하나도 없음
-  // 조건 2: 그리고 아직 가족 이름도 설정한 적이 없음 (localStorage가 비어있음)
   const isNoSupplements = supplements.length === 0;
   const isNoFamily = !localStorage.getItem("familyMembers");
 
   if (isNoSupplements && isNoFamily) {
-    // 두 조건 모두 만족할 때만 (완전 처음 방문일 때만) 온보딩 표시
+
     if (overlay) overlay.classList.add("active");
     if (configModal) configModal.classList.add("active");
     if (mainContainer) mainContainer.style.display = "none";
   } else {
-    // 영양제가 있거나, 혹은 영양제는 없어도 이름 설정은 이미 마친 경우
+
     if (overlay) overlay.classList.remove("active");
     if (configModal) configModal.classList.remove("active");
     if (mainContainer) mainContainer.style.display = "block";
@@ -767,9 +822,8 @@ function openTakenCheckUI(date) {
   }
 
   title.innerText = date.replaceAll('-', '.');
-  body.innerHTML = ""; // 기존 내용 초기화
+  body.innerHTML = "";
 
-  // 해당 날짜 영양제들 필터링
   const matchedSupps = supplements.filter(s => s.schedule.includes(date));
 
   if (matchedSupps.length === 0) {
@@ -845,11 +899,9 @@ function openTakenCheckUI(date) {
       titleContainer.appendChild(extendBtn);
       wrapper.appendChild(titleContainer);
 
-      // 3. 복용 체크 테이블 생성
       const table = document.createElement("table");
       table.classList.add("taken-table");
 
-      // 헤더 행
       const headerRow = document.createElement("tr");
       const thTime = document.createElement("th");
       thTime.innerText = "시간";
@@ -862,7 +914,6 @@ function openTakenCheckUI(date) {
       });
       table.appendChild(headerRow);
 
-      // 시간별 체크박스 행
       const times = sup.times || [];
       if (!sup.takenStatus) sup.takenStatus = {};
       if (!sup.takenStatus[date]) sup.takenStatus[date] = {};
@@ -881,6 +932,8 @@ function openTakenCheckUI(date) {
           chk.style.margin = "2px";
 
           chk.addEventListener("change", async () => {
+            chk.classList.add('bounce-active');
+            setTimeout(() => chk.classList.remove('bounce-active'), 400);
             sup.takenStatus[date][`${time}_${member}`] = chk.checked;
             if (!chk.checked) {
              delete sup.takenStatus[date][`${time}_${member}_extended`];
@@ -903,7 +956,7 @@ function openTakenCheckUI(date) {
       section.appendChild(table);
       wrapper.appendChild(section);
       body.appendChild(wrapper);
-    }); // 루프 끝
+    });
   }
 
   modal.classList.add("active");
@@ -916,7 +969,6 @@ document.getElementById("closeTakenCheckBtn").addEventListener("click", async ()
   closeBottomSheet("takenCheckModal");
 });
 
-// ===== 통계 모달 요소
 const statsBtn = document.getElementById("statsBtn");
 const statsModal = document.getElementById("statsModal");
 const closeStatsModal = document.getElementById("closeStatsModal");
@@ -930,14 +982,17 @@ statsBtn.addEventListener("click", () => {
   statsModal.classList.add("active");
   document.body.classList.add("modal-open");
   history.pushState({ modal: "stats" }, "");
-  // 기본 기간: 올해
+
   const year = new Date().getFullYear();
   document.getElementById("periodStart").value = `${year}-01`;
   document.getElementById("periodEnd").value = `${year}-12`;
 
   renderFamilyUI();
 
-  statsContent.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:180px;'>이름을 길게 누르면<br>변경/삭제 가능합니다</p>";
+  statsContent.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:180px;'>이름을 길게 누르면 변경/삭제가 가능합니다.</p>";
+  setTimeout(() => {
+        applyIOSButtonEffect();
+    }, 50);
 });
 
 // 2. 통계 모달 닫기
@@ -980,42 +1035,30 @@ function showStatsForFamily(name) {
   const stats = {};
 
   supplements.forEach(sup => {
-    // 1. 해당 가족이 포함되지 않았거나 복용 기록 데이터가 아예 없으면 패스
     if (!sup.family || !sup.family.includes(name)) return;
 
-    // 2. [의도 반영] 고정 목표량(Target) 계산 
-    // 사용자님의 필드명인 'totalCapsules'를 사용합니다.
-    // 연장을 아무리 해도 이 값은 변하지 않으므로 통계가 고정됩니다.
     const initialTotal = parseFloat(sup.totalCapsules) || 0;
     if (initialTotal <= 0) return;
 
     const fixedTargetForOne = initialTotal / sup.family.length;
-
-    // 3. [의도 반영] 실제 복용량(Taken) 집계
-    // schedule 배열을 돌지 않고, 실제 체크 데이터인 takenStatus만 확인합니다.
     let actualTakenAmount = 0;
 
     if (sup.takenStatus) {
       Object.keys(sup.takenStatus).forEach(dateStr => {
-        // 설정한 통계 기간 내의 날짜인지 확인
         if (dateStr >= startStr && dateStr <= endStr) {
           const dayStatus = sup.takenStatus[dateStr];
           
           let takenSlots = 0; 
           for (const key in dayStatus) {
-            // "아침_도림" 같이 실제 체크된 값만 확인 (연장으로 자동생성된 _extended는 제외됨)
-            // 사용자님의 체크 로직 key 구조인 `${time}_${member}`를 따릅니다.
             if (key.includes(`_${name}`) && dayStatus[key] === true && !key.includes("_extended")) {
               takenSlots++; 
             }
           }
-          // 실제 복용량 = 체크된 횟수 * (1회당 복용량)
           actualTakenAmount += (takenSlots * (sup.dose / sup.times.length));
         }
       });
     }
 
-    // 4. 통계 객체 생성
     stats[sup.productName] = {
       taken: actualTakenAmount,
       target: fixedTargetForOne,
@@ -1053,7 +1096,6 @@ function showStatsForFamily(name) {
 }
 
 function renderFamilyUI() {
-  // 1. 통계 모달의 버튼들 교체
   const statsFamilyContainer = document.querySelector(".family-buttons");
   if (statsFamilyContainer) {
     statsFamilyContainer.innerHTML = ""; 
@@ -1066,7 +1108,6 @@ function renderFamilyUI() {
       let timer;
       let isLongPress = false;
 
-      // [수정된 롱 프레스 로직]
       const startPress = () => {
         isLongPress = false;
         timer = setTimeout(async () => {
@@ -1158,47 +1199,37 @@ function renderFamilyUI() {
 }
 
 function switchStatsTab(tab) {
-  const container = document.getElementById('statsTabContainer');
-  const familyWrapper = document.getElementById('familyBtnsWrapper');
-  const periodWrapper = document.getElementById('periodWrapper');
-  const statsContent = document.getElementById('statsContent');
-  const btns = container.querySelectorAll('.tab-btn');
-  const slider = container.querySelector('.tab-slider');
+    const container = document.getElementById('statsTabContainer');
+    const familyWrapper = document.getElementById('familyBtnsWrapper');
+    const periodWrapper = document.getElementById('periodWrapper');
+    const statsContent = document.getElementById('statsContent');
+    const btns = container.querySelectorAll('.tab-btn');
+    const slider = container.querySelector('.tab-slider');
 
-  if (tab === 'stats') {
-    // 슬라이더 이동 및 활성화 상태 변경
-    slider.style.transform = 'translateX(0)';
-    btns[0].classList.add('active');
-    btns[1].classList.remove('active');
-
-    // 화면 노출 제어
-    familyWrapper.style.display = 'flex';
-    periodWrapper.style.display = 'none';
-    statsContent.style.visibility = 'visible';
-    
-    // 탭을 돌아올 때 현재 선택된 가족의 통계를 다시 보여줌
-    const selectedBtn = familyWrapper.querySelector('.family-btn.selected');
-    if (selectedBtn) {
-      showStatsForFamily(selectedBtn.dataset.name);
+    if (tab === 'stats') {
+        slider.style.transform = 'translateX(0%)';
+        btns[0].classList.add('active');
+        btns[1].classList.remove('active');
+        familyWrapper.style.display = 'flex';
+        periodWrapper.style.display = 'none';
+        statsContent.style.visibility = 'visible';
+        
+        const selectedBtn = familyWrapper.querySelector('.family-btn.selected');
+        if (selectedBtn) showStatsForFamily(selectedBtn.dataset.name);
+    } else {
+        slider.style.transform = 'translateX(100%)';
+        btns[0].classList.remove('active');
+        btns[1].classList.add('active');
+        familyWrapper.style.display = 'none';
+        periodWrapper.style.display = 'flex';
+        statsContent.style.visibility = 'hidden';
     }
-  } else {
-    // 슬라이더 이동 및 활성화 상태 변경
-    slider.style.transform = 'translateX(100%)';
-    btns[0].classList.remove('active');
-    btns[1].classList.add('active');
-
-    // 화면 노출 제어
-    familyWrapper.style.display = 'none';
-    periodWrapper.style.display = 'flex';
-    statsContent.style.visibility = 'hidden'; // 기간 설정 중엔 그래프 숨김
-  }
 }
 
-// 모달을 닫을 때 탭 위치 초기화 (추가 권장)
 const originalCloseStatsModal = document.getElementById("closeStatsModal").onclick;
 document.getElementById("closeStatsModal").onclick = function() {
-    originalCloseStatsModal(); // 기존 닫기 로직 실행
-    switchStatsTab('stats');   // 다시 열 때를 위해 '통계' 탭으로 초기화
+    originalCloseStatsModal();
+    switchStatsTab('stats');
 };
 
 function renderFamilyCheckboxes() {
@@ -1214,8 +1245,6 @@ function renderFamilyCheckboxes() {
     chk.type = "checkbox";
     chk.className = "inputFamily";
     chk.value = name;
-    
-    // [중요] 초기화 시 무조건 false 부여
     chk.checked = false; 
 
     label.appendChild(chk);
@@ -1224,7 +1253,6 @@ function renderFamilyCheckboxes() {
   });
 }
 
-// 사용자님의 DB 구조를 기반으로 특정 가족 구성원 데이터를 완전히 삭제하는 함수
 async function deleteFamilyMemberFromDB(targetName) {
   if (!db) await openDatabase();
   return new Promise((resolve, reject) => {
@@ -1237,18 +1265,15 @@ async function deleteFamilyMemberFromDB(targetName) {
       allSups.forEach(sup => {
         let changed = false;
 
-        // 1. 영양제 주인 명단(family)에서 이름 삭제
         if (sup.family && sup.family.includes(targetName)) {
           sup.family = sup.family.filter(n => n !== targetName);
           changed = true;
         }
 
-        // 2. 복용 기록(takenStatus)에서 해당 이름이 포함된 키 삭제
         if (sup.takenStatus) {
           for (let date in sup.takenStatus) {
             const dayData = sup.takenStatus[date];
             for (let key in dayData) {
-              // "시간_이름" 형식의 키에서 이름이 일치하면 삭제
               if (key.endsWith(`_${targetName}`)) {
                 delete dayData[key];
                 changed = true;
@@ -1266,7 +1291,6 @@ async function deleteFamilyMemberFromDB(targetName) {
   });
 }
 
-// 1) 기준 날짜 이전의 미복용 체크 슬롯 계산
 function calculateLeftUnTakenSlotsBefore(sup, baseDate) {
   const takenStatus = sup.takenStatus || {};
   let totalLeftSlots = 0;
@@ -1292,7 +1316,6 @@ function calculateLeftUnTakenSlotsBefore(sup, baseDate) {
   return totalLeftSlots;
 }
 
-// 2) 연장할 날짜 수 계산
 function calculateAdditionalDays(sup, baseDate, leftSlots) {
   const perDaySlots = sup.family.length * sup.times.length;
 
@@ -1301,7 +1324,6 @@ function calculateAdditionalDays(sup, baseDate, leftSlots) {
   return Math.ceil(leftSlots / perDaySlots);
 }
 
-// 3) 기준 날짜 이후의 일정 재생성
 function extendScheduleFromDate(sup, baseDate, additionalDays) {
   const beforeDates = sup.schedule.filter(d => d < baseDate);
   const afterDates = sup.schedule.filter(d => d >= baseDate);
@@ -1322,7 +1344,6 @@ function extendScheduleFromDate(sup, baseDate, additionalDays) {
   sup.schedule = beforeDates.concat(afterDates, newDates);
 }
 
-// ===== 하단 백업/복원 안내 =====
 const footerYear = document.getElementById("footerYear");
 const footerBackupLink = document.getElementById("footerBackupLink");
 const backupMenuModal = document.getElementById("backupMenuModal");
@@ -1331,22 +1352,17 @@ const triggerImportBtn = document.getElementById("triggerImportBtn");
 const closeBackupMenu = document.getElementById("closeBackupMenu");
 const importFileInput = document.getElementById("importFileInput");
 
-// 현재 연도 표시
 footerYear.innerText = new Date().getFullYear();
-
-// 백업/복원 메뉴 열기
 footerBackupLink.addEventListener("click", () => {
   backupMenuModal.classList.add("active");
   document.body.classList.add("modal-open");
   history.pushState({ modal: "backup" }, "");
 });
 
-// 취소/닫기
 closeBackupMenu.addEventListener("click", () => {
   closeBottomSheet("backupMenuModal");
 });
 
-// ====================
 // 백업 동작
 exportBtn.addEventListener("click", () => {
   if (supplements.length === 0) {
@@ -1366,7 +1382,6 @@ exportBtn.addEventListener("click", () => {
   closeBottomSheet("backupMenuModal");
 });
 
-// ====================
 // 복원 트리거
 triggerImportBtn.addEventListener("click", () => {
   importFileInput.click();
@@ -1406,8 +1421,6 @@ importFileInput.addEventListener("change", async (e) => {
       });
     };
 
-    // [중요 2] 가족 명단(familyMembers) 추출 및 갱신
-    // 백업 데이터(data)에 들어있는 가족 이름들을 싹 모아서 localStorage에 넣습니다.
     const newFamilySet = new Set();
     data.forEach(sup => {
       if (sup.family && Array.isArray(sup.family)) {
@@ -1418,15 +1431,11 @@ importFileInput.addEventListener("change", async (e) => {
     if (newFamilySet.size > 0) {
       const newFamilyList = Array.from(newFamilySet);
       localStorage.setItem("familyMembers", JSON.stringify(newFamilyList));
-      familyMembers = newFamilyList; // 메모리 변수도 즉시 교체
+      familyMembers = newFamilyList;
     }
 
     await deleteDatabaseAsync();
-
-    // ===== 메모리에 백업 데이터 적용 =====
     supplements = data;
-
-    // ===== DB 재생성 및 저장 =====
     await openDatabase();
     await saveAllSupplements();
 
@@ -1435,20 +1444,15 @@ importFileInput.addEventListener("change", async (e) => {
     location.reload();
 
   } catch (err) {
-    // 4. 에러 발생 시 상세 이유를 콘솔에 찍어 확인하기 위함
+
     console.error("복원 에러 상세:", err);
     alert("복원 중 오류가 발생했습니다. (사유: " + err.message + ")");
   }
   e.target.value = "";
 });
 
-// 하단 텍스트 요소
 const footerVersionEl = document.getElementById("footerVersion");
-
-// 앱 내부 버전 표시 (기존 v6처럼)
 document.getElementById("footerAppVersion").innerText = APP_VERSION;
-
-// 클릭 이벤트
 footerVersionEl.addEventListener("click", async () => {
   try {
     const res = await fetch("./version.json?" + Date.now());
@@ -1460,7 +1464,7 @@ footerVersionEl.addEventListener("click", async () => {
 
     if (latestVersion !== currentVersion) {
       if (confirm(`새로운 버전이 있습니다!\n업데이트하려면 확인을 누르세요.`)) {
-        location.reload();  // 페이지 새로고침
+        location.reload();
       }
     } else {
       alert(`💊 최신 버전입니다!`);
@@ -1479,7 +1483,6 @@ function hexToRgb(hex) {
   return `${r}, ${g}, ${b}`;
 }
 
-// 스와이프 제스처로 좌우 월 이동 처리 (개선)
 let touchStartX = 0;
 let touchStartY = 0;
 let touchEndX = 0;
@@ -1487,8 +1490,6 @@ let touchEndY = 0;
 
 const minSwipeDistance = 70;
 const swipeRatio = 1.5;
-
-// 스와이프 및 가장자리 터치 충돌 개선 로직
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
@@ -1520,27 +1521,22 @@ datesWrapper.addEventListener("touchend", (e) => {
   const absDiffX = Math.abs(diffX);
   const absDiffY = Math.abs(diffY);
 
-  // 사용자님의 기존 기준(minSwipeDistance=70, swipeRatio=1.5) 적용
   if (absDiffX > minSwipeDistance && absDiffX > absDiffY * swipeRatio) {
     if (diffX < 0) {
-      changeMonthWithDay(1);  // 다음 달
+      changeMonthWithDay(1);
     } else if (diffX > 0) {
-      changeMonthWithDay(-1); // 이전 달
+      changeMonthWithDay(-1);
     }
   }
 
-  // 좌표 리셋
   touchStartX = 0;
   touchStartY = 0;
   touchEndX = 0;
   touchEndY = 0;
 });
 
-// ―――――――――――――――――――
-// 월 변경 함수 (날짜 유지 & 보정)
-// ―――――――――――――――――――
 function changeMonthWithDay(direction) {
-  // 현재 선택된 날짜가 없다면 오늘 날짜 기준으로 처리
+
   let year, month, day;
   if (selectedDateForList) {
     const parts = selectedDateForList.split("-");
@@ -1554,25 +1550,19 @@ function changeMonthWithDay(direction) {
     day   = today.getDate();
   }
 
-  // 새로운 달 계산
   const newDate = new Date(year, month + direction, day);
-
-  // 그 달의 마지막 날짜 구하기
   const lastDayOfNewMonth = new Date(
     newDate.getFullYear(),
     newDate.getMonth() + 1,
     0
   ).getDate();
 
-  // 만약 날짜(day)가 그 달의 마지막보다 크면 보정
   const adjustedDay = day > lastDayOfNewMonth ? lastDayOfNewMonth : day;
 
-  // 선택 날짜 업데이트
   selectedDateForList = `${newDate.getFullYear()}-${String(
     newDate.getMonth() + 1
   ).padStart(2, "0")}-${String(adjustedDay).padStart(2, "0")}`;
 
-  // dt 객체도 보정된 날짜로 맞춤
   dt = new Date(
     newDate.getFullYear(),
     newDate.getMonth(),
@@ -1582,12 +1572,10 @@ function changeMonthWithDay(direction) {
   renderCalendar();
 }
 
-// 요소 가져오기
 const realColorInput = document.getElementById('inputColor');
 const colorDot = document.getElementById('colorDot');
 const colorHexText = document.getElementById('colorHexText');
 
-// 값이 변경될 때 UI 업데이트 (사용자가 색을 고른 직후 실행됨)
 if (realColorInput) {
   realColorInput.addEventListener('input', (e) => {
     const newColor = e.target.value.toUpperCase();
@@ -1596,15 +1584,13 @@ if (realColorInput) {
   });
 }
 
-// 가격 입력 시 실시간 쉼표 추가 로직
 const inputPriceEl = document.getElementById("inputPrice");
 
 if (inputPriceEl) {
   inputPriceEl.addEventListener("input", (e) => {
-    // 1. 숫자 이외의 문자를 모두 제거 (쉼표 포함)
+
     let value = e.target.value.replace(/[^0-9]/g, "");
     
-    // 2. 숫자가 있을 때만 천 단위 쉼표를 찍어서 다시 노출
     if (value) {
       e.target.value = Number(value).toLocaleString();
     } else {
@@ -1613,7 +1599,6 @@ if (inputPriceEl) {
   });
 }
 
-// 모달 열 때 UI를 동기화해주는 함수
 function updateColorBar(color) {
   const isAuto = !color || color === "#000000" || color === "";
   const displayColor = isAuto ? "#000000" : color;
@@ -1655,23 +1640,20 @@ async function updateSupplementFamilyName(oldName, newName) {
       allSups.forEach(sup => {
         let changed = false;
         
-        // 1. 가족 명단 배열 업데이트
         if (sup.family && sup.family.includes(oldName)) {
           sup.family = sup.family.map(n => n === oldName ? newName : n);
           changed = true;
         }
 
-        // 2. [중요] 사용자님의 takenStatus 키값 변경 (시간_이름 형식)
         if (sup.takenStatus) {
           for (let date in sup.takenStatus) {
             const dayData = sup.takenStatus[date];
             for (let key in dayData) {
-              // key가 "아침_도림" 형태인지 확인
+
               if (key.endsWith(`_${oldName}`)) {
                 const timePart = key.split(`_${oldName}`)[0];
                 const newKey = `${timePart}_${newName}`;
                 
-                // 새로운 이름의 키로 값 복사 후 기존 키 삭제
                 dayData[newKey] = dayData[key];
                 delete dayData[key];
                 changed = true;
@@ -1820,3 +1802,228 @@ function renderYearlyCalendar(year) {
     container.appendChild(monthDiv);
   }
 }
+
+function initCostModalTabs() {
+    const costDiv = document.getElementById('monthlyCostContent');
+    const calcDiv = document.getElementById('calcTabContent');
+    const slider = document.querySelector('#costTabContainer .tab-slider');
+    const btns = document.querySelectorAll('#costTabContainer .tab-btn');
+
+    if(slider) slider.style.transform = 'translateX(0)';
+    btns[0].classList.add('active');
+    btns[1].classList.remove('active');
+    costDiv.style.display = 'flex';
+    calcDiv.style.display = 'none';
+}
+
+function switchCostTab(tab) {
+    const container = document.getElementById('costTabContainer');
+    const costContent = document.getElementById('monthlyCostContent');
+    const calcContent = document.getElementById('calcTabContent');
+    const slider = container.querySelector('.tab-slider');
+    const btns = container.querySelectorAll('.tab-btn');
+
+    if (tab === 'cost') {
+        slider.style.transform = 'translateX(0%)';
+        btns[0].classList.add('active');
+        btns[1].classList.remove('active');
+        costContent.style.display = 'flex';
+        calcContent.style.display = 'none';
+    } else {
+        slider.style.transform = 'translateX(100%)';
+        btns[0].classList.remove('active');
+        btns[1].classList.add('active');
+        costContent.style.display = 'none';
+        calcContent.style.display = 'flex';
+        
+        renderCalcTab(); 
+    }
+}
+
+function updateCalcSum() {
+    if (event && event.target && event.target.classList.contains('calc-check')) {
+        const target = event.target;
+        target.classList.add('bounce-active');
+        setTimeout(() => target.classList.remove('bounce-active'), 400);
+    }
+    const checkboxes = document.querySelectorAll('.calc-check');
+    let newSum = 0;
+    
+    checkboxes.forEach(cb => {
+        if (cb.checked) {
+            newSum += parseInt(cb.dataset.price || 0);
+        }
+    });
+    
+    const sumDisplay = document.getElementById('selectedSumDisplay');
+    if (sumDisplay) {
+        sumDisplay.innerText = `선택 제품 합계: ${newSum.toLocaleString()}원`;
+    }
+}
+
+function renderCalcTab() {
+    const year = dt.getFullYear();
+    const month = dt.getMonth() + 1;
+    const calcDiv = document.getElementById('calcTabContent');
+    
+    const thisMonthSups = supplements.filter(sup => {
+        const firstDate = sup.schedule?.[0] || "";
+        const [y, m] = firstDate.split("-").map(Number);
+        return y === year && m === month;
+    });
+
+    if (thisMonthSups.length === 0) {
+        calcDiv.innerHTML = `<div style="flex:1; display:flex; align-items:center; justify-content:center;"><p style="opacity:0.6;">이번 달 등록된 제품이 없습니다.</p></div>`;
+        return;
+    }
+
+    let totalOriginal = 0;
+    let listHtml = `<h4 style="margin-bottom:10px; margin-left:10px; font-size:16px; font-weight:bold;">${month}월 구매가</h4>`;
+    
+    thisMonthSups.forEach(sup => {
+        const price = (sup.price || 0);
+        totalOriginal += price;
+        listHtml += `
+            <div class="calc-list-item" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding:10px; border-radius:50px;">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <input type="checkbox" class="calc-check" 
+                           data-id="${sup.id}" 
+                           data-price="${price}" 
+                           onchange="updateCalcSum()" 
+                           checked style="width:20px; height:20px; accent-color:#05d339;">
+                    <span style="font-size:15px;">${sup.productName}</span>
+                </div>
+                <span style="font-size:14px; font-weight:normal;">${price.toLocaleString()}원</span>
+            </div>
+        `;
+    });
+
+    listHtml += `<div id="selectedSumDisplay" style="text-align:center; font-size:12px; opacity:0.5;">선택 제품 합계: ${totalOriginal.toLocaleString()}원</div>`;
+
+    calcDiv.innerHTML = `
+        <div class="calc-inner-wrapper" style="display:flex; flex-direction:column; width:100%;">
+            ${listHtml}
+            
+            <div class="calc-input-box" style="margin-top:25px; padding:15px; border-radius:22px;">
+                <label style="font-size:13px; opacity:0.6; display:block; margin-bottom:8px;">실제 총 결제 금액</label>
+                <div style="display:flex; align-items:center; gap:5px;">
+                    <span style="font-size:18px; font-weight:normal;">₩</span>
+                    <input type="number" id="actualPaidInput" placeholder="할인 적용된 금액 입력" 
+                           style="width:100%; border:none; background:transparent; font-size:18px; font-weight:normal; color:var(--text-color); outline:none;" inputmode="numeric">
+                </div>
+            </div>
+
+            <div class="delete-btn-container" style="padding: 30px 0 20px;">
+                <button onclick="processDiscount()" class="delete-glass-btn" style="color: #05d339; display: flex; align-items: center; justify-content: center;">
+                    할인율 적용
+                </button>
+            </div>
+            
+            <div id="calcStatusMsg" style="margin-top:10px; font-size:13px; text-align:center; color:#05d339; font-weight:600;"></div>
+        </div>
+    `;
+}
+
+async function processDiscount() {
+    const actualPaid = parseInt(document.getElementById('actualPaidInput').value);
+    if (!actualPaid || actualPaid <= 0) return alert("금액을 입력하세요.");
+
+    const checkboxes = document.querySelectorAll('.calc-check:checked');
+    const selectedIds = Array.from(checkboxes).map(cb => Number(cb.dataset.id));
+    const selectedSups = supplements.filter(s => selectedIds.includes(s.id));
+    const originalSum = selectedSups.reduce((acc, cur) => acc + (cur.price || 0), 0);
+
+    if (originalSum === 0) return;
+    const rate = actualPaid / originalSum;
+
+    for (let sup of selectedSups) {
+        sup.price = Math.round(sup.price * rate);
+        await saveSupplementToDB(sup);
+    }
+
+    document.getElementById('calcStatusMsg').innerText = "저장 완료! 잠시 후 업데이트됩니다.";
+    renderCalendar();
+    setTimeout(() => { monthlyCostBtn.click(); }, 1200);
+}
+
+function applyIOSButtonEffect() {
+    const selectors = [
+        'button',
+        '.tab-btn',
+        '.fab-today-btn', 
+        '.fab-add-btn', 
+        '.family-btn', 
+        '.menu-btn', 
+        '.primary-btn', 
+        '.close-btn', 
+        '.check-btn', 
+        '.extend-btn',
+        '.delete-glass-btn',
+        '.month-display'
+    ];
+
+    const targetElements = document.querySelectorAll(selectors.join(', '));
+
+    targetElements.forEach(el => {
+        setupIOSButtonAutomated(el);
+    });
+}
+
+function setupIOSButtonAutomated(element) {
+    if (!element || element.dataset.iosApplied) return;
+    element.dataset.iosApplied = "true";
+
+    let isPressed = false;
+    const getEffectTarget = (el) => {
+        if (el.classList.contains('tab-btn')) {
+            return el.closest('.tab-container').querySelector('.tab-slider');
+        }
+        return el;
+    };
+
+    element.addEventListener('pointerdown', (e) => {
+        isPressed = true;
+        const target = getEffectTarget(element);
+        if (target) {
+            console.log("효과 적용 대상 발견:", target);
+            target.classList.add('ios-active');
+        }
+        element.setPointerCapture(e.pointerId);
+    });
+
+    element.addEventListener('pointermove', (e) => {
+        if (!isPressed) return;
+        const rect = element.getBoundingClientRect();
+        const isInside = (
+            e.clientX >= rect.left && e.clientX <= rect.right &&
+            e.clientY >= rect.top && e.clientY <= rect.bottom
+        );
+        isInside ? element.classList.add('ios-active') : element.classList.remove('ios-active');
+    });
+
+    element.addEventListener('pointerup', (e) => {
+        if (!isPressed) return;
+        isPressed = false;
+        
+        const rect = element.getBoundingClientRect();
+        const isInside = (
+            e.clientX >= rect.left && e.clientX <= rect.right &&
+            e.clientY >= rect.top && e.clientY <= rect.bottom
+        );
+
+        element.classList.remove('ios-active');
+        element.releasePointerCapture(e.pointerId);
+
+        if (!isInside) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    });
+
+    element.addEventListener('pointercancel', () => {
+        isPressed = false;
+        element.classList.remove('ios-active');
+    });
+}
+
+window.addEventListener('DOMContentLoaded', applyIOSButtonEffect);

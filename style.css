@@ -58,8 +58,9 @@ input, textarea {
 }
 
 /* 모든 버튼, 날짜 셀, 리스트 요소에 돋보기/복사 금지 강제 적용 */
-button, 
-.date, 
+button,
+.date,
+.header-right-group,
 .supplement-bar, 
 .family-btn, 
 .fab-today-btn, 
@@ -78,14 +79,13 @@ button,
 
 /* 버벅임 방지 및 즉각적인 터치 반응 */
 button,
-.header-right-group,
 .fab-today-btn, 
 .fab-add-btn, 
 .family-btn, 
 .menu-btn, 
 .primary-btn, 
 .close-btn, 
-.check-btn, 
+.check-btn,
 .extend-btn,
 .supplement-bar,
 .delete-glass-btn,
@@ -96,20 +96,19 @@ button,
   -webkit-tap-highlight-color: transparent; /* 기본 회색 하이라이트 제거 */
 }
 
-button:active, 
-.header-right-group:active,
-.fab-today-btn:active, 
-.fab-add-btn:active, 
-.family-btn:active, 
-.menu-btn:active, 
-.primary-btn:active, 
-.close-btn:active,
-.check-btn:active,
-.extend-btn:active,
-.delete-glass-btn:active,
-.month-display:active {
+button.ios-active, 
+.fab-today-btn.ios-active, 
+.fab-add-btn.ios-active, 
+.family-btn.ios-active, 
+.menu-btn.ios-active, 
+.primary-btn.ios-active, 
+.close-btn.ios-active,
+.check-btn.ios-active,
+.extend-btn.ios-active,
+.delete-glass-btn.ios-active,
+.month-display.ios-active {
   transform: scale(1.2) !important;
-  filter: contrast(1.15) saturate(1.1);
+  filter: contrast(1.15) saturate(1.1) brightness(1.1);
   z-index: 9999;
 }
 
@@ -178,7 +177,6 @@ button:active,
   pointer-events: none;
 }
 
-/* 낮 모드: 모든 막대가 중심에서 밖으로 향함 */
 body:not(.dark-mode) .theme-icon::before,
 body:not(.dark-mode) .theme-icon::after {
  content: "";
@@ -191,19 +189,16 @@ body:not(.dark-mode) .theme-icon::after {
   border-radius: 10px;
 }
 
-/* 상하(0도) + 좌우(90도) 막대 생성 */
 body:not(.dark-mode) .theme-icon::before {
-  /* 자기 자신(상하) + 그림자 회전(좌우) */
-  box-shadow: 0 0 0 transparent; /* 잔상 제거 */
+  box-shadow: 0 0 0 transparent;
 }
 
-/* 1. 상하(12시, 6시) & 좌우(3시, 9시) */
 body:not(.dark-mode) .theme-icon::before {
   transform: translate(-50%, -50%);
 }
 
 .theme-icon::before {
-  transform: translate(-50%, -50%); /* 12시-6시 방향 */
+  transform: translate(-50%, -50%);
 }
 
 body:not(.dark-mode) .theme-icon::before {
@@ -253,12 +248,10 @@ body.dark-mode .theme-icon::after {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* 원화 버튼 전용 아이콘 */
 .monthly-cost-btn {
   position: relative;
 }
 
-/* W의 V자 형태를 대신하는 가로 두 줄 */
 .monthly-cost-btn::before,
 .monthly-cost-btn::after {
   content: "";
@@ -346,7 +339,6 @@ body.dark-mode .theme-icon::after {
   cursor: pointer;
 }
 
-/* 날짜 숫자 레이아웃 조정 */
 .date .number {
   position: relative;
   display: flex;
@@ -367,15 +359,26 @@ body.dark-mode .theme-icon::after {
   line-height: 1;
   z-index: 1;
   margin: 0 auto 4px auto;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s;
 }
 
 .date .number:active {
-    transform: scale(0.7);
-    transition: transform 0.3s;
+  transform: scale(0.8);
+  transition: transform 0.1s ease-out;
+}
+
+.date.selected .number {
+  animation: ios-date-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes ios-date-bounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
 .date {
-    cursor: default; /* 셀 전체는 기본 포인터로 */
+    cursor: default;
 }
 
 .date.today-date .number {
@@ -750,6 +753,7 @@ body.dark-mode #statsContent {
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  height: 34px;
 }
 
 .info-row.split #inputDate {
@@ -848,7 +852,6 @@ select.unit-select-inside {
   -webkit-appearance: none;
 }
 
-/* 체크박스 그룹용 행 */
 .checkbox-line-row {
   display: flex;
   justify-content: space-around;
@@ -857,33 +860,58 @@ select.unit-select-inside {
 }
 
 input[type="checkbox"] {
-  width: 21px;
-  height: 21px;
-  border-radius: 10px;
+  -webkit-appearance: none; /* 브라우저 기본 스타일 완전 제거 */
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%; /* 완전한 원형 */
   background-color: #dddddd;
   display: inline-grid;
   place-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s cubic-bezier(0.45, 0.05, 0.55, 0.95);
 }
 
-body.dark-mode input[type="checkbox"] { background-color: #3b3b41 !important; }
+body.dark-mode input[type="checkbox"] { 
+  background-color: #3b3b41 !important; 
+}
 
-input[type="checkbox"]:checked { background-color: #05d339 !important; }
+/* 체크될 때 전체적으로 살짝 튕기는 효과 */
+input[type="checkbox"]:active {
+  transform: scale(0.9); /* 누르고 있을 때 살짝 작아짐 */
+}
+
+input[type="checkbox"]:checked {
+  background-color: #05d339 !important;
+  animation: ios-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
 body.dark-mode input[type="checkbox"]:checked { background-color: #05d339 !important; }
 
+/* 체크 아이콘 (V 표시) 효과 */
 input[type="checkbox"]::before {
   content: "";
-  width: 11px;
-  height: 11px;
+  width: 10px;
+  height: 10px;
   transform: scale(0);
-  background-color: #e0ffe7;
+  background-color: #ffffff; /* 더 깨끗한 흰색 추천 */
   clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-  transition: 350ms transform;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+  transform-origin: center;
 }
 
-input[type="checkbox"]:checked::before { transform: scale(1); }
+input[type="checkbox"]:checked::before {
+  transform: scale(1.1); /* 아이콘이 살짝 더 커지며 나타남 */
+}
+
+/* iOS 스타일 바운스 애니메이션 */
+@keyframes ios-bounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
 
 .checkbox-label-text {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: normal;
   color: var(--text-color);
   margin-left: 5px;
@@ -917,7 +945,7 @@ input[type="checkbox"]:checked::before { transform: scale(1); }
 }
 
 body.dark-mode .memo-paper-group {
-  background: #29292b !important;
+  background: #2c2c2e !important;
 }
 
 .memo-paper-group + .memo-paper-group {
@@ -1190,7 +1218,7 @@ body.dark-mode .close-btn::before {
 }
 
 body.dark-mode .cost-bar-bg {
-background: rgba(236, 236, 236, 0.767);
+background: rgba(255, 255, 255, 0.911);
 }
 
 .cost-bar-fill {
@@ -1200,17 +1228,17 @@ background: rgba(236, 236, 236, 0.767);
 }
 
 .total-cost-wrapper {
-  margin-top: 15px;
-  padding-top: 30px;
+  margin-top: 1px;
+  padding-top: 15px;
   border-top: 1px solid var(--calendar-line);
   text-align: center;
   padding-right: 6px;
 }
 
 .total-cost-label {
-  font-size: 13px;
-  font-weight: 600;
-  opacity: 0.8;
+  font-size: 11px;
+  font-weight: normal;
+  opacity: 0.6;
   display: block;
   text-align: center;
   margin-bottom: 6px;
@@ -1218,7 +1246,7 @@ background: rgba(236, 236, 236, 0.767);
 
 .total-cost-amount {
   font-size: 21px;
-  font-weight: 700;
+  font-weight: normal;
   text-align: center;
   color: #000000;
 }
@@ -1230,6 +1258,100 @@ body.dark-mode .total-cost-amount {
 /* 숫자 입력란 정렬 최적화 */
 input[type="number"], .total-cost-amount, .stats-count-text {
   font-variant-numeric: tabular-nums;
+}
+
+.family-cost-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 15px;
+    padding: 0 5px;
+}
+
+.family-cost-card {
+    background-color: #c0c0c033;
+    border-radius: 22px;
+    padding: 10px 14px;
+    min-width: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+body.dark-mode .family-cost-card {
+    background-color: #2c2c2e;
+}
+
+.family-cost-name {
+    font-size: 12px;
+    font-weight: 600;
+    opacity: 0.5;
+    color: var(--text-color);
+}
+
+.family-cost-amount {
+    font-size: 15px;
+    font-weight: normal;
+    color: var(--text-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.calc-list-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    background: #c0c0c033;
+    padding: 10px;
+    border-radius: 12px;
+}
+
+/*구매가 계산기*/
+.calc-input-box {
+    background: #c0c0c033;
+}
+
+body.dark-mode .calc-list-item {
+    background-color: #2c2c2e !important;
+}
+
+body.dark-mode .calc-input-box {
+    background-color: #2c2c2e !important;
+}
+
+.calc-info { flex: 1; }
+.calc-name { font-size: 14px; font-weight: 600; }
+.calc-price { font-size: 12px; opacity: 0.6; }
+
+.discount-input-wrapper {
+    margin-top: 20px;
+    padding: 15px;
+    background: var(--calendar-line);
+    border-radius: 15px;
+}
+
+.discount-input-wrapper input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    margin-top: 8px;
+    box-sizing: border-box;
+}
+
+.apply-calc-btn {
+    width: 100%;
+    height: 50px;
+    background-color: #05d339;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 15px;
 }
 
 /* 복용 체크 모달 커스텀 */
@@ -1254,7 +1376,7 @@ input[type="number"], .total-cost-amount, .stats-count-text {
 }
 
 body.dark-mode .taken-sup-section {
-  background-color: #29292b !important;
+  background-color: #2c2c2e !important;
 }
 
 .taken-sup-title {
@@ -1364,9 +1486,8 @@ body.dark-mode .extend-btn {
     flex-shrink: 0; /* 내용이 많아도 줄어들지 않음 */
 }
 
-/* 헤더 탭 컨테이너 */
 .tab-container {
-  pointer-events: auto;
+  position: relative;
   display: flex;
   width: 90px;
   height: 35px;
@@ -1374,10 +1495,13 @@ body.dark-mode .extend-btn {
   border-radius: 50px;
   padding: 1px;
   z-index: 2;
+  overflow: hidden; 
 }
 
-body.dark-mode .tab-container {
-  background-color: #19191B;
+body.dark-mode .tab-container,
+body.dark-mode .stats-modal .modal-header .tab-container,
+body.dark-mode .cost-header .tab-container {
+    background-color: #19191B !important;
 }
 
 .tab-container::before {
@@ -1425,8 +1549,9 @@ body.dark-mode .tab-container::before {
   height: calc(100% - 4px);
   background-color: #05d339;
   border-radius: 50px;
-  transition: all 0.15s ease-out;
   z-index: 1;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateX(0);
 }
 
 body.dark-mode .tab-slider {
@@ -1434,14 +1559,17 @@ body.dark-mode .tab-slider {
 }
 
 .tab-btn {
+  position: relative;
   flex: 1;
   border: none;
-  background: none;
+  background: none !important;
   font-size: 15px;
   font-weight: normal;
   color: var(--text-color);
-  z-index: 2;
+  z-index: 10;
   cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* 기간 설정 레이아웃 */
@@ -1462,7 +1590,7 @@ body.dark-mode .tab-slider {
 }
 
 body.dark-mode .period-input-group {
-  background: #29292b;
+  background: #2c2c2e;
 }
 
 .period-input-group label {
@@ -1473,8 +1601,8 @@ body.dark-mode .period-input-group {
 .period-input-group input {
   border: none;
   background: transparent;
-  font-family: inherit;
   font-size: 15px;
+  font-weight: normal;
   color: var(--text-color);
   outline: none;
 }
@@ -1584,7 +1712,7 @@ body.dark-mode .period-input-group {
 
 /* 밤 모드일 때 평소 버튼 배경색 */
 body.dark-mode .family-btn {
-  background-color: #29292b !important;
+  background-color: #2c2c2e !important;
 }
 
 /* 선택된 버튼 - 낮/밤 모드 별로 */
@@ -1694,7 +1822,7 @@ body.dark-mode .family-btn.selected {
 
 /* 다크모드 대응 */
 body.dark-mode .menu-btn {
-  background-color: #29292b !important;
+  background-color: #2c2c2e !important;
   color: white;
 }
 
@@ -1805,7 +1933,7 @@ body.dark-mode .onboarding-header h1 { color: white; }
     border: none !important;
 }
 
-.modal-header, .cost-header, .yearly-modal .modal-header, .stats-modal .modal-header {
+.modal-header, .yearly-modal .modal-header {
     position: sticky !important;
     top: 0 !important;
     width: 100%;
@@ -1842,7 +1970,7 @@ body.dark-mode #monthlyCostContent,
 body.dark-mode #takenCheckBody,
 body.dark-mode .yearly-grid,
 body.dark-mode .backup-menu-modal {
-    background-color: #1d1d1f !important;
+    background-color: #1f1f20 !important;
     border-radius: 35px 35px 0 0 !important;
 }
 
@@ -1852,13 +1980,53 @@ body.dark-mode .backup-menu-modal {
 }
 
 body.dark-mode #statsModal .stats-modal {
- background-color: #1d1d1f !important;
+ background-color: #1f1f20 !important;
     border-radius: 35px 35px 0 0 !important;
 }
 
-.stats-modal .modal-header .tab-container {
+.stats-modal .modal-header .tab-container,
+.cost-header .tab-container {
     position: absolute !important;
     left: 50% !important;
-    transform: translateX(-50%) !important;
-    margin: 0 !important;
+    margin-left: -45px !important; 
+    transform: none !important; 
+    top: 17px;
+    display: flex;
+    width: 90px;
+    height: 35px;
+    background-color: rgba(197, 197, 197, 0.15);
+    border-radius: 50px;
+    padding: 1px;
+    z-index: 2000;
+    overflow: visible !important;
+}
+
+.cost-header {
+    justify-content: space-between;
+    position: relative;
+}
+
+#monthlyCostContent, #calcTabContent {
+    margin-top: -70px !important;
+    padding-top: 80px !important;
+    flex: 1 !important;
+    background-color: #f8f8f8 !important;
+    border-radius: 35px 35px 0 0 !important;
+    min-height: 100% !important;
+    box-sizing: border-box !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    display: none;
+    flex-direction: column;
+}
+
+body.dark-mode #monthlyCostContent, 
+body.dark-mode #calcTabContent {
+    background-color: #1f1f20 !important;
+}
+
+#calcTabContent {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-bottom: 40px !important;
 }
