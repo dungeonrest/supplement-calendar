@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.11a";
+const APP_VERSION = "3.12";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -2027,3 +2027,16 @@ function setupIOSButtonAutomated(element) {
 }
 
 window.addEventListener('DOMContentLoaded', applyIOSButtonEffect);
+
+// 아코디언을 부드럽게 열고 닫기 위한 간단한 처리
+document.querySelectorAll('.accordion-section summary').forEach((summary) => {
+  summary.addEventListener('click', (e) => {
+    const details = summary.parentElement;
+    if (details.hasAttribute('open')) {
+
+      e.preventDefault();
+      details.classList.remove('is-open');
+      setTimeout(() => { details.removeAttribute('open'); }, 100);
+    }
+  });
+});

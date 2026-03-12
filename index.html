@@ -153,22 +153,52 @@
         </div>
       </div>
 
-      <label class="input-label">대상 및 시간</label>
       <div class="memo-paper-group checkbox-group">
-        <div class="checkbox-line-row">
-          <label class="checkbox-item"><input type="checkbox" class="inputFamily" value="도림"><span class="checkbox-label-text">도림</span></label>
-          <label class="checkbox-item"><input type="checkbox" class="inputFamily" value="뚜임"><span class="checkbox-label-text">뚜임</span></label>
-          <label class="checkbox-item"><input type="checkbox" class="inputFamily" value="진이"><span class="checkbox-label-text">진이</span></label>
-          <label class="checkbox-item"><input type="checkbox" class="inputFamily" value="쿤이"><span class="checkbox-label-text">쿤이</span></label>
-        </div>
-        <div class="memo-divider"></div>
-        <div class="checkbox-line-row">
-          <label class="checkbox-item"><input type="checkbox" class="inputTime" value="아침"><span class="checkbox-label-text">아침</span></label>
-          <label class="checkbox-item"><input type="checkbox" class="inputTime" value="점심"><span class="checkbox-label-text">점심</span></label>
-          <label class="checkbox-item"><input type="checkbox" class="inputTime" value="저녁"><span class="checkbox-label-text">저녁</span></label>
-          <label class="checkbox-item"><input type="checkbox" class="inputTime" value="공복"><span class="checkbox-label-text">공복</span></label>
-        </div>
+<details class="accordion-section">
+    <summary class="info-row">
+      <span class="row-label">대상</span>
+      <span class="unit-text dropdown-icon"></span>
+    </summary>
+    <div class="accordion-content">
+      <div class="checkbox-wrapper-line">
+        <label class="checkbox-item"><span class="checkbox-label-text">도림</span><input type="checkbox" class="inputFamily" value="도림"></label>
       </div>
+      <div class="checkbox-wrapper-line">
+        <label class="checkbox-item"><span class="checkbox-label-text">뚜임</span><input type="checkbox" class="inputFamily" value="뚜임"></label>
+      </div>
+      <div class="checkbox-wrapper-line">
+        <label class="checkbox-item"><span class="checkbox-label-text">진이</span><input type="checkbox" class="inputFamily" value="진이"></label>
+      </div>
+      <div class="checkbox-wrapper-line">
+        <label class="checkbox-item"><span class="checkbox-label-text">쿤이</span><input type="checkbox" class="inputFamily" value="쿤이"></label>
+      </div>
+    </div>
+  </details>
+
+  <div class="memo-divider"></div>
+
+  <details class="accordion-section">
+    <summary class="info-row">
+      <span class="row-label">시간</span>
+      <span class="unit-text dropdown-icon"></span>
+    </summary>
+    <div class="accordion-content">
+      <div class="checkbox-wrapper-line">
+        <label class="checkbox-item"><span class="checkbox-label-text">아침</span><input type="checkbox" class="inputTime" value="아침"></label>
+      </div>
+      <div class="checkbox-wrapper-line">
+        <label class="checkbox-item"><span class="checkbox-label-text">점심</span><input type="checkbox" class="inputTime" value="점심"></label>
+      </div>
+      <div class="checkbox-wrapper-line">
+        <label class="checkbox-item"><span class="checkbox-label-text">저녁</span><input type="checkbox" class="inputTime" value="저녁"></label>
+      </div>
+      <div class="checkbox-wrapper-line">
+        <label class="checkbox-item"><span class="checkbox-label-text">공복</span><input type="checkbox" class="inputTime" value="공복"></label>
+      </div>
+    </div>
+  </details>
+
+</div>
 
       <div class="memo-container">
         <label class="input-label">메모</label>
@@ -255,7 +285,6 @@
       </div>
   </div>
 </div>
-
 
 <button id="fabTodayBtn" class="fab-today-btn">오늘</button>
 <button id="fabAddBtn" class="fab-add-btn"></button>
