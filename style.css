@@ -850,7 +850,7 @@ select.unit-select-inside {
 .accordion-content {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.25s ease-in-out;
+  transition: grid-template-rows 0.15s ease-in-out;
   overflow: hidden;
   border-top: 0.8px solid transparent;
 }
@@ -986,7 +986,7 @@ input[type="checkbox"]:checked::before {
 }
 
 .memo-paper-group.checkbox-group {
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 .memo-container {
@@ -1016,7 +1016,7 @@ body.dark-mode .memo-paper-group {
   align-items: center;
   color: #454549;
   width: 92% !important;
-  margin: 25px auto 8px !important;
+  margin: 20px auto 8px !important;
   padding: 0 15px !important;
   box-sizing: border-box;
 }
@@ -1045,7 +1045,7 @@ body.dark-mode .input-label {
 .delete-btn-container {
   display: flex;
   justify-content: center;
-  padding: 40px 0 20px;
+  padding: 20px 0 20px;
   width: 100%;
 }
 
@@ -1091,7 +1091,6 @@ body.dark-mode .delete-glass-btn {
   pointer-events: none;
 }
 
-/* 다크모드 테두리 빛 반사 */
 body.dark-mode .delete-glass-btn::before {
   background: conic-gradient(
     from 180deg,
@@ -2086,24 +2085,28 @@ body.dark-mode .family-btn.selected {
 .action-sheet-container {
     width: 50%;
     max-width: 260px;
-    background: rgba(255, 255, 255, 0.9);
+    background: #f3f0f0;
     border-radius: 30px;
     padding: 12px 13px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.082);
     transform: translateY(100px);
     transition: transform 0.2s ease;
     margin-bottom: calc(env(safe-area-inset-bottom) + 20px);
+    overflow: hidden;
 }
 
 .action-sheet-overlay.active .action-sheet-container {
     transform: translateY(0);
 }
 
+body.dark-mode .action-sheet-container {
+    background: #111113;
+}
+
 .action-sheet-container::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 30px;
+  border-radius: inherit;
   padding: 0.8px;
   background: conic-gradient(
     from 180deg,
@@ -2122,6 +2125,19 @@ body.dark-mode .family-btn.selected {
   pointer-events: none;
 }
 
+body.dark-mode .action-sheet-container::before {
+  background: conic-gradient(
+    from 180deg,
+    rgba(255, 255, 255, 0.3) 0deg,
+    rgba(255, 255, 255, 0) 60deg,
+    rgba(255, 255, 255, 0.3) 120deg,
+    rgba(255, 255, 255, 0.3) 180deg,
+    rgba(255, 255, 255, 0) 240deg,
+    rgba(255, 255, 255, 0.3) 300deg,
+    rgba(255, 255, 255, 0.3) 360deg
+  );
+}
+
 /* 내부 그룹 (상하 배치) */
 .action-sheet-group {
     display: block;
@@ -2130,7 +2146,7 @@ body.dark-mode .family-btn.selected {
 
 /* 상단 문구 */
 .action-sheet-header {
-    color: var(--bg-color);
+    color: var(--text-color);
     font-size: 15px;
     font-weight: normal;
     text-align: left;
@@ -2141,7 +2157,7 @@ body.dark-mode .family-btn.selected {
 /* 정보 삭제 버튼 (내부 상자 형태) */
 .action-sheet-btn.delete-text {
     width: 100%;
-    background-color: #2c2c2e;
+    background-color: #c0c0c033;
     border: none;
     padding: 10px 0;
     color: #ff3b30;
@@ -2151,9 +2167,4 @@ body.dark-mode .family-btn.selected {
     cursor: pointer;
 }
 
-body.dark-mode .action-sheet-container {
-    background: #19191B;
-}
-body.dark-mode .action-sheet-header {
-    color: var(--text-color);
-}
+body.dark-mode .action-sheet-btn.delete-text { background-color: #2c2c2e; }

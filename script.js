@@ -1,5 +1,4 @@
-
-const APP_VERSION = "3.12q";
+const APP_VERSION = "3.13";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -953,9 +952,11 @@ function showStatsForFamily(name) {
   const innerBg = isDark ? "#1c1c1e" : "#ffffff";
   const trackColor = isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.08)";
 
-  const start = document.getElementById("periodStart").value;
-  const end = document.getElementById("periodEnd").value;
+  const start = document.getElementById("periodStart").value; // 예: "2026-01"
+  const end = document.getElementById("periodEnd").value;     // 예: "2026-03"
   
+  if (!start || !end) return;
+
   const startStr = `${start}-01`; 
   const endArr = end.split("-");
   const lastDay = new Date(parseInt(endArr[0]), parseInt(endArr[1]), 0).getDate();
@@ -964,64 +965,70 @@ function showStatsForFamily(name) {
   const stats = {};
 
   supplements.forEach(sup => {
+    // 1. 해당 가족 구성원이 포함되어 있는지 확인
     if (!sup.family || !sup.family.includes(name)) return;
+
+    // 2. 선택한 기간 내에 이 영양제의 스케줄이 하루라도 있는지 확인 (핵심 필터)
+    const hasScheduleInPeriod = sup.schedule.some(date => date >= startStr && date <= endStr);
+    if (!hasScheduleInPeriod) return; // 기간 내 스케줄 없으면 아예 건너뜀
 
     const initialTotal = parseFloat(sup.totalCapsules) || 0;
     if (initialTotal <= 0) return;
 
-    const fixedTargetForOne = initialTotal / sup.family.length;
-    let actualTakenAmount = 0;
+    // 해당 기간 동안 이 사람이 먹어야 했던 총 횟수 계산 (목표치)
+    // 전체 기간 대비가 아니라, '선택한 기간' 내의 스케줄 개수 기준
+    const periodScheduleCount = sup.schedule.filter(date => date >= startStr && date <= endStr).length;
+    const targetForPeriod = periodScheduleCount * (sup.times.length); 
 
+    let actualTakenCount = 0;
     if (sup.takenStatus) {
       Object.keys(sup.takenStatus).forEach(dateStr => {
         if (dateStr >= startStr && dateStr <= endStr) {
           const dayStatus = sup.takenStatus[dateStr];
-          
-          let takenSlots = 0; 
           for (const key in dayStatus) {
+            // 해당 구성원(name)의 체크 여부 확인
             if (key.includes(`_${name}`) && dayStatus[key] === true && !key.includes("_extended")) {
-              takenSlots++; 
+              actualTakenCount++;
             }
           }
-          actualTakenAmount += (takenSlots * (sup.dose / sup.times.length));
         }
       });
     }
 
     stats[sup.productName] = {
-      taken: actualTakenAmount,
-      target: fixedTargetForOne,
-      color: sup.circleColor,
-      unit: sup.unit || '회'
+      taken: actualTakenCount,
+      target: targetForPeriod,
+      color: sup.circleColor
     };
   });
 
   let html = "";
-  if (Object.keys(stats).length === 0) {
-    html = "<p style='text-align:center; font-size:20px; font-weight:bold; margin-top:150px;'>기록 없음</p>";
+  const keys = Object.keys(stats);
+  if (keys.length === 0) {
+    html = "<p style='text-align:center; font-size:16px; opacity:0.5; margin-top:150px;'>해당 기간에 복용 기록이 없습니다.</p>";
   } else {
-    for (const key in stats) {
+    keys.forEach(key => {
       const info = stats[key];
       let percent = info.target > 0 ? Math.round((info.taken / info.target) * 100) : 0;
       if (percent > 100) percent = 100;
       
       html += `
-  <div class="stats-item">
-    <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
-      <div class="pie-inner" style="background-color: ${innerBg}">
-        <span class="pie-percent">${percent}%</span>
-      </div>
-    </div>
-    <div class="stats-info">
-      <span class="stats-product-name">${key}</span>
-      <span class="stats-count-text">${Math.round(info.taken)} / ${Math.round(info.target)}회</span>
-    </div>
-  </div>
-`;
-    }
+        <div class="stats-item">
+          <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
+            <div class="pie-inner" style="background-color: ${innerBg}">
+              <span class="pie-percent">${percent}%</span>
+            </div>
+          </div>
+          <div class="stats-info">
+            <span class="stats-product-name">${key}</span>
+            <span class="stats-count-text">${info.taken} / ${info.target}회 복용</span>
+          </div>
+        </div>`;
+    });
   }
-  statsContent.innerHTML = html;
-  statsContent.scrollTop = 0;
+  const content = document.getElementById("statsContent");
+  content.innerHTML = html;
+  content.scrollTop = 0;
 }
 
 function renderFamilyUI() {
@@ -1127,32 +1134,170 @@ function renderFamilyUI() {
   }
 }
 
+// 탭 전환 함수 수정
 function switchStatsTab(tab) {
-    const container = document.getElementById('statsTabContainer');
     const familyWrapper = document.getElementById('familyBtnsWrapper');
     const periodWrapper = document.getElementById('periodWrapper');
     const statsContent = document.getElementById('statsContent');
-    const btns = container.querySelectorAll('.tab-btn');
-    const slider = container.querySelector('.tab-slider');
+    const btns = document.querySelectorAll('#statsTabContainer .tab-btn');
+    const slider = document.querySelector('#statsTabContainer .tab-slider');
+
+    // 1. 초기화: 모든 내용을 비우고 탭 설정
+    statsContent.innerHTML = ""; 
 
     if (tab === 'stats') {
         slider.style.transform = 'translateX(0%)';
         btns[0].classList.add('active');
         btns[1].classList.remove('active');
-        familyWrapper.style.display = 'flex';
-        periodWrapper.style.display = 'none';
-        statsContent.style.visibility = 'visible';
         
+        familyWrapper.style.display = 'flex';
+        periodWrapper.style.display = 'flex';
+        
+        // 이전에 선택된 가족이 있다면 바로 통계 표시
         const selectedBtn = familyWrapper.querySelector('.family-btn.selected');
-        if (selectedBtn) showStatsForFamily(selectedBtn.dataset.name);
+        if (selectedBtn) {
+            showStatsForFamily(selectedBtn.dataset.name);
+        } else {
+            statsContent.innerHTML = "<p style='text-align:center; font-size:14px; opacity:0.5; margin-top:100px;'>가족 구성원을 선택해주세요.</p>";
+        }
     } else {
         slider.style.transform = 'translateX(100%)';
         btns[0].classList.remove('active');
         btns[1].classList.add('active');
+        
         familyWrapper.style.display = 'none';
-        periodWrapper.style.display = 'flex';
-        statsContent.style.visibility = 'hidden';
+        periodWrapper.style.display = 'none';
+        
+        renderAnalysisTab(); // 분석 데이터 렌더링
     }
+}
+
+// 기간 선택 시 실시간 업데이트 (이벤트 리스너에 추가 필요)
+[periodStart, periodEnd].forEach(el => {
+    el.addEventListener('change', () => {
+        const selectedBtn = document.querySelector('.family-btn.selected');
+        if (selectedBtn && document.querySelector('#statsTabContainer .tab-btn.active').innerText === '통계') {
+            showStatsForFamily(selectedBtn.dataset.name);
+        }
+    });
+});
+
+// 분석 탭 렌더링 (실제 데이터 계산)
+function renderAnalysisTab() {
+  const statsContent = document.getElementById('statsContent');
+  
+  // 1. 데이터 분석용 변수 초기화
+  let totalChecks = 0;
+  let timeStats = { "아침": 0, "점심": 0, "저녁": 0, "공복": 0 };
+  let dayStats = [0, 0, 0, 0, 0, 0, 0]; // 일~토
+  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+  
+  let bestProduct = { name: "기록 없음", rate: 0 };
+  let refillList = [];
+
+  // 2. 전체 영양제 순회 분석
+  supplements.forEach(sup => {
+    let supTotal = 0;
+    let supTaken = 0;
+
+    if (sup.takenStatus) {
+      Object.keys(sup.takenStatus).forEach(dateStr => {
+        const dayData = sup.takenStatus[dateStr];
+        const dateObj = new Date(dateStr);
+        const dayIdx = dateObj.getDay();
+
+        Object.keys(dayData).forEach(key => {
+          // 순수 복용 체크(true)만 집계 (연장 데이터 제외)
+          if (dayData[key] === true && !key.includes("_extended")) {
+            totalChecks++;
+            supTaken++;
+            dayStats[dayIdx]++;
+            
+            if (key.includes("아침")) timeStats["아침"]++;
+            else if (key.includes("점심")) timeStats["점심"]++;
+            else if (key.includes("저녁")) timeStats["저녁"]++;
+            else if (key.includes("공복")) timeStats["공복"]++;
+          }
+        });
+      });
+    }
+
+    // 복용 성실도 계산 (스케줄 대비 실제 복용량)
+    const scheduleCount = sup.schedule ? sup.schedule.length : 0;
+    const targetCount = scheduleCount * sup.family.length * sup.times.length;
+    let rate = targetCount > 0 ? (supTaken / targetCount) * 100 : 0;
+    
+    if (rate > bestProduct.rate) {
+      bestProduct = { name: sup.productName, rate: Math.round(rate) };
+    }
+
+    // 재구매 알림 계산 (남은 알약 수 기반)
+    const dailyDose = parseFloat(sup.dose) || 0; 
+    const totalProvision = parseFloat(sup.totalCapsules) || 0;
+    // 실제 소모량 = (체크된 총 횟수 * 1회 분량) / (가족 수 * 시간대 수) 로직 보정
+    const consumedAmount = (supTaken * (dailyDose / sup.times.length));
+    const remains = totalProvision - consumedAmount;
+    const daysLeft = dailyDose > 0 ? Math.floor(remains / dailyDose) : 999;
+
+    if (daysLeft <= 7 && daysLeft >= 0) {
+      refillList.push({ name: sup.productName, days: daysLeft });
+    }
+  });
+
+  // 요일 및 시간대 최댓값 추출
+  const bestDayIdx = dayStats.indexOf(Math.max(...dayStats));
+  const bestDayName = totalChecks > 0 ? dayNames[bestDayIdx] : "-";
+  const bestTime = Object.keys(timeStats).reduce((a, b) => timeStats[a] > timeStats[b] ? a : b);
+
+  // 3. UI 렌더링
+  statsContent.innerHTML = `
+    <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px; padding-bottom:100px;">
+      
+      <div style="background: var(--bg-paper); padding: 20px; border-radius: 20px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+        <div style="border-right: 1px solid rgba(128,128,128,0.15);">
+          <p style="font-size:11px; opacity:0.6; margin:0;">복용 성실도 1위</p>
+          <h4 style="margin:5px 0 0 0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${bestProduct.name}</h4>
+          <span style="color:#05d339; font-size:12px; font-weight:bold;">${bestProduct.rate}%</span>
+        </div>
+        <div style="padding-left:10px;">
+          <p style="font-size:11px; opacity:0.6; margin:0;">가장 성실한 요일</p>
+          <h4 style="margin:5px 0 0 0; font-size:15px;">${bestDayName}요일</h4>
+          <span style="font-size:12px; opacity:0.5;">주로 ${bestTime} 복용</span>
+        </div>
+      </div>
+
+      <div style="background: var(--bg-paper); padding: 20px; border-radius: 20px;">
+        <p style="font-size:13px; opacity:0.6; margin:0 0 15px 0;">시간대별 복용 비중</p>
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          ${Object.entries(timeStats).map(([time, count]) => {
+            const ratio = totalChecks > 0 ? (count / totalChecks * 100).toFixed(1) : 0;
+            return `
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="width:30px; font-size:11px; opacity:0.8;">${time}</span>
+                <div style="flex:1; height:6px; background:rgba(128,128,128,0.1); border-radius:3px; overflow:hidden;">
+                  <div style="width:${ratio}%; height:100%; background:#007aff; border-radius:3px;"></div>
+                </div>
+                <span style="width:35px; font-size:10px; text-align:right; opacity:0.6;">${ratio}%</span>
+              </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div style="background: var(--bg-paper); padding: 20px; border-radius: 20px;">
+        <p style="font-size:13px; opacity:0.6; margin:0 0 10px 0;">재구매 및 관리</p>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          ${refillList.length > 0 
+            ? refillList.map(item => `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,77,77,0.05); padding:10px; border-radius:12px; border:1px solid rgba(255,77,77,0.1);">
+                  <span style="font-size:13px; font-weight:500;">⚠️ ${item.name}</span>
+                  <span style="font-size:12px; color:#ff4d4d; font-weight:bold;">약 ${item.days}일분 남음</span>
+                </div>`).join('')
+            : `<p style="font-size:13px; margin:5px 0; text-align:center; opacity:0.5;">✅ 모든 영양제가 넉넉합니다.</p>`}
+        </div>
+      </div>
+
+    </div>
+  `;
 }
 
 const originalCloseStatsModal = document.getElementById("closeStatsModal").onclick;
@@ -1693,15 +1838,18 @@ function renderYearlyCalendar(year) {
   if (!container) return;
   container.innerHTML = "";
   
-  const todayKST = getTodayKST();
   const now = new Date();
   const currentMonthIdx = (now.getFullYear() === year) ? now.getMonth() : -1;
+
+  // 집계용 변수
+  let countComplete = 0; // 완복
+  let countPartial = 0;  // 부분
+  let countNone = 0;     // 미복
 
   for (let m = 0; m < 12; m++) {
     const monthDiv = document.createElement("div");
     monthDiv.className = "mini-month-container";
     if (m === currentMonthIdx) monthDiv.classList.add("current-month");
-
     monthDiv.innerHTML = `<div class="mini-month-title">${m + 1}월</div>`;
     
     const daysGrid = document.createElement("div");
@@ -1710,26 +1858,59 @@ function renderYearlyCalendar(year) {
     const firstDay = new Date(year, m, 1).getDay();
     const lastDate = new Date(year, m + 1, 0).getDate();
 
-    for (let i = 0; i < firstDay; i++) {
-      daysGrid.innerHTML += `<div></div>`;
-    }
+    for (let i = 0; i < firstDay; i++) daysGrid.innerHTML += `<div></div>`;
 
     for (let d = 1; d <= lastDate; d++) {
       const dateStr = `${year}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      
-      const dayData = supplements.filter(s => s.schedule && s.schedule.includes(dateStr));
+      const todaySups = supplements.filter(s => s.schedule && s.schedule.includes(dateStr));
       
       let style = "";
-      if (dayData.length > 0) {
-        style = `background-color: ${dayData[0].circleColor}; color: #fff;`;
+      if (todaySups.length > 0) {
+        let totalSlots = 0;
+        let takenSlots = 0;
+
+        todaySups.forEach(sup => {
+          const dayStatus = (sup.takenStatus && sup.takenStatus[dateStr]) || {};
+          totalSlots += (sup.family.length * sup.times.length);
+          Object.values(dayStatus).forEach(val => { if (val === true) takenSlots++; });
+        });
+
+        if (takenSlots === 0) {
+          style = "background-color: #ff4d4d; color: #fff;"; // 미복용
+          countNone++;
+        } else if (takenSlots < totalSlots) {
+          style = "background-color: #ffcc00; color: #fff;"; // 부분
+          countPartial++;
+        } else {
+          style = "background-color: #05d339; color: #fff;"; // 완료
+          countComplete++;
+        }
       }
-      
       daysGrid.innerHTML += `<div class="mini-day" style="${style}">${d}</div>`;
     }
-    
     monthDiv.appendChild(daysGrid);
     container.appendChild(monthDiv);
   }
+
+  // 집계 카드 추가 (그리드 내부 맨 마지막에 3컬럼을 차지하도록 추가)
+  const summaryDiv = document.createElement("div");
+  summaryDiv.style = "grid-column: 1 / span 3; margin-top: 10px; padding: 20px; background: var(--bg-paper); border-radius: 20px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px;";
+  summaryDiv.innerHTML = `
+    <h4 style="margin:0; font-size:16px; opacity:0.8;">${year}년 복용 리포트</h4>
+    <div style="display:flex; justify-content: space-between; align-items: center;">
+      <div style="display:flex; align-items:center; gap:8px;"><div style="width:12px; height:12px; background:#05d339; border-radius:50%;"></div> 완전 복용</div>
+      <span style="font-weight:bold;">${countComplete}일</span>
+    </div>
+    <div style="display:flex; justify-content: space-between; align-items: center;">
+      <div style="display:flex; align-items:center; gap:8px;"><div style="width:12px; height:12px; background:#ffcc00; border-radius:50%;"></div> 부분 복용</div>
+      <span style="font-weight:bold;">${countPartial}일</span>
+    </div>
+    <div style="display:flex; justify-content: space-between; align-items: center;">
+      <div style="display:flex; align-items:center; gap:8px;"><div style="width:12px; height:12px; background:#ff4d4d; border-radius:50%;"></div> 미복용 날짜</div>
+      <span style="font-weight:bold;">${countNone}일</span>
+    </div>
+  `;
+  container.appendChild(summaryDiv);
 }
 
 function initCostModalTabs() {
@@ -1994,13 +2175,10 @@ function resetAccordions() {
   });
 }
 
-/* --- 삭제 액션 시트 최종 통합 로직 (질문자님 코드 맞춤형) --- */
-
-// 1. 액션 시트 열기 (기존 deleteInfoBtn 클릭 이벤트와 연결)
+//액션 시트
 const deleteBtnInModal = document.getElementById('deleteInfoBtn');
 if (deleteBtnInModal) {
     deleteBtnInModal.onclick = function() {
-        // [근거] js2 코드 141라인 근처: currentEditId 변수 사용 확인
         if (typeof currentEditId !== 'undefined' && currentEditId) {
             openActionSheet();
         } else {
@@ -2017,45 +2195,35 @@ function openActionSheet() {
     }
 }
 
-// 2. 액션 시트 닫기
 function closeActionSheet() {
     const overlay = document.getElementById('actionSheetOverlay');
     if (overlay) {
         overlay.classList.remove('active');
         setTimeout(() => {
             overlay.style.visibility = 'hidden';
-        }, 300);
+        }, 150);
     }
 }
 
-// 3. 배경 클릭 시 닫기
 document.getElementById('actionSheetOverlay').onclick = function(e) {
     if (e.target === this) closeActionSheet();
 };
 
-// 4. [핵심] 진짜 삭제 실행 (비동기 처리)
 document.getElementById('confirmDeleteBtn').onclick = async function() {
     if (typeof currentEditId !== 'undefined' && currentEditId) {
         try {
-            // [근거] js2 코드 214라인: 이미 구현된 IndexedDB 삭제 함수 호출
             await deleteSupplementFromDB(currentEditId);
-            
-            // [근거] js2 코드 140라인: 메모리(배열) 상에서도 즉시 삭제
             supplements = supplements.filter(s => s.id !== currentEditId);
-            
-            // UI 정리
             closeActionSheet();
             
-            // [근거] js2 코드 44라인: 영양제 수정 모달 닫기
             const modalOverlay = document.getElementById("modalOverlay");
             if (modalOverlay) modalOverlay.classList.remove("active");
             document.body.classList.remove("modal-open");
 
-            // [근거] js2 코드 559라인: 화면(달력) 즉시 갱신
             if (typeof renderCalendar === 'function') renderCalendar();
             
             console.log("삭제 성공:", currentEditId);
-            currentEditId = null; // ID 초기화
+            currentEditId = null;
             
         } catch (error) {
             console.error("삭제 중 오류 발생:", error);
