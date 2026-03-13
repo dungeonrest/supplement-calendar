@@ -623,7 +623,7 @@ body.dark-mode #statsContent {
     grid-template-columns: repeat(3, 1fr) !important;
     column-gap: 0 !important;
     row-gap: 10px !important;
-    padding: 10px 10px 100px 10px !important;
+    padding: 10px 10px 10px 10px !important;
 }
 
 /* 개별 달: 가로선 구현 */
@@ -714,7 +714,7 @@ body.dark-mode #statsContent {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  height: 34px;
+  height: 28px;
 }
 
 .info-col {
@@ -797,11 +797,6 @@ body.dark-mode .row-label {
   background: transparent;
   margin-right: 18px;
   padding: 0;
-}
-
-#inputDate {
-  width: 100%;
-  text-align: center !important;
 }
 
 /* 오른쪽 단위 텍스트 */
@@ -1736,7 +1731,7 @@ body.dark-mode .onboarding-header h1 { color: white; }
 }
 
 #modalBody, #monthlyCostContent, #takenCheckBody, .yearly-grid {
-    margin-top: -70px !important; 
+    margin-top: -80px !important; 
     padding-top: 80px !important; 
     flex: 1 !important;
     background-color: #f8f8f8 !important;

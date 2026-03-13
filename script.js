@@ -1,4 +1,4 @@
-const APP_VERSION = "3.13";
+const APP_VERSION = "3.13q";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1879,10 +1879,10 @@ function renderYearlyCalendar(year) {
           style = "background-color: #ff4d4d; color: #fff;"; // 미복용
           countNone++;
         } else if (takenSlots < totalSlots) {
-          style = "background-color: #ffcc00; color: #fff;"; // 부분
+          style = "background-color: #ffbb00; color: #fff;"; // 부분
           countPartial++;
         } else {
-          style = "background-color: #05d339; color: #fff;"; // 완료
+          style = "background-color: #02bb30; color: #fff;"; // 완료
           countComplete++;
         }
       }
@@ -1894,15 +1894,15 @@ function renderYearlyCalendar(year) {
 
   // 집계 카드 추가 (그리드 내부 맨 마지막에 3컬럼을 차지하도록 추가)
   const summaryDiv = document.createElement("div");
-  summaryDiv.style = "grid-column: 1 / span 3; margin-top: 10px; padding: 20px; background: var(--bg-paper); border-radius: 20px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px;";
+  summaryDiv.style = "grid-column: 1 / span 3; margin-top: 5px; padding: 20px; background: var(--bg-paper); border-radius: 20px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px;";
   summaryDiv.innerHTML = `
-    <h4 style="margin:0; font-size:16px; opacity:0.8;">${year}년 복용 리포트</h4>
+    <h4 style="margin:0; font-size:16px; opacity:0.8;">${year}년 리포트</h4>
     <div style="display:flex; justify-content: space-between; align-items: center;">
-      <div style="display:flex; align-items:center; gap:8px;"><div style="width:12px; height:12px; background:#05d339; border-radius:50%;"></div> 완전 복용</div>
+      <div style="display:flex; align-items:center; gap:8px;"><div style="width:12px; height:12px; background:#02bb30; border-radius:50%;"></div> 완전 복용</div>
       <span style="font-weight:bold;">${countComplete}일</span>
     </div>
     <div style="display:flex; justify-content: space-between; align-items: center;">
-      <div style="display:flex; align-items:center; gap:8px;"><div style="width:12px; height:12px; background:#ffcc00; border-radius:50%;"></div> 부분 복용</div>
+      <div style="display:flex; align-items:center; gap:8px;"><div style="width:12px; height:12px; background:#ffbb00; border-radius:50%;"></div> 부분 복용</div>
       <span style="font-weight:bold;">${countPartial}일</span>
     </div>
     <div style="display:flex; justify-content: space-between; align-items: center;">
