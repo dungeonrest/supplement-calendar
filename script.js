@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.12";
+const APP_VERSION = "3.12w";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -25,63 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.classList.add("dark-mode");
   }
 });
-
-/**
- * @param {HTMLElement} element
- * @param {Function} callback
- */
-function setupIOSButton(element, callback) {
-    if (!element) return;
-
-    let isPressed = false;
-
-    element.addEventListener('pointerdown', (e) => {
-        isPressed = true;
-        element.classList.add('ios-active');
-        element.setPointerCapture(e.pointerId);
-    });
-
-    element.addEventListener('pointermove', (e) => {
-        if (!isPressed) return;
-
-        const rect = element.getBoundingClientRect();
-        const isInside = (
-            e.clientX >= rect.left &&
-            e.clientX <= rect.right &&
-            e.clientY >= rect.top &&
-            e.clientY <= rect.bottom
-        );
-
-        if (isInside) {
-            element.classList.add('ios-active');
-        } else {
-            element.classList.remove('ios-active');
-        }
-    });
-
-    element.addEventListener('pointerup', (e) => {
-        if (!isPressed) return;
-        isPressed = false;
-        
-        const rect = element.getBoundingClientRect();
-        const isInside = (
-            e.clientX >= rect.left && e.clientX <= rect.right &&
-            e.clientY >= rect.top && e.clientY <= rect.bottom
-        );
-
-        element.classList.remove('ios-active');
-        element.releasePointerCapture(e.pointerId);
-
-        if (isInside && callback) {
-            callback(e);
-        }
-    });
-
-    element.addEventListener('pointercancel', () => {
-        isPressed = false;
-        element.classList.remove('ios-active');
-    });
-}
 
 document.addEventListener("touchstart", function() {}, true);
 
@@ -160,14 +103,17 @@ function openSupplementModal(sup) {
   const currentTimeCheckboxes = document.querySelectorAll(".inputTime");
   currentTimeCheckboxes.forEach(tb => {
     tb.checked = sup.times && sup.times.includes(tb.value);
+    });
     
   const memos = sup.memos || ["", "", ""];
   document.getElementById("memoLine1").value = memos[0] || "";
   document.getElementById("memoLine2").value = memos[1] || "";
   document.getElementById("memoLine3").value = memos[2] || "";
-  });
-
+  
   updateColorBar(sup.circleColor);
+
+  updateSelectedDisplay('inputFamily', 'selectedFamilyText');
+  updateSelectedDisplay('inputTime', 'selectedTimeText');
 }
 
 // 상태
@@ -386,6 +332,7 @@ addBtn.addEventListener("click", () => {
   modalOverlay.classList.add("active");
   document.body.classList.add("modal-open");
   history.pushState({ modal: "add" }, "");
+
   inputDate.value = selectedDateForList || getTodayKST();
   inputProduct.value = "";
   inputTotal.value = "";
@@ -393,12 +340,16 @@ addBtn.addEventListener("click", () => {
   if (doseEl) doseEl.value = "";
   inputPrice.value = "";
   updateColorBar("#000000");
-  document.querySelectorAll(".inputFamily").forEach(tb => {
-    tb.checked = false;
-  });
-  document.querySelectorAll(".inputTime").forEach(tb => {
-    tb.checked = false;
-  });
+
+  document.querySelectorAll(".inputFamily").forEach(tb => tb.checked = false);
+  document.querySelectorAll(".inputTime").forEach(tb => tb.checked = false);
+
+  document.getElementById("selectedFamilyText").textContent = "";
+  document.getElementById("selectedTimeText").textContent = "";
+  document.getElementById("selectedFamilyText").style.opacity = 1;
+  document.getElementById("selectedTimeText").style.opacity = 1;
+  resetAccordions();
+
   document.getElementById("memoLine1").value = "";
   document.getElementById("memoLine2").value = "";
   document.getElementById("memoLine3").value = "";
@@ -412,6 +363,7 @@ fabAddBtn.addEventListener("click", () => {
 
 closeModalBtn.addEventListener("click", () => {
   closeBottomSheet("modalOverlay");
+  resetAccordions();
 });
 
 // 달력 렌더 //
@@ -489,9 +441,6 @@ function renderCalendar() {
 
         selectedDateForList = fullDate;
         renderCalendar();
-
-      spanNumber.classList.add('bounce-active');
-      setTimeout(() => spanNumber.classList.remove('bounce-active'), 400);    
 
     const hasSupps = supplements.some(sup => sup.schedule.includes(fullDate));
     if (hasSupps) {
@@ -709,6 +658,12 @@ saveInfoBtn.addEventListener("click", async (e) => {
     supplements.push(newSup);
     await saveSupplementToDB(newSup);
   }
+
+  resetAccordions();
+  document.getElementById('selectedFamilyText').textContent = '';
+  document.getElementById('selectedTimeText').textContent = '';
+  document.getElementById('selectedFamilyText').style.opacity = 1;
+  document.getElementById('selectedTimeText').style.opacity = 1;
     
     modalOverlay.classList.remove("active");
     selectedDateForList = start;
@@ -932,8 +887,6 @@ function openTakenCheckUI(date) {
           chk.style.margin = "2px";
 
           chk.addEventListener("change", async () => {
-            chk.classList.add('bounce-active');
-            setTimeout(() => chk.classList.remove('bounce-active'), 400);
             sup.takenStatus[date][`${time}_${member}`] = chk.checked;
             if (!chk.checked) {
              delete sup.takenStatus[date][`${time}_${member}_extended`];
@@ -1843,8 +1796,6 @@ function switchCostTab(tab) {
 function updateCalcSum() {
     if (event && event.target && event.target.classList.contains('calc-check')) {
         const target = event.target;
-        target.classList.add('bounce-active');
-        setTimeout(() => target.classList.remove('bounce-active'), 400);
     }
     const checkboxes = document.querySelectorAll('.calc-check');
     let newSum = 0;
@@ -2028,15 +1979,44 @@ function setupIOSButtonAutomated(element) {
 
 window.addEventListener('DOMContentLoaded', applyIOSButtonEffect);
 
-// 아코디언을 부드럽게 열고 닫기 위한 간단한 처리
-document.querySelectorAll('.accordion-section summary').forEach((summary) => {
-  summary.addEventListener('click', (e) => {
-    const details = summary.parentElement;
-    if (details.hasAttribute('open')) {
+// 아코디언 토글 및 텍스트 표시 제어
+function toggleAccordion(id) {
+  const el = document.getElementById(id);
+  const isActive = el.classList.contains('active');
+  const displayId = id === 'familyAccordion' ? 'selectedFamilyText' : 'selectedTimeText';
+  const inputClass = id === 'familyAccordion' ? 'inputFamily' : 'inputTime';
+  const displayElement = document.getElementById(displayId);
 
-      e.preventDefault();
-      details.classList.remove('is-open');
-      setTimeout(() => { details.removeAttribute('open'); }, 100);
-    }
+  if (isActive) {
+    // [닫힐 때] 텍스트 업데이트 및 표시
+    updateSelectedDisplay(inputClass, displayId);
+    el.classList.remove('active');
+  } else {
+    // [열릴 때] 텍스트 즉시 숨기기
+    displayElement.style.opacity = 0;
+    // 애니메이션이 끝난 후 텍스트를 완전히 비우고 싶다면 아래 주석 해제
+    // setTimeout(() => { displayElement.textContent = ''; }, 300);
+    el.classList.add('active');
+  }
+}
+
+// 텍스트 업데이트 함수 (애니메이션 포함)
+function updateSelectedDisplay(inputClass, displayId) {
+  const checkboxes = document.querySelectorAll(`.${inputClass}:checked`);
+  const selectedValues = Array.from(checkboxes).map(cb => cb.value);
+  const displayElement = document.getElementById(displayId);
+  
+  if (selectedValues.length > 0) {
+    displayElement.textContent = selectedValues.join(', ');
+    displayElement.style.transition = 'opacity 0.4s ease-in-out';
+    displayElement.style.opacity = 1; // 스르륵 나타남
+  } else {
+    displayElement.textContent = '';
+  }
+}
+
+function resetAccordions() {
+  document.querySelectorAll('.accordion-section').forEach(section => {
+    section.classList.remove('active');
   });
-});
+}

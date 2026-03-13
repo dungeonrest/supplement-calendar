@@ -367,16 +367,6 @@ body.dark-mode .theme-icon::after {
   transition: transform 0.1s ease-out;
 }
 
-.date.selected .number {
-  animation: ios-date-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes ios-date-bounce {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
 .date {
     cursor: default;
 }
@@ -707,7 +697,7 @@ body.dark-mode #statsContent {
     border-radius: 10px;
 }
 
-/* 공통 입력창 스타일 초기화 */
+/* 기본 초기화 및 모달 입력창 스타일 */
 .modal input, .modal select {
   -webkit-appearance: none;
   appearance: none;
@@ -735,11 +725,7 @@ body.dark-mode #statsContent {
   position: relative;
 }
 
-.color-picker-container {
-  width: 50%;
-  position: relative;
-}
-
+/* 컬러 피커 스타일 */
 .custom-color-bar {
   display: flex;
   justify-content: center;
@@ -780,18 +766,17 @@ body.dark-mode #statsContent {
   align-items: center;
   height: 44px;
   padding: 0 2px;
-  box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+  box-sizing: border-box;
   width: 100%;
 }
 
-/* 왼쪽 고정 라벨 (제품명, 가격 등) */
+/* 왼쪽 고정 라벨 */
 .row-label {
   color: #9E9EA4;
   font-size: 15px;
   font-weight: normal;
   text-align: left;
   flex-shrink: 0;
-  width: auto;
   margin-right: 15px;
 }
 
@@ -812,6 +797,11 @@ body.dark-mode .row-label {
   background: transparent;
   margin-right: 18px;
   padding: 0;
+}
+
+#inputDate {
+  width: 100%;
+  text-align: center !important;
 }
 
 /* 오른쪽 단위 텍스트 */
@@ -839,188 +829,164 @@ select.unit-select-inside {
   background-position: right center;
   background-size: 15px; /*단위 화살표 크기*/
   cursor: pointer;
-  color: #8E8E93;
 }
 
-/* 아코디언 상자 전체 */
-.accordion-section {
-  width: 100%;
-  overflow: hidden;
-}
-
-/* 애니메이션 효과를 위한 스타일 */
-.accordion-content {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.5s ease-out;
-}
-
-/* 열렸을 때 (open 상태일 때) */
-.accordion-section[open] + .accordion-content,
-.accordion-section[open] .accordion-content {
-  max-height: 500px;
-}
-
-/* 제목 줄 (대상, 시간) 및 리스트 줄 높이 통일 */
-.accordion-section summary, 
-.checkbox-wrapper-line {
+.header-right-wrapper {
   display: flex;
   align-items: center;
-  height: 44px;
-  padding: 0 5px !important;
-  box-sizing: border-box;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+/* 아코디언 애니메이션 핵심 */
+.accordion-section {
   width: 100%;
 }
 
-/* 제목 줄 설정 */
-.accordion-section summary {
-  list-style: none;
+.accordion-header {
   cursor: pointer;
-  outline: none;
-  justify-content: space-between;
 }
-.accordion-section summary::-webkit-details-marker { display: none; }
 
-/* 화살표 위치 및 모양 */
+.accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease-in-out;
+  overflow: hidden;
+  border-top: 0.8px solid transparent;
+}
+
+.accordion-section.active .accordion-content {
+  grid-template-rows: 1fr;
+  border-top: 0.8px solid var(--calendar-line);
+}
+
+.accordion-inner {
+  min-height: 0;
+}
+
+.selected-text {
+  opacity: 1;
+  transition: opacity 0.1s ease-in-out;
+}
+
+/* 아코디언이 active(열림) 상태일 때 우측 텍스트 숨기기 */
+.accordion-section.active .selected-text {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 화살표 아이콘 및 애니메이션 */
 .dropdown-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  width: 40px;
+  width: 35px;
   height: 100%;
 }
 
 .dropdown-icon::after {
   content: "";
   display: inline-block;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-size: contain;
   background-repeat: no-repeat;
-  transition: transform 0.2s ease;
+  transition: transform 0.3s ease;
 }
 
-.dropdown-icon,
-input[type="checkbox"] {
-  width: 22px !important;
-  height: 22px !important;
-  flex-shrink: 0;
-  margin: 0;
-}
-
-.accordion-section[open] .dropdown-icon::after {
+.accordion-section.active .dropdown-icon::after {
   transform: rotate(180deg);
 }
 
-/* 세로 리스트 내부 정렬 및 선 */
-.accordion-content {
-  background: transparent;
-}
-
+/* 세로 리스트 내부 체크박스 행 */
 .checkbox-wrapper-line {
-  padding: 0 9px 0 1px !important;
-  border-top: 0.8px solid var(--calendar-line);
+  display: flex;
+  align-items: center;
+  height: 44px;
+  width: 100%;
 }
 
-/* 체크박스와 텍스트 */
 .checkbox-item {
-  display: flex !important;
+  display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
   height: 100%;
   cursor: pointer;
+  padding: 0 2px;
 }
-
-/* 체크박스 스타일 조정*/
-.checkbox-item input[type="checkbox"] {
-  margin: 0;
-  flex-shrink: 0;
-}
-
-/* 왼쪽 고정 텍스트 정렬 */
 
 .checkbox-label-text {
   font-size: 15px;
-  text-align: left;
-  margin: 0;
-  padding: 0;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-wrapper-line:not(:first-child) .checkbox-label-text {
+  border-top: 0.8px solid var(--calendar-line);
+  height: 100%;
+  display: flex;
+  align-items: center;
   flex: 1;
 }
 
+.checkbox-wrapper-line:first-child .checkbox-label-text {
+  border-top: none;
+}
+
+/* 체크박스와 글자 사이 간격 */
+.checkbox-item input[type="checkbox"] {
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+/* 체크박스 커스텀 디자인*/
 input[type="checkbox"] {
-  -webkit-appearance: none; /* 브라우저 기본 스타일 완전 제거 */
+  -webkit-appearance: none;
   appearance: none;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%; /* 완전한 원형 */
-  background-color: #dddddd;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  border: 1.8px solid #dddddd;
+  background-color: transparent;
   display: inline-grid;
-  place-content: center;
+  place-items: center;
   cursor: pointer;
-  transition: background-color 0.2s, transform 0.2s cubic-bezier(0.45, 0.05, 0.55, 0.95);
 }
 
 body.dark-mode input[type="checkbox"] { 
-  background-color: #3b3b41 !important; 
-}
-
-/* 체크될 때 전체적으로 살짝 튕기는 효과 */
-input[type="checkbox"]:active {
-  transform: scale(0.9); /* 누르고 있을 때 살짝 작아짐 */
+  border: 1.8px solid #616164;
 }
 
 input[type="checkbox"]:checked {
-  background-color: #05d339 !important;
-  animation: ios-bounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background-color: #05d339;
+  border: none;
 }
-body.dark-mode input[type="checkbox"]:checked { background-color: #0B84FE !important; }
+body.dark-mode input[type="checkbox"]:checked {
+  background-color: #0b89fe;
+  border: none;
+}
 
-/* 체크 아이콘 (아이폰 스타일 SVG) */
 input[type="checkbox"]::before {
   content: "";
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
   transform: scale(0);
-
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 5 11 19 6 13'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 5 10 19 5 13'%3E%3C/polyline%3E%3C/svg%3E");
   background-size: contain;
   background-repeat: no-repeat;
-  
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.2);
-  transform-origin: center;
+  background-position: center;
 }
 
 input[type="checkbox"]:checked::before {
-  transform: scale(1.1); /* 아이콘이 살짝 더 커지며 나타남 */
+  transform: scale(1);
 }
 
-/* iOS 스타일 바운스 애니메이션 */
-@keyframes ios-bounce {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
-
-.checkbox-label-text {
-  font-size: 14px;
-  font-weight: normal;
-  color: var(--text-color);
-  margin-left: 5px;
-}
-
-/* 아이폰 날짜 선택기 중앙 정렬 강제 */
-#inputDate {
-  width: 100%;
-  text-align: center !important;
-}
-
-#inputDate::-webkit-date-and-time-value {
-  text-align: center !important;
-  width: 100%;
-  display: block;
+.memo-paper-group.checkbox-group {
+  margin-top: 20px;
 }
 
 .memo-container {
@@ -1034,16 +1000,12 @@ input[type="checkbox"]:checked::before {
   padding: 0 16px;
   background: rgba(192, 192, 192, 0.2) !important;
   border-radius: 22px;
-  overflow: hidden; /* 테두리 밖으로 선이 나가지 않게 */
+  overflow: hidden;
   box-sizing: border-box;
 }
 
 body.dark-mode .memo-paper-group {
   background: #2c2c2e !important;
-}
-
-.memo-paper-group + .memo-paper-group {
-  margin-top: 20px;
 }
 
 .input-label {
@@ -1053,7 +1015,6 @@ body.dark-mode .memo-paper-group {
   justify-content: space-between;
   align-items: center;
   color: #454549;
-
   width: 92% !important;
   margin: 25px auto 8px !important;
   padding: 0 15px !important;
@@ -1071,20 +1032,13 @@ body.dark-mode .input-label {
   border: none;
   outline: none;
   font-size: 15px;
-  font-weight: normal;
   color: var(--text-color);
-  text-align: left;
-  background: transparent !important; 
-  border: none !important;
 }
 
 .memo-divider {
   height: 0.8px;
   background-color: var(--calendar-line);
-}
-
-body.dark-mode .memo-divider {
-  background-color: var(--calendar-line);
+  border: none;
 }
 
 /* 버튼을 하단 중앙에 배치하는 컨테이너 */
