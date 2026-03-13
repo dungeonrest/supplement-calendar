@@ -1,6 +1,6 @@
 {
-  "name": "영양제 달력",
-  "short_name": "영양젱",
+  "name": "영양제",
+  "short_name": "영양제",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

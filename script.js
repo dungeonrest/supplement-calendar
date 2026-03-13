@@ -1,5 +1,5 @@
 
-const APP_VERSION = "3.12w";
+const APP_VERSION = "3.12e";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -558,30 +558,6 @@ listArea.appendChild(bar);
       applyIOSButtonEffect();
   }
 }
-
-// 삭제 버튼 클릭 시 실행될 로직
-const deleteInfoBtn = document.getElementById("deleteInfoBtn");
-
-deleteInfoBtn.addEventListener("click", async () => {
-  if (!currentEditId) return;
-
-  const productName = inputProduct.value.trim() || "이 영양제";
-
-  if (confirm(`'${productName}'의 복용 기록이 모두 사라집니다.\n정말 삭제할까요?`)) {
-
-    await deleteSupplementFromDB(currentEditId);
-    
-    supplements = supplements.filter(s => s.id !== currentEditId);
-    
-    modalOverlay.classList.remove("active");
-    document.body.classList.remove("modal-open");
-    renderCalendar();
-    
-    if (window.history.state && window.history.state.modal) {
-      window.history.back();
-    }
-  }
-});
 
 // 저장
 saveInfoBtn.addEventListener("click", async (e) => {
@@ -1988,19 +1964,16 @@ function toggleAccordion(id) {
   const displayElement = document.getElementById(displayId);
 
   if (isActive) {
-    // [닫힐 때] 텍스트 업데이트 및 표시
+
     updateSelectedDisplay(inputClass, displayId);
     el.classList.remove('active');
   } else {
-    // [열릴 때] 텍스트 즉시 숨기기
+
     displayElement.style.opacity = 0;
-    // 애니메이션이 끝난 후 텍스트를 완전히 비우고 싶다면 아래 주석 해제
-    // setTimeout(() => { displayElement.textContent = ''; }, 300);
     el.classList.add('active');
   }
 }
 
-// 텍스트 업데이트 함수 (애니메이션 포함)
 function updateSelectedDisplay(inputClass, displayId) {
   const checkboxes = document.querySelectorAll(`.${inputClass}:checked`);
   const selectedValues = Array.from(checkboxes).map(cb => cb.value);
@@ -2009,7 +1982,7 @@ function updateSelectedDisplay(inputClass, displayId) {
   if (selectedValues.length > 0) {
     displayElement.textContent = selectedValues.join(', ');
     displayElement.style.transition = 'opacity 0.4s ease-in-out';
-    displayElement.style.opacity = 1; // 스르륵 나타남
+    displayElement.style.opacity = 1;
   } else {
     displayElement.textContent = '';
   }
@@ -2020,3 +1993,73 @@ function resetAccordions() {
     section.classList.remove('active');
   });
 }
+
+/* --- 삭제 액션 시트 최종 통합 로직 (질문자님 코드 맞춤형) --- */
+
+// 1. 액션 시트 열기 (기존 deleteInfoBtn 클릭 이벤트와 연결)
+const deleteBtnInModal = document.getElementById('deleteInfoBtn');
+if (deleteBtnInModal) {
+    deleteBtnInModal.onclick = function() {
+        // [근거] js2 코드 141라인 근처: currentEditId 변수 사용 확인
+        if (typeof currentEditId !== 'undefined' && currentEditId) {
+            openActionSheet();
+        } else {
+            alert("삭제할 항목을 선택할 수 없습니다.");
+        }
+    };
+}
+
+function openActionSheet() {
+    const overlay = document.getElementById('actionSheetOverlay');
+    if (overlay) {
+        overlay.style.visibility = 'visible';
+        overlay.classList.add('active');
+    }
+}
+
+// 2. 액션 시트 닫기
+function closeActionSheet() {
+    const overlay = document.getElementById('actionSheetOverlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            overlay.style.visibility = 'hidden';
+        }, 300);
+    }
+}
+
+// 3. 배경 클릭 시 닫기
+document.getElementById('actionSheetOverlay').onclick = function(e) {
+    if (e.target === this) closeActionSheet();
+};
+
+// 4. [핵심] 진짜 삭제 실행 (비동기 처리)
+document.getElementById('confirmDeleteBtn').onclick = async function() {
+    if (typeof currentEditId !== 'undefined' && currentEditId) {
+        try {
+            // [근거] js2 코드 214라인: 이미 구현된 IndexedDB 삭제 함수 호출
+            await deleteSupplementFromDB(currentEditId);
+            
+            // [근거] js2 코드 140라인: 메모리(배열) 상에서도 즉시 삭제
+            supplements = supplements.filter(s => s.id !== currentEditId);
+            
+            // UI 정리
+            closeActionSheet();
+            
+            // [근거] js2 코드 44라인: 영양제 수정 모달 닫기
+            const modalOverlay = document.getElementById("modalOverlay");
+            if (modalOverlay) modalOverlay.classList.remove("active");
+            document.body.classList.remove("modal-open");
+
+            // [근거] js2 코드 559라인: 화면(달력) 즉시 갱신
+            if (typeof renderCalendar === 'function') renderCalendar();
+            
+            console.log("삭제 성공:", currentEditId);
+            currentEditId = null; // ID 초기화
+            
+        } catch (error) {
+            console.error("삭제 중 오류 발생:", error);
+            alert("삭제에 실패했습니다. 다시 시도해주세요.");
+        }
+    }
+};

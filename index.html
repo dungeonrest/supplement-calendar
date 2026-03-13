@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>영양제 달력</title>
+  <title>영양제</title>
 
   <link rel="manifest" href="manifest.json" />
   <link rel="stylesheet" href="style.css" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="영양제 달력">
+  <meta name="apple-mobile-web-app-title" content="영양제">
   <link rel="apple-touch-icon" href="icons/192.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
 
@@ -314,6 +314,17 @@
     </div>
     <div id="yearlyContent" class="yearly-grid">
       </div>
+  </div>
+</div>
+
+<div class="action-sheet-overlay" id="actionSheetOverlay">
+  <div class="action-sheet-container">
+    <div class="action-sheet-group">
+      <div class="action-sheet-header">이 영양제를 삭제하겠습니까?</div>
+    </div>
+    <div class="action-sheet-group">
+      <button class="action-sheet-btn delete-text" id="confirmDeleteBtn">영양제 삭제</button>
+    </div>
   </div>
 </div>
 
