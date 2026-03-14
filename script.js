@@ -1,4 +1,4 @@
-const APP_VERSION = "3.13w";
+const APP_VERSION = "3.13e";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1981,53 +1981,56 @@ function renderCalcTab() {
     });
 
     if (thisMonthSups.length === 0) {
-        calcDiv.innerHTML = `<div style="flex:1; display:flex; align-items:center; justify-content:center;"><p style="opacity:0.6;">이번 달 등록된 제품이 없습니다.</p></div>`;
+        calcDiv.innerHTML = `
+            <div style="flex:1; display:flex; align-items:center; justify-content:center;">
+                <p style="opacity:0.6;">이번 달 등록된 제품이 없습니다.</p>
+            </div>`;
         return;
     }
 
     let totalOriginal = 0;
-    let listHtml = `<h4 style="margin-bottom:10px; margin-left:10px; font-size:16px; font-weight:bold;">${month}월 구매가</h4>`;
+    let listHtml = `<h4 class="calc-main-title">${month}월 구매가</h4>`;
     
     thisMonthSups.forEach(sup => {
         const price = (sup.price || 0);
         totalOriginal += price;
         listHtml += `
-            <div class="calc-list-item" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding:10px; border-radius:50px;">
+            <div class="calc-list-item">
                 <div style="display:flex; align-items:center; gap:12px;">
                     <input type="checkbox" class="calc-check" 
                            data-id="${sup.id}" 
                            data-price="${price}" 
                            onchange="updateCalcSum()" 
-                           checked style="width:20px; height:20px; accent-color:#05d339;">
-                    <span style="font-size:15px;">${sup.productName}</span>
+                           checked>
+                    <span class="calc-product-name">${sup.productName}</span>
                 </div>
-                <span style="font-size:14px; font-weight:normal;">${price.toLocaleString()}원</span>
+                <span class="calc-product-price">${price.toLocaleString()}원</span>
             </div>
         `;
     });
 
-    listHtml += `<div id="selectedSumDisplay" style="text-align:center; font-size:12px; opacity:0.5;">선택 제품 합계: ${totalOriginal.toLocaleString()}원</div>`;
+    listHtml += `<div id="selectedSumDisplay" class="selected-sum-display">선택 제품 합계: ${totalOriginal.toLocaleString()}원</div>`;
 
     calcDiv.innerHTML = `
         <div class="calc-inner-wrapper" style="display:flex; flex-direction:column; width:100%;">
             ${listHtml}
             
-            <div class="calc-input-box" style="margin-top:25px; padding:15px; border-radius:22px;">
-                <label style="font-size:13px; opacity:0.6; display:block; margin-bottom:8px;">실제 총 결제 금액</label>
+            <div class="calc-input-box">
+                <label class="calc-input-label">실제 총 결제 금액</label>
                 <div style="display:flex; align-items:center; gap:5px;">
-                    <span style="font-size:18px; font-weight:normal;">₩</span>
-                    <input type="number" id="actualPaidInput" placeholder="할인 적용된 금액 입력" 
-                           style="width:100%; border:none; background:transparent; font-size:18px; font-weight:normal; color:var(--text-color); outline:none;" inputmode="numeric">
+                    <span style="font-size:18px;">₩</span>
+                    <input type="number" id="actualPaidInput" class="actual-paid-input" 
+                           placeholder="할인 적용된 금액 입력" inputmode="numeric">
                 </div>
             </div>
 
-            <div class="delete-btn-container" style="padding: 30px 0 20px;">
-                <button onclick="processDiscount()" class="delete-glass-btn" style="color: #05d339; display: flex; align-items: center; justify-content: center;">
+            <div class="delete-btn-container">
+                <button onclick="processDiscount()" class="delete-glass-btn">
                     할인율 적용
                 </button>
             </div>
             
-            <div id="calcStatusMsg" style="margin-top:10px; font-size:13px; text-align:center; color:#05d339; font-weight:600;"></div>
+            <div id="calcStatusMsg" class="calc-status-msg"></div>
         </div>
     `;
 }
@@ -2145,7 +2148,6 @@ function toggleAccordion(id) {
   const isActive = el.classList.contains('active');
   const displayId = id === 'familyAccordion' ? 'selectedFamilyText' : 'selectedTimeText';
   const inputClass = id === 'familyAccordion' ? 'inputFamily' : 'inputTime';
-  const displayElement = document.getElementById(displayId);
 
   if (isActive) {
 
@@ -2153,7 +2155,7 @@ function toggleAccordion(id) {
     el.classList.remove('active');
   } else {
 
-    displayElement.style.opacity = 0;
+    resetAccordions();
     el.classList.add('active');
   }
 }
@@ -2165,8 +2167,6 @@ function updateSelectedDisplay(inputClass, displayId) {
   
   if (selectedValues.length > 0) {
     displayElement.textContent = selectedValues.join(', ');
-    displayElement.style.transition = 'opacity 0.4s ease-in-out';
-    displayElement.style.opacity = 1;
   } else {
     displayElement.textContent = '';
   }
