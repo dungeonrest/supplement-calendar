@@ -1,4 +1,4 @@
-const APP_VERSION = "3.13q";
+const APP_VERSION = "3.13w";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -2078,10 +2078,11 @@ function applyIOSButtonEffect() {
 }
 
 function setupIOSButtonAutomated(element) {
-    if (!element || element.dataset.iosApplied) return;
+    if (!element || element.dataset.iosApplied === "true") return;
     element.dataset.iosApplied = "true";
 
     let isPressed = false;
+
     const getEffectTarget = (el) => {
         if (el.classList.contains('tab-btn')) {
             return el.closest('.tab-container').querySelector('.tab-slider');
@@ -2092,47 +2093,49 @@ function setupIOSButtonAutomated(element) {
     element.addEventListener('pointerdown', (e) => {
         isPressed = true;
         const target = getEffectTarget(element);
-        if (target) {
-            console.log("효과 적용 대상 발견:", target);
-            target.classList.add('ios-active');
-        }
+        if (target) target.classList.add('ios-active');
+        
         element.setPointerCapture(e.pointerId);
-    });
-
-    element.addEventListener('pointermove', (e) => {
-        if (!isPressed) return;
-        const rect = element.getBoundingClientRect();
-        const isInside = (
-            e.clientX >= rect.left && e.clientX <= rect.right &&
-            e.clientY >= rect.top && e.clientY <= rect.bottom
-        );
-        isInside ? element.classList.add('ios-active') : element.classList.remove('ios-active');
     });
 
     element.addEventListener('pointerup', (e) => {
         if (!isPressed) return;
         isPressed = false;
+
+        const target = getEffectTarget(element);
+        if (target) target.classList.remove('ios-active');
         
+        element.releasePointerCapture(e.pointerId);
+
         const rect = element.getBoundingClientRect();
         const isInside = (
             e.clientX >= rect.left && e.clientX <= rect.right &&
             e.clientY >= rect.top && e.clientY <= rect.bottom
         );
 
-        element.classList.remove('ios-active');
-        element.releasePointerCapture(e.pointerId);
-
-        if (!isInside) {
-            e.preventDefault();
-            e.stopPropagation();
+        if (isInside) {
+            element.dispatchEvent(new MouseEvent('click', {
+                bubbles: true,
+                cancelable: true,
+                view: window
+            }));
         }
     });
 
+    element.addEventListener('click', (e) => {
+        if (e.isTrusted) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true);
+
     element.addEventListener('pointercancel', () => {
         isPressed = false;
-        element.classList.remove('ios-active');
+        const target = getEffectTarget(element);
+        if (target) target.classList.remove('ios-active');
     });
 }
+
 
 window.addEventListener('DOMContentLoaded', applyIOSButtonEffect);
 

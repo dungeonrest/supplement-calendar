@@ -110,6 +110,7 @@ button.ios-active,
   transform: scale(1.15) !important;
   filter: contrast(1.15) saturate(1.1) brightness(1.1);
   z-index: 9999;
+  pointer-events: none;
 }
 
 .supplement-bar:active {
@@ -134,8 +135,13 @@ button.ios-active,
   font-weight: bold;
   color: var(--text-color);
   letter-spacing: -0.5px;
-  cursor: default;
+  display: inline-block; /* span이 크기 값을 가지도록 함 */
+    cursor: pointer;
+    position: relative;
+    z-index: 10; /* 클릭 우선순위 확보 */
+    touch-action: none;
   user-select: none;
+
 }
 
 .header-right-group {
@@ -1932,13 +1938,6 @@ body.dark-mode .period-input-group {
   font-weight: normal;
   color: var(--text-color);
   outline: none;
-}
-
-.period-info {
-  font-size: 12px;
-  text-align: center;
-  opacity: 0.5;
-  margin-top: 0px;
 }
 
 /* 통계 그래프 스타일 */
