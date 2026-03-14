@@ -1,4 +1,4 @@
-const APP_VERSION = "3.13e";
+const APP_VERSION = "3.14";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -23,6 +23,17 @@ document.addEventListener("DOMContentLoaded", () => {
   if (saved) {
     document.body.classList.add("dark-mode");
   }
+
+  const splitContainer = document.querySelector(".info-row.split");
+  const cols = splitContainer.querySelectorAll(".info-col");
+
+  cols[0].addEventListener("click", () => {
+    splitContainer.classList.remove("select-color");
+  });
+
+  cols[1].addEventListener("click", () => {
+    splitContainer.classList.add("select-color");
+  });
 });
 
 document.addEventListener("touchstart", function() {}, true);
@@ -113,6 +124,7 @@ function openSupplementModal(sup) {
 
   updateSelectedDisplay('inputFamily', 'selectedFamilyText');
   updateSelectedDisplay('inputTime', 'selectedTimeText');
+  document.querySelector(".info-row.split").classList.remove("select-color");
 }
 
 // 상태
@@ -349,6 +361,7 @@ addBtn.addEventListener("click", () => {
   document.getElementById("selectedTimeText").style.opacity = 1;
   resetAccordions();
 
+  document.querySelector(".info-row.split").classList.remove("select-color");
   document.getElementById("memoLine1").value = "";
   document.getElementById("memoLine2").value = "";
   document.getElementById("memoLine3").value = "";
@@ -747,7 +760,6 @@ function openTakenCheckUI(date) {
 
   if (body) {
     body.style.overflowY = "auto";
-    body.style.maxHeight = "80vh";
     body.scrollTop = 0;
   }
 

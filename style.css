@@ -534,9 +534,9 @@ body.modal-open {
 
 .modal {
   width: 100% !important; 
-  height: 99vh !important;
+  height: 100vh !important;
   max-width: none !important;
-  max-height: 99vh !important;
+  max-height: 100vh !important;
   background-color: var(--bg-color) !important;
   border-radius: 35px 35px 0 0;
   display: flex;
@@ -606,7 +606,7 @@ body.dark-mode #statsContent {
   left: 50%;
   transform: translateX(-50%);
   margin: 0;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   pointer-events: none;
 }
@@ -620,6 +620,7 @@ body.dark-mode #statsContent {
     font-weight: bold !important;
     flex: 1 !important;
     color: var(--text-color) !important;
+    padding: 7px 0px 0px 0px !important;
 }
 
 .yearly-grid {
@@ -630,12 +631,12 @@ body.dark-mode #statsContent {
     grid-template-columns: repeat(3, 1fr) !important;
     column-gap: 0 !important;
     row-gap: 10px !important;
-    padding: 10px 10px 10px 10px !important;
+    padding: 10px 6px 10px 10px !important;
 }
 
 /* 개별 달: 가로선 구현 */
 .mini-month-container {
-    padding: 0 8px 18px 4px !important;
+    padding: 20px 8px 18px 4px !important;
     border-bottom: 1px solid var(--calendar-line) !important;
     box-sizing: border-box !important;
 }
@@ -719,9 +720,51 @@ body.dark-mode #statsContent {
 .info-row.split {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%;
   height: 28px;
+  position: relative;
+  box-sizing: border-box;
+  z-index: 0;
+  width: calc(100% + 22px) !important; 
+  margin-left: -12px !important; 
+  margin-right: -12px !important;
+}
+
+/* 움직이는 흰색 배경 상자 */
+.info-row.split::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(50% - 1px);
+  height: calc(100% - 4px);
+  background: #ffffff;
+  border-radius: 50px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+}
+
+/* 색상 선택 시 상자 이동 */
+.info-row.split.select-color::before {
+  transform: translateX(calc(100%));
+}
+
+body.dark-mode .info-row.split::before {
+  background: #636366;
+}
+
+.info-row.split input[type="date"] {
+  font-size: 13px !important;
+  text-align: center !important;
+  color: var(--text-color);
+  cursor: pointer;
+  margin: 0;
+  background: transparent;
+  width: 100%;
+  border: none;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .info-col {
@@ -730,6 +773,11 @@ body.dark-mode #statsContent {
   justify-content: center;
   align-items: center;
   position: relative;
+  height: 100%;
+  z-index: 1;
+  cursor: pointer;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* 컬러 피커 스타일 */
@@ -763,7 +811,7 @@ body.dark-mode #statsContent {
 }
 
 #colorHexText {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: normal;
 }
 
@@ -796,9 +844,8 @@ body.dark-mode .row-label {
   flex: 1;
   min-width: 0;
   height: 100%;
-  font-size: 16px !important;
+  font-size: 15px !important;
   font-weight: normal !important;
-  font-family: inherit;
   color: var(--text-color);
   text-align: right !important; 
   background: transparent;
@@ -868,13 +915,14 @@ select.unit-select-inside {
 }
 
 .selected-text {
+  font-size: 15px;
   opacity: 1;
   transition: opacity 0.3s ease-in-out;
 }
 
 /* 아코디언이 active(열림) 상태일 때 우측 텍스트 숨기기 */
 .accordion-section.active .selected-text {
-  opacity: 0;
+  opacity: 0 !important;
   pointer-events: none;
 }
 
@@ -1000,7 +1048,7 @@ input[type="checkbox"]:checked::before {
 .memo-paper-group {
   width: 92%;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 12px;
   background: rgba(192, 192, 192, 0.2) !important;
   border-radius: 22px;
   overflow: hidden;
@@ -1020,7 +1068,7 @@ body.dark-mode .memo-paper-group {
   color: #454549;
   width: 92% !important;
   margin: 20px auto 8px !important;
-  padding: 0 15px !important;
+  padding: 0 13px !important;
   box-sizing: border-box;
 }
 
@@ -1432,7 +1480,7 @@ body.dark-mode .calc-input-box {
   display: block !important;
   width: 100%;
   height: auto;
-  min-height: calc(100% + 150px);
+  min-height: calc(100vh - 50px) !important;
   padding: 10px 0 100px 0 !important;
   overflow-y: visible;
   box-sizing: border-box;
@@ -1746,7 +1794,7 @@ body.dark-mode .onboarding-header h1 { color: white; }
     position: sticky !important;
     top: 0 !important;
     width: 100%;
-    padding: 15px 14px;
+    padding: 15px 17px;
     z-index: 3000 !important;
     height: 60px !important;
     box-sizing: border-box;
@@ -1779,7 +1827,7 @@ body.dark-mode #monthlyCostContent,
 body.dark-mode #takenCheckBody,
 body.dark-mode .yearly-grid,
 body.dark-mode .backup-menu-modal {
-    background-color: #1f1f20 !important;
+    background-color: #1c1c1d !important;
     border-radius: 35px 35px 0 0 !important;
 }
 
@@ -1789,7 +1837,7 @@ body.dark-mode .backup-menu-modal {
 }
 
 body.dark-mode #statsModal .stats-modal {
- background-color: #1f1f20 !important;
+ background-color: #1c1c1d !important;
     border-radius: 35px 35px 0 0 !important;
 }
 
@@ -1826,7 +1874,7 @@ body.dark-mode #statsModal .stats-modal {
 
 body.dark-mode #monthlyCostContent, 
 body.dark-mode #calcTabContent {
-    background-color: #1f1f20 !important;
+    background-color: #1c1c1d !important;
 }
 
 #calcTabContent {
@@ -2083,8 +2131,6 @@ body.dark-mode .family-btn.selected {
     position: fixed;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    
     display: flex;
     align-items: flex-end;
     justify-content: center;
