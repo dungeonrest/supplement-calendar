@@ -14,7 +14,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
 
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 </head>
 <body>
 
@@ -51,27 +51,40 @@
   <div id="dates" class="dates-container"></div>
 </div>
 
-<div id="familyConfigModal" class="modal-overlay hidden" style="background-color: transparent; align-items: flex-start; padding-top: 100px;">
+<div id="familyConfigModal" class="modal-overlay hidden">
   <div class="onboarding-container">
-    <div class="onboarding-header">
-      <span class="emoji-badge">💊</span>
-      <h1>반가워요!<br>누구와 함께 복용하나요?</h1>
-      <p>이름을 쉼표로 구분해서 적어주세요.</p>
-          </div>
-
-    <div class="onboarding-body">
-      <input type="text" id="familyInput" placeholder="철수, 엄마, 아빠" autocomplete="off">
-      <div class="onboarding-notice">
-        <p>이름은 나중에 언제든 바꿀 수 있어요.</p>
-        <p>최소 1명에서 최대 4명까지 입력해주세요.</p>     
+    
+    <div class="onboarding-top">
+      <div class="onboarding-header">
+        <h1>'영양제'의 새로운 시작</h1>
       </div>
+
+      <div class="description-row">
+        <span class="inline-emoji">💊</span>
+        <p class="description-text">이제 영양제를 효율적으로 관리할 수 있습니다.</p>
+      </div>
+
+      <p class="limit-notice">
+        가족과 함께 혹은 혼자서 영양제를 챙겨 먹을 때 '영양제' 앱이 제품의 재고 현황을 알려주며
+        재고 관리에 도움을 줍니다. 복용 여부 체크와 비용 및 통계 정보를 통해 편리하고 체계적인 건강
+        관리를 하는 데 도움을 받을 수 있습니다.
+      </p>
     </div>
 
-    <div class="onboarding-footer">
-      <button id="saveFamilyConfig" class="primary-btn">시작하기</button>
-    </div>
-  </div>
-</div>
+    <div class="onboarding-bottom">
+      <p class="input-sub-label">
+        이름은 통계 탭에서 변경 및 삭제가 가능합니다.
+        최소 1명에서 최대 4명까지 입력해주세요.
+      </p>
+      
+      <div class="input-wrapper">
+        <input type="text" id="familyInput" placeholder="쉼표로 이름 구분 (예: 철수, 엄마)" autocomplete="off">
+      </div>
+
+      <div class="onboarding-footer">
+        <button id="saveFamilyConfig" class="primary-btn">시작하기</button>
+      </div>
+    </div> </div> </div>
 
 <div id="footerBackupArea" class="footer-backup-area">
   <span id="footerVersion" class="footer-version">© <span id="footerYear"></span> <span id="footerAppVersion"></span></span>

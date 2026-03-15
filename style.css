@@ -113,7 +113,6 @@ button:not(.tab-btn).ios-active,
   transform: scale(1.25) !important;
   filter: contrast(1.25) saturate(1.25);
   z-index: 9999;
-  pointer-events: none;
 }
 
 @keyframes ios-jelly-bounce {
@@ -130,10 +129,10 @@ button:not(.tab-btn).ios-release,
 .menu-btn.ios-release,
 .primary-btn.ios-release,
 .close-btn.ios-release,
-.check-btn.iosrelease,
-.extend-btn.release,
-.delete-glass-btn.release,
-.month-display.release {
+.check-btn.ios-release,
+.extend-btn.ios-release,
+.delete-glass-btn.ios-release,
+.month-display.ios-release {
   animation: ios-jelly-bounce 0.55s cubic-bezier(0.9, 1.8, 0.2, 1) forwards !important;
 }
 
@@ -180,7 +179,7 @@ button:not(.tab-btn).ios-release,
   body.dark-mode .header-right-group {
   background-color: #19191B;
 }
-
+/*----------------------------------------테마 아이콘 시작----------------------------*/
 .theme-btn {
   position: relative;
   display: flex;
@@ -202,13 +201,13 @@ button:not(.tab-btn).ios-release,
 
 .theme-icon,
 .theme-icon::before,
-.theme-icon::after,
-.stats-btn span {
+.theme-icon::after {
   pointer-events: none;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-body:not(.dark-mode) .theme-icon::before,
-body:not(.dark-mode) .theme-icon::after {
+.theme-icon::before,
+.theme-icon::after {
  content: "";
   position: absolute;
   top: 50%;
@@ -219,41 +218,35 @@ body:not(.dark-mode) .theme-icon::after {
   border-radius: 10px;
 }
 
-body:not(.dark-mode) .theme-icon::before {
-  box-shadow: 0 0 0 transparent;
-}
-
-body:not(.dark-mode) .theme-icon::before {
-  transform: translate(-50%, -50%);
-}
-
 .theme-icon::before {
   transform: translate(-50%, -50%);
 }
 
-body:not(.dark-mode) .theme-icon::before {
-  background: 
-    linear-gradient(to bottom, transparent 2px, var(--text-color) 2px, var(--text-color) 5px, transparent 5px, transparent 19px, var(--text-color) 19px, var(--text-color) 22px, transparent 22px),
-    linear-gradient(to right, transparent 2px, var(--text-color) 2px, var(--text-color) 5px, transparent 5px, transparent 19px, var(--text-color) 19px, var(--text-color) 22px, transparent 22px);  background-size: 2px 24px, 24px 2px;
-  background-repeat: no-repeat;
-  background-position: center;
-  width: 24px;
-  height: 24px;
-}
-
-body:not(.dark-mode) .theme-icon::after {
-  background: 
-    linear-gradient(to bottom, transparent 2px, var(--text-color) 2px, var(--text-color) 5px, transparent 5px, transparent 19px, var(--text-color) 19px, var(--text-color) 22px, transparent 22px),
-    linear-gradient(to right, transparent 2px, var(--text-color) 2px, var(--text-color) 5px, transparent 5px, transparent 19px, var(--text-color) 19px, var(--text-color) 22px, transparent 22px);  background-size: 2px 24px, 24px 2px;
-  background-repeat: no-repeat;
-  background-position: center;
-  width: 24px;
-  height: 24px;
+.theme-icon::after {
   transform: translate(-50%, -50%) rotate(45deg);
 }
 
+.theme-icon::before,
+.theme-icon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  background: 
+    linear-gradient(to bottom, transparent 2px, var(--text-color) 2px, var(--text-color) 5px, transparent 5px, transparent 19px, var(--text-color) 19px, var(--text-color) 22px, transparent 22px),
+    linear-gradient(to right, transparent 2px, var(--text-color) 2px, var(--text-color) 5px, transparent 5px, transparent 19px, var(--text-color) 19px, var(--text-color) 22px, transparent 22px);
+  background-size: 2px 24px, 24px 2px;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 1;
+}
+
 body.dark-mode .theme-icon {
-  width: 16px; height: 16px; border: none;
+  width: 16px;
+  height: 16px;
+  border: none;
   background-color: transparent;
   box-shadow: inset -5px -3px 0 0 var(--text-color);
   transform: rotate(-20deg);
@@ -261,9 +254,11 @@ body.dark-mode .theme-icon {
 
 body.dark-mode .theme-icon::before,
 body.dark-mode .theme-icon::after {
-  display: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(90deg);
 }
-
+/*----------------------------------------테마 아이콘 끝----------------------------*/
+/*---------------------------------월별 비용, 통계 아이콘 시작----------------------------*/
 .monthly-cost-btn, .stats-btn {
   width: 32px;
   height: 32px;
@@ -323,7 +318,7 @@ body.dark-mode .theme-icon::after {
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-
+/*---------------------------------월별 비용, 통계 아이콘 끝----------------------------*/
 .day-labels {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -664,6 +659,14 @@ body.dark-mode #statsContent {
     padding: 10px 6px 10px 10px !important;
 }
 
+.yearly-grid::before {
+    content: "";
+    /* grid-column: 1 / span 3; 을 주면 가로 한 줄 전체를 차지하는 빈 공간이 됩니다 */
+    grid-column: 1 / span 3 !important; 
+    height: 1px !important; /* 이 수치로 간격을 조절하세요. (헤더 높이 60px 제외 순수 간격) */
+    display: block !important;
+}
+
 /* 개별 달: 가로선 구현 */
 .mini-month-container {
     padding: 0px 8px 15px 4px !important;
@@ -857,7 +860,7 @@ body.dark-mode .info-row.split::before {
 
 /* 왼쪽 고정 라벨 */
 .row-label {
-  color: #9E9EA4;
+  color: var(--text-color);
   font-size: 15px;
   font-weight: normal;
   text-align: left;
@@ -865,33 +868,33 @@ body.dark-mode .info-row.split::before {
   margin-right: 15px;
 }
 
-body.dark-mode .row-label {
-  color: #9E9EA4;
-}
-
 /* 중앙 입력란 */
 .memo-line-style {
   flex: 1;
   min-width: 0;
   height: 100%;
-  font-size: 15px !important;
-  font-weight: normal !important;
-  color: var(--text-color);
-  text-align: right !important; 
+  font-size: 15px;
+  font-weight: normal;
+  color: #76767a;
+  text-align: right; 
   background: transparent;
   margin-right: 18px;
   padding: 0;
 }
 
+body.dark-mode .memo-line-style { color: #9E9EA4; }
+
 /* 오른쪽 단위 텍스트 */
 .unit-text, .unit-select-inside, .unit-placeholder {
-  color: #9E9EA4 !important;
+  color: #76767a;
   font-size: 15px;
   text-align: left;
   flex-shrink: 0;
   background: transparent;
   min-width: 31px;
 }
+
+body.dark-mode .unit-text, .unit-select-inside, .unit-placeholder { color: #9E9EA4; }
 
 /* 단위 선택기(Select) 아이폰 전용 여백 제거 */
 select.unit-select-inside {
@@ -948,7 +951,10 @@ select.unit-select-inside {
   font-size: 15px;
   opacity: 1;
   transition: opacity 0.3s ease-in-out;
+  color: #76767a;
 }
+
+body.dark-mode .selected-text { color: #9E9EA4; }
 
 /* 아코디언이 active(열림) 상태일 때 우측 텍스트 숨기기 */
 .accordion-section.active .selected-text {
@@ -1113,6 +1119,7 @@ body.dark-mode .input-label {
   border: none;
   outline: none;
   font-size: 15px;
+  text-align: left;
   margin-left: -6px;
   color: var(--text-color);
 }
@@ -1228,7 +1235,7 @@ body.dark-mode .check-btn::before {
   filter: brightness(1.1);
 }
 
-/* 닫기 버튼(우측) */
+/*---------------------------------닫기 버튼 시작----------------------------*/
 .close-btn.right {
   position: relative;
   margin-left: auto;
@@ -1254,7 +1261,6 @@ body.dark-mode .close-btn {
   background-color: #19191B;
 }
 
-/* 1. 테두리 (기존 동일) */
 .close-btn::before {
   content: "";
   position: absolute;
@@ -1313,19 +1319,27 @@ body.dark-mode .close-btn::before {
 .close-btn span {
   transform: translate(-50%, -50%) rotate(-45deg);
 }
-
+/*---------------------------------닫기 버튼 끝----------------------------------*/
+/*--------------------------월별 비용 모달_비용 탭 시작----------------------------*/
 #monthlyCostContent {
   display: flex;
   flex-direction: column;
-  padding: 40px 20px 40px 20px !important;
+  padding: 0px 20px 40px 20px !important;
+}
+
+#monthlyCostContent::before {
+    content: "";
+    display: block !important;
+    min-height: 10px !important;
+    width: 100%;
+    clear: both;
 }
 
 .cost-item {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 18px;
-  padding: 0 10px;
+  margin-bottom: 15px;
 }
 
 .cost-item-header {
@@ -1337,51 +1351,64 @@ body.dark-mode .close-btn::before {
   color: var(--text-color);
 }
 
+.cost-item-header span:last-child { color: #76767a; font-weight: normal; }
+
+body.dark-mode .cost-item-header span:last-child { color: #9E9EA4;}
+
 /* 비용 전용 막대 그래프 */
 .cost-bar-bg {
   width: 100%;
-  height: 6px;
-  background: rgba(226, 226, 226, 0.788);
+  height: 1px;
+  background: rgb(226, 226, 226);
   border-radius: 6px;
   overflow: hidden;
-}
-
-body.dark-mode .cost-bar-bg {
-background: rgba(255, 255, 255, 0.911);
 }
 
 .cost-bar-fill {
   height: 100%;
   border-radius: 6px;
-  transition: width 0.3s ease;
 }
 
-.total-cost-wrapper {
-  margin-top: 1px;
-  padding-top: 15px;
-  border-top: 1px solid var(--calendar-line);
-  text-align: center;
-  padding-right: 6px;
+/* 상자 밖 왼쪽 위 타이틀 */
+.summary-box-outside-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-left: 15px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+/* 요약 상자 컨테이너 */
+.cost-summary-box {
+    background-color: #f3f0f0;
+    border-radius: 30px;
+    padding: 20px 18px;
+    margin-bottom: 25px;
+}
+
+body.dark-mode .cost-summary-box {
+    background-color: #2c2c2e;
+}
+
+/* 총액 행 (양끝 정렬) */
+.total-cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 5px;
 }
 
 .total-cost-label {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: normal;
+  color: var(--text-color);
   opacity: 0.6;
-  display: block;
-  text-align: center;
-  margin-bottom: 6px;
 }
 
 .total-cost-amount {
-  font-size: 21px;
+  font-size: 20px;
   font-weight: normal;
-  text-align: center;
-  color: #000000;
-}
-
-body.dark-mode .total-cost-amount {
-  color: #ffffff;
+  color: var(--text-color);
 }
 
 /* 숫자 입력란 정렬 최적화 */
@@ -1393,20 +1420,22 @@ input[type="number"], .total-cost-amount, .stats-count-text {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    justify-content: center;
+    justify-content: space-between;
     margin-bottom: 15px;
-    padding: 0 5px;
+    padding: 0;
 }
 
 .family-cost-card {
     background-color: #c0c0c033;
     border-radius: 22px;
-    padding: 10px 14px;
-    min-width: 100px;
+    padding: 15px 18px;
+    flex: 1 1 calc(50% - 5px); 
+    min-width: 140px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 4px;
+    box-sizing: border-box;
 }
 
 body.dark-mode .family-cost-card {
@@ -1414,19 +1443,21 @@ body.dark-mode .family-cost-card {
 }
 
 .family-cost-name {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     opacity: 0.5;
     color: var(--text-color);
+    font-variant-numeric: tabular-nums;
+    text-align: left;
 }
 
 .family-cost-amount {
-    font-size: 15px;
+    font-size: 14px;
     font-weight: normal;
     color: var(--text-color);
     font-variant-numeric: tabular-nums;
 }
-
+/*--------------------------월별 비용 모달_계산 탭 시작----------------------------*/
 /* 제품 리스트 아이템 */
 .calc-list-item {
     display: flex;
@@ -1505,8 +1536,8 @@ body.dark-mode .calc-input-box {
     height: 20px;
     accent-color: #05d339;
 }
-
-/* 복용 체크 모달 커스텀 */
+/*-----------------------------월별 비용 모달 끝-------------------------------*/
+/*----------------------------복용 체크 모달 시작------------------------------*/
 #takenCheckBody {
   display: block !important;
   width: 100%;
@@ -1732,89 +1763,147 @@ body.dark-mode .menu-btn {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
 }
+/*--------------------------------------온보딩 시작--------------------------------------*/
+/* 온보딩 전용 배경 */
+#familyConfigModal {
+  background-color: var(--bg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 2000;
+}
 
-/* 온보딩 컨테이너 */
+body.dark-mode #familyConfigModal {
+  color: #fff !important;
+  background-color: #000000 !important;
+}
+
+/* 컨테이너 레이아웃 */
 .onboarding-container {
   width: 100%;
-  max-width: 400px;
-  padding: 0 30px;
+  max-width: 440px;
+  height: 100%;
+  max-height: 900px;
+  padding: 60px 38px 40px;
+  background-color: var(--bg-color);
   display: flex;
   flex-direction: column;
-  animation: fadeIn 0.8s ease-out;
+  box-sizing: border-box;
+  animation: iosSlideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* 큰 제목 스타일 */
+/* 상단 섹션 (제목 및 설명) */
+.onboarding-top {
+  margin-bottom: 20px; /* 키보드 대응 최소 여백 */
+}
+
 .onboarding-header h1 {
-  font-size: 28px;
-  line-height: 1.4;
-  margin-top: 20px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 500;
   letter-spacing: -0.5px;
+  line-height: 1.2;
+  color: var(--text-color);
+  margin-bottom: 5px;
+  margin-left: 10px;
 }
 
-.onboarding-header p {
+/* 설명줄: 이모지와 텍스트 나란히 */
+.description-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0px;
+  margin-right: 20px;
+}
+
+.inline-emoji {
+  font-size: 28px;
+  margin-left: 10px;
+}
+
+.description-text {
   font-size: 16px;
-  color: #888;
-  margin-top: 10px;
+  color: var(--text-color);
+  font-weight: 400;
 }
 
-.emoji-badge {
-  font-size: 40px;
-  display: block;
+.limit-notice {
+  font-size: 15px;
+  line-height: 1.4;
+  color:  #98989E;
+  padding-right: 15px;
+  padding-left: 50px; /* 이모지 너비만큼 들여쓰기 */
+  margin-bottom: 0;
 }
 
-/* 입력창: 세련된 언더라인 스타일 */
+.onboarding-bottom {
+  margin-top: auto; /* 핵심: 이 설정이 위쪽 여백을 모두 차지하여 아래로 밉니다 */
+  display: flex;
+  flex-direction: column;
+}
+
+.input-sub-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #98989E;
+  padding-left: 4px;  /* 입력창 글자와 수직 정렬을 맞추기 위한 미세 조정 */
+  text-transform: uppercase; /* 영문일 경우 세련되게 대문자로 표시 */
+}
+
+/* 입력창 */
 #familyInput {
   width: 100%;
+  height: 50px;
   border: none;
-  border-bottom: 2px solid #eee;
-  padding: 15px 0;
-  font-size: 20px;
-  margin-top: 30px;
-  background: transparent;
-  outline: none;
-}
-
-#familyInput:focus {
-  border-bottom-color: #05d339
-}
-
-/* 하단 안내 */
-.onboarding-notice {
-  margin-top: 30px;
-}
-
-.onboarding-notice p {
-  font-size: 13px;
-  color: #bbb;
-  margin: 5px 0;
+  background-color: #F2F2F7;
+  border-radius: 50px;
+  padding: 16px;
+  margin-bottom: 10px;
+  font-size: 15px;
   text-align: center;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s;
 }
 
-/* 시작하기 버튼: 플로팅 버튼 스타일 */
+.input-sub-label {
+  margin-bottom: 8px;
+}
+
+/* 버튼: 하단 고정 및 iOS 블루 */
+.onboarding-footer {
+  margin-top: auto; /* 버튼을 화면 맨 아래로 */
+}
+
 .primary-btn {
   width: 100%;
-  height: 60px;
-  border-radius: 18px;
-  border: none;
-  background: #05d339;
+  height: 50px;
+  background: #007AFF;
   color: white;
-  font-size: 18px;
-  font-weight: bold;
-  margin-top: 30px;
+  border: none;
+  border-radius: 30px;
+  box-shadow: none;
+  font-size: 17px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 10px 20px rgba(78, 205, 196, 0.3);
 }
 
-/* 등장 애니메이션 */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+/* 하단 안내문 */
+.onboarding-notice p {
+  font-size: 11px;
+  color: #8E8E93;
+  margin-bottom: 24px;
 }
 
-body.dark-mode #familyInput { border-bottom-color: #333; color: white; }
-body.dark-mode .onboarding-header h1 { color: white; }
-
+/* iOS 특유의 슬라이드 업 애니메이션 */
+@keyframes iosSlideUp {
+  from { transform: translateY(100vh); }
+  to { transform: translateY(0); }
+}
+/*--------------------------------------온보딩 끝--------------------------------------*/
 #footerBackupLink, #footerVersion {
   display: inline-block; 
   padding: 20px;

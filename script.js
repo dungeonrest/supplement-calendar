@@ -1,4 +1,4 @@
-const APP_VERSION = "3.14w";
+const APP_VERSION = "3.15";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -239,101 +239,124 @@ themeToggleBtn.addEventListener("click", () => {
   localStorage.setItem("darkMode", isDark);
 });
 
-// 월별 비용
+/*--------------------------------------월별 비용 시작-----------------------------------*/
 monthlyCostBtn.addEventListener("click", () => {
-  const year = dt.getFullYear();
-  const month = dt.getMonth() + 1;
+    const year = dt.getFullYear();
+    const month = dt.getMonth() + 1;
 
-  initCostModalTabs();
+    // 탭 초기화 함수 호출 (기존 함수 유지)
+    initCostModalTabs();
 
-  let totalCost = 0;
-  const monthlyItems = [];
-  const familyCosts = {};
+    let totalCost = 0;
+    const monthlyItems = [];
+    const familyCosts = {};
 
-  supplements.forEach(sup => {
-    const supInputDate = sup.schedule?.[0] ?? "";
-    const [y, m] = supInputDate.split("-").map(x => parseInt(x));
+    // 1. 데이터 계산 로직
+    supplements.forEach(sup => {
+        const supInputDate = sup.schedule?.[0] ?? "";
+        const [y, m] = supInputDate.split("-").map(x => parseInt(x));
 
-    if (y === year && m === month) {
-      const totalDays = sup.schedule.length;
-      const monthsCount = Math.ceil(totalDays / 30);
-      const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
-      
-      totalCost += monthlyPart;
-      monthlyItems.push({
-        name: sup.productName,
-        cost: monthlyPart,
-        color: sup.circleColor
-      });
+        if (y === year && m === month) {
+            const totalDays = sup.schedule.length;
+            const monthsCount = Math.ceil(totalDays / 30);
+            const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
+            
+            totalCost += monthlyPart;
+            monthlyItems.push({
+                name: sup.productName,
+                cost: monthlyPart,
+                color: sup.circleColor
+            });
 
-      if (sup.family && Array.isArray(sup.family) && sup.family.length > 0) {
-        const perPersonCost = Math.round(monthlyPart / sup.family.length);
-        sup.family.forEach(member => {
-          if (!familyCosts[member]) {
-            familyCosts[member] = 0;
-          }
-          familyCosts[member] += perPersonCost;
-        });
-      }
-    }
-  });
-
-  let costHtml = "";
-  if (monthlyItems.length > 0) {
-    monthlyItems.forEach(item => {
-      const ratio = totalCost > 0 ? Math.round((item.cost / totalCost) * 100) : 0;
-      
-      costHtml += `
-        <div class="cost-item">
-          <div class="cost-item-header">
-            <span>${item.name}</span>
-            <span>${item.cost.toLocaleString()}원</span>
-          </div>
-          <div class="cost-bar-bg">
-            <div class="cost-bar-fill" style="width: ${ratio}%; background-color: ${item.color};"></div>
-          </div>
-        </div>
-      `;
+            if (sup.family && Array.isArray(sup.family) && sup.family.length > 0) {
+                const perPersonCost = Math.round(monthlyPart / sup.family.length);
+                sup.family.forEach(member => {
+                    if (!familyCosts[member]) {
+                        familyCosts[member] = 0;
+                    }
+                    familyCosts[member] += perPersonCost;
+                });
+            }
+        }
     });
-  } else {
-    costHtml = "<p style='text-align:center; font-size:20px; font-weight:bold; margin-top:100px; padding-bottom:80px;'>비용 없음</p>";
-  }
 
-  let familySummaryHtml = "";
-  const names = Object.keys(familyCosts);
-  
-  if (names.length > 0) {
-    familySummaryHtml += `<div class="family-cost-container">`;
-    names.forEach(name => {
-        familySummaryHtml += `
-            <div class="family-cost-card">
-                <span class="family-cost-name">${name}</span>
-                <span class="family-cost-amount">${familyCosts[name].toLocaleString()}원</span>
+    // 2. 제품별 목록 HTML 생성
+    let itemsHtml = "";
+    if (monthlyItems.length > 0) {
+        monthlyItems.forEach(item => {
+            const ratio = totalCost > 0 ? Math.round((item.cost / totalCost) * 100) : 0;
+            itemsHtml += `
+                <div class="cost-item">
+                    <div class="cost-item-header">
+                        <span>${item.name}</span>
+                        <span>${item.cost.toLocaleString()}원</span>
+                    </div>
+                    <div class="cost-bar-bg">
+                        <div class="cost-bar-fill" style="width: ${ratio}%; background-color: ${item.color};"></div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // 3. 상자 외부 타이틀 및 내부 요약 상자 조립
+    let costContentHtml = "";
+    if (totalCost > 0) {
+        costContentHtml = `
+            <div style="height: 10px; width: 100%;"></div>
+            <div class="summary-box-outside-title">${month}월</div>
+            
+            <div class="cost-summary-box">
+                <div class="summary-box-items">
+                    ${itemsHtml}
+                </div>
+                <div class="summary-box-divider"></div>
+                <div class="total-cost-row">
+                    <span class="total-cost-label">총 비용</span>
+                    <span class="total-cost-amount">₩ ${Math.round(totalCost).toLocaleString()}</span>
+                </div>
             </div>
         `;
-    });
-    familySummaryHtml += `</div>`;
-    familySummaryHtml += `<div style="width: 100%; height: 1px; background: var(--calendar-line); margin: 0px 0 15px; opacity: 0.6;"></div>`;
-}
+    } else {
+        costContentHtml = `
+            <p style='text-align:center; font-size:20px; font-weight:bold; margin-top:100px; padding-bottom:80px;'>
+                비용 없음
+            </p>
+        `;
+    }
 
-  costHtml += `
-    <div class="total-cost-wrapper">
-      ${familySummaryHtml}
-      <span class="total-cost-label">${month}월 한 달 치 비용</span>
-      <span class="total-cost-amount">₩ ${Math.round(totalCost).toLocaleString()}</span>
-    </div>
-  `;
+    // 4. 가족별 카드 생성 (상자 외부에 배치)
+    let familySummaryHtml = "";
+    const names = Object.keys(familyCosts);
+    if (names.length > 0) {
+        familySummaryHtml += `<div class="family-cost-container">`;
+        names.forEach(name => {
+            familySummaryHtml += `
+                <div class="family-cost-card">
+                    <span class="family-cost-name">${name}</span>
+                    <span class="family-cost-amount">${familyCosts[name].toLocaleString()}원</span>
+                </div>
+            `;
+        });
+        familySummaryHtml += `</div>`;
+    }
 
-  document.getElementById("monthlyCostContent").innerHTML = costHtml;
-  monthlyCostModal.classList.add("active");
-  document.body.classList.add("modal-open");
+    // 5. 최종 렌더링
+    document.getElementById("monthlyCostContent").innerHTML = `
+        ${costContentHtml}
+        ${familySummaryHtml}
+    `;
+
+    // 모달 표시 (기존 클래스/함수 유지)
+    monthlyCostModal.classList.add("active");
+    document.body.classList.add("modal-open");
 });
 
 closeMonthlyCostModal.addEventListener("click", () => {
   closeBottomSheet("monthlyCostModal");
   switchCostTab('cost');
 });
-
+/*--------------------------------------월별 비용 끝-----------------------------------*/
 // + 버튼 클릭 //
 addBtn.addEventListener("click", () => {
   currentEditId = null;
