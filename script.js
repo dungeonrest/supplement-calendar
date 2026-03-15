@@ -1,4 +1,4 @@
-const APP_VERSION = "3.14";
+const APP_VERSION = "3.14w";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -2045,6 +2045,7 @@ function renderCalcTab() {
             <div id="calcStatusMsg" class="calc-status-msg"></div>
         </div>
     `;
+    applyIOSButtonEffect();
 }
 
 async function processDiscount() {
@@ -2099,17 +2100,16 @@ function setupIOSButtonAutomated(element) {
     let isPressed = false;
 
     const getEffectTarget = (el) => {
-        if (el.classList.contains('tab-btn')) {
-            return el.closest('.tab-container').querySelector('.tab-slider');
-        }
         return el;
     };
 
     element.addEventListener('pointerdown', (e) => {
         isPressed = true;
         const target = getEffectTarget(element);
-        if (target) target.classList.add('ios-active');
-        
+        if (target) {
+            target.classList.remove('ios-release');
+            target.classList.add('ios-active');
+        }
         element.setPointerCapture(e.pointerId);
     });
 
@@ -2118,7 +2118,14 @@ function setupIOSButtonAutomated(element) {
         isPressed = false;
 
         const target = getEffectTarget(element);
-        if (target) target.classList.remove('ios-active');
+        if (target) {
+            target.classList.remove('ios-active');
+            target.classList.add('ios-release'); 
+
+            setTimeout(() => {
+                target.classList.remove('ios-release');
+            }, 550);
+        }
         
         element.releasePointerCapture(e.pointerId);
 
@@ -2137,20 +2144,22 @@ function setupIOSButtonAutomated(element) {
         }
     });
 
+    element.addEventListener('pointercancel', () => {
+        isPressed = false;
+        const target = getEffectTarget(element);
+        if (target) {
+            target.classList.remove('ios-active');
+            target.classList.remove('ios-release');
+        }
+    });
+
     element.addEventListener('click', (e) => {
         if (e.isTrusted) {
             e.preventDefault();
             e.stopPropagation();
         }
     }, true);
-
-    element.addEventListener('pointercancel', () => {
-        isPressed = false;
-        const target = getEffectTarget(element);
-        if (target) target.classList.remove('ios-active');
-    });
 }
-
 
 window.addEventListener('DOMContentLoaded', applyIOSButtonEffect);
 
@@ -2158,18 +2167,28 @@ window.addEventListener('DOMContentLoaded', applyIOSButtonEffect);
 function toggleAccordion(id) {
   const el = document.getElementById(id);
   const isActive = el.classList.contains('active');
-  const displayId = id === 'familyAccordion' ? 'selectedFamilyText' : 'selectedTimeText';
-  const inputClass = id === 'familyAccordion' ? 'inputFamily' : 'inputTime';
 
   if (isActive) {
-
+    const displayId = id === 'familyAccordion' ? 'selectedFamilyText' : 'selectedTimeText';
+    const inputClass = id === 'familyAccordion' ? 'inputFamily' : 'inputTime';
     updateSelectedDisplay(inputClass, displayId);
     el.classList.remove('active');
   } else {
-
+    syncAllAccordionTexts();
     resetAccordions();
     el.classList.add('active');
   }
+}
+
+function syncAllAccordionTexts() {
+  updateSelectedDisplay('inputFamily', 'selectedFamilyText');
+  updateSelectedDisplay('inputTime', 'selectedTimeText');
+}
+
+function resetAccordions() {
+  document.querySelectorAll('.accordion-section').forEach(section => {
+    section.classList.remove('active');
+  });
 }
 
 function updateSelectedDisplay(inputClass, displayId) {

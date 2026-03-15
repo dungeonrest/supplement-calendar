@@ -60,7 +60,6 @@ input, textarea {
 /* 모든 버튼, 날짜 셀, 리스트 요소에 돋보기/복사 금지 강제 적용 */
 button,
 .date,
-.header-right-group,
 .supplement-bar, 
 .family-btn, 
 .fab-today-btn, 
@@ -72,7 +71,8 @@ button,
 .primary-btn,
 .checkbox-item,
 .delete-glass-btn,
-.month-display {
+.month-display,
+.header-right-group {
   -webkit-touch-callout: none !important;
   -webkit-user-select: none !important;
   user-select: none !important;
@@ -91,13 +91,14 @@ button,
 .supplement-bar,
 .delete-glass-btn,
 .month-display {
-  transition: transform 0.3s ease-out,
-              filter 0.3s ease-out;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.4s ease-out;
   touch-action: manipulation; /* 더블탭 확대 대기를 없애서 클릭 반응 속도 향상 */
   -webkit-tap-highlight-color: transparent; /* 기본 회색 하이라이트 제거 */
+  will-change: transform;
 }
 
-button.ios-active, 
+button:not(.tab-btn).ios-active,
 .fab-today-btn.ios-active, 
 .fab-add-btn.ios-active, 
 .family-btn.ios-active, 
@@ -108,14 +109,36 @@ button.ios-active,
 .extend-btn.ios-active,
 .delete-glass-btn.ios-active,
 .month-display.ios-active {
-  transform: scale(1.15) !important;
-  filter: contrast(1.15) saturate(1.1) brightness(1.1);
+  transition: transform 0.15s;
+  transform: scale(1.25) !important;
+  filter: contrast(1.25) saturate(1.25);
   z-index: 9999;
   pointer-events: none;
 }
 
+@keyframes ios-jelly-bounce {
+  0% { transform: scale(1.25); }
+  65% { transform: scale(1.0); }    
+  70% { transform: scale(1.015); }    
+  100% { transform: scale(1.0); }    
+}
+
+button:not(.tab-btn).ios-release,
+.fab-today-btn.ios-release,
+.fab-add-btn.ios-release,
+.family-btn.ios-release,
+.menu-btn.ios-release,
+.primary-btn.ios-release,
+.close-btn.ios-release,
+.check-btn.iosrelease,
+.extend-btn.release,
+.delete-glass-btn.release,
+.month-display.release {
+  animation: ios-jelly-bounce 0.55s cubic-bezier(0.9, 1.8, 0.2, 1) forwards !important;
+}
+
 .supplement-bar:active {
-  transform: scale(1.15);
+  transform: scale(1.2);
   filter: brightness(1.1);
   z-index: 100;
   transition: all 0.3s ease;
@@ -136,11 +159,11 @@ button.ios-active,
   font-weight: bold;
   color: var(--text-color);
   letter-spacing: -0.5px;
-  display: inline-block; /* span이 크기 값을 가지도록 함 */
-    cursor: pointer;
-    position: relative;
-    z-index: 10; /* 클릭 우선순위 확보 */
-    touch-action: none;
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+  touch-action: none;
   user-select: none;
 
 }
@@ -379,18 +402,18 @@ body.dark-mode .theme-icon::after {
 }
 
 .date.today-date .number {
-  border-color: var(--main-color, #EB504B);
+  border-color: var(--main-color, #ff4040);
   color: var(--text-color);
 }
 
 .date.selected .number {
-  background-color: var(--main-color, #EB504B) !important;
-  border-color: var(--main-color, #EB504B) !important;
+  background-color: var(--main-color, #ff4040) !important;
+  border-color: var(--main-color, #ff4040) !important;
   color: #ffffff !important;
 }
 
 body.dark-mode .date.selected .number {
-  background-color: var(--main-color, #EB504B) !important;
+  background-color: var(--main-color, #ff4040) !important;
   color: #000000 !important;
 }
 
@@ -534,16 +557,22 @@ body.modal-open {
 
 .modal {
   width: 100% !important; 
-  height: 100vh !important;
-  max-width: none !important;
-  max-height: 100vh !important;
-  background-color: var(--bg-color) !important;
+  height: calc(100svh - env(safe-area-inset-top)) !important;
+  max-height: calc(100svh - env(safe-area-inset-top)) !important;
+  margin-top: env(safe-area-inset-top) !important;
+  
+  background-color: #f8f8f8 !important;
   border-radius: 35px 35px 0 0;
   display: flex;
-  flex-direction: column; /* 헤더 고정, 바디 스크롤 구조 */
-  overflow: hidden !important; /* 내부 바디만 스크롤하기 위해 전체는 숨김 */
+  flex-direction: column;
+  overflow: hidden !important;
+  position: relative;
   transform: translateY(100%);
   transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+body.dark-mode .modal {
+    background-color: #1c1c1d !important;
 }
 
 #modalBody {
@@ -579,7 +608,7 @@ body.dark-mode #statsContent {
   justify-content: center;
   z-index: 2000;
   touch-action: none;
-  background-color: rgba(0, 0, 0, 0.007);
+  background-color: rgba(0, 0, 0, 0.002) !important;
   visibility: hidden;
   pointer-events: none;
   transition: visibility 0.4s;
@@ -590,7 +619,8 @@ body.dark-mode #statsContent {
   visibility: visible;
   touch-action: none !important;
   pointer-events: auto;
-  transition: none;
+  background-color: rgba(0, 0, 0, 0.002) !important;
+  transition: background-color 0.4s;
 }
 
 .modal-overlay.active .modal,
@@ -602,13 +632,13 @@ body.dark-mode #statsContent {
 }
 
 .modal-header h3 {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  margin: 0;
   font-size: 15px;
-  font-weight: 700;
-  pointer-events: none;
+  font-weight: 600;
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin: 0 !important;
+  white-space: nowrap;
 }
 
 .yearly-modal .modal-header h3 {
@@ -636,7 +666,7 @@ body.dark-mode #statsContent {
 
 /* 개별 달: 가로선 구현 */
 .mini-month-container {
-    padding: 20px 8px 18px 4px !important;
+    padding: 0px 8px 15px 4px !important;
     border-bottom: 1px solid var(--calendar-line) !important;
     box-sizing: border-box !important;
 }
@@ -1083,6 +1113,7 @@ body.dark-mode .input-label {
   border: none;
   outline: none;
   font-size: 15px;
+  margin-left: -6px;
   color: var(--text-color);
 }
 
@@ -1480,7 +1511,7 @@ body.dark-mode .calc-input-box {
   display: block !important;
   width: 100%;
   height: auto;
-  min-height: calc(100vh - 50px) !important;
+  min-height: calc(100svh - 50px) !important;
   padding: 10px 0 100px 0 !important;
   overflow-y: visible;
   box-sizing: border-box;
@@ -1588,10 +1619,10 @@ body.dark-mode .extend-btn {
 /* 플로팅 버튼 디자인 */
 .fab-today-btn, .fab-add-btn {
   position: fixed;
-  bottom: 20px;
+  bottom: 21px;
   width: auto;
   height: auto;
-  padding: 9px 13px;
+  padding: 10px 13px;
   border-radius: 20px;
   border: none;
   background-color: rgba(243, 243, 243, 0.788);
@@ -1640,8 +1671,15 @@ body.dark-mode .extend-btn {
 }
 
 .fab-add-btn {
-  padding: 18px 26px;
+  padding: 20px 26px;
 }
+
+.fab-today-btn span {
+  display: block;
+  will-change: transform; 
+  pointer-events: none;
+}
+
 
 /* 하단 백업/복원 링크 */
 .footer-backup-area {
@@ -1785,50 +1823,46 @@ body.dark-mode .onboarding-header h1 { color: white; }
   -webkit-tap-highlight-color: transparent; /* 터치 시 생기는 하이라이트 제거 */
 }
 
-.modal, .taken-modal, .stats-modal, .yearly-modal {
-    background-color: transparent !important; 
-    border: none !important;
-}
-
 .modal-header, .yearly-modal .modal-header {
-    position: sticky !important;
-    top: 0 !important;
-    width: 100%;
-    padding: 15px 17px;
-    z-index: 3000 !important;
-    height: 60px !important;
-    box-sizing: border-box;
-    
-    background-color: transparent !important; 
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    
-    display: flex !important;
-    align-items: center !important;
-    border: none !important;
-    justify-content: space-between;
+  position: absolute !important; 
+  top: 0 !important;
+  left: 0 !important;
+  width: 100%;
+  height: 60px !important;
+  z-index: 3001 !important;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  
+  background-color: transparent !important; 
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 17px !important;
+  box-sizing: border-box !important;
 }
 
-#modalBody, #monthlyCostContent, #takenCheckBody, .yearly-grid {
-    margin-top: -82px !important; 
-    padding-top: 80px !important; 
-    flex: 1 !important;
-    background-color: #f8f8f8 !important;
-    border-radius: 35px 35px 0 0 !important;
-    
-    min-height: 100% !important; 
-    box-sizing: border-box !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
+#modalBody, #monthlyCostContent, #takenCheckBody, .yearly-grid, #calcTabContent {
+  margin-top: 0 !important;
+  padding-top: 60px !important; 
+  flex: 1 !important;
+  background-color: transparent !important; 
+  
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
 }
 
 body.dark-mode #modalBody, 
 body.dark-mode #monthlyCostContent, 
 body.dark-mode #takenCheckBody,
 body.dark-mode .yearly-grid,
-body.dark-mode .backup-menu-modal {
+body.dark-mode .backup-menu-modal,
+body.dark-mode #calcTabContent {
     background-color: #1c1c1d !important;
-    border-radius: 35px 35px 0 0 !important;
 }
 
 #statsModal .stats-modal, .backup-menu-modal {
@@ -1845,48 +1879,22 @@ body.dark-mode #statsModal .stats-modal {
 .cost-header .tab-container {
     position: absolute !important;
     left: 50% !important;
-    margin-left: -45px !important; 
-    transform: none !important; 
+    transform: translateX(-50%) !important;
     top: 10px;
     display: flex;
-    width: 85px;
-    height: 25px;
+    width: 98px;
+    height: 36px;
     background-color: #c5c5c526;
     border-radius: 50px;
-    padding: 6px;
+    padding: 2px;
     z-index: 2000;
     overflow: visible !important;
-}
-
-#monthlyCostContent, #calcTabContent {
-    margin-top: -70px !important;
-    padding-top: 80px !important;
-    flex: 1 !important;
-    background-color: #f8f8f8 !important;
-    border-radius: 35px 35px 0 0 !important;
-    min-height: 100% !important;
-    box-sizing: border-box !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    display: none;
-    flex-direction: column;
-}
-
-body.dark-mode #monthlyCostContent, 
-body.dark-mode #calcTabContent {
-    background-color: #1c1c1d !important;
-}
-
-#calcTabContent {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 40px !important;
 }
 
 .stats-modal {
     display: flex;
     flex-direction: column;
-    height: 90vh;
+    height: 90svh;
     overflow: hidden;
 }
 
@@ -1949,14 +1957,14 @@ body.dark-mode .tab-container::before {
 
 .tab-slider {
   position: absolute;
-  top: 2px;
-  left: 2px;
-  width: calc(50% - 2px);
-  height: calc(100% - 4px);
+  top: 3px;
+  left: 3px;
+  width: calc(50% - 3px);
+  height: calc(100% - 6px);
   background-color: #05d339;
   border-radius: 50px;
   z-index: 1;
-  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateX(0);
 }
 
@@ -1967,23 +1975,25 @@ body.dark-mode .tab-slider {
 .tab-btn {
   position: relative;
   flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
-  background: none !important;
-  font-size: 15px;
+  background: transparent !important;
+  font-size: 14px;
   font-weight: normal;
   color: var(--text-color);
-  z-index: 10;
+  z-index: 2;
   cursor: pointer;
-  outline: none;
-  -webkit-tap-highlight-color: transparent;
 }
 
 /* 기간 설정 레이아웃 */
 .period-select-container {
-  padding: 20px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
 }
 
 .period-input-group {
@@ -2077,10 +2087,8 @@ body.dark-mode .period-input-group {
 }
 
 #statsFilters {
-  margin-top: -70px !important;
-  padding-top: 80px !important;
+  padding-top: 50px !important;
   background-color: transparent;
-  padding-top: 10px;
 }
 
 .family-buttons {
@@ -2090,8 +2098,7 @@ body.dark-mode .period-input-group {
   background-color: transparent;
   position: sticky;
   z-index: 1001;
-  margin-top: 0px;
-  margin-bottom: 0px;
+
 }
 
 .family-btn {
@@ -2214,7 +2221,7 @@ body.dark-mode .action-sheet-container::before {
     font-size: 15px;
     font-weight: normal;
     text-align: left;
-    margin: 1px 50px 10px 10px;
+    margin: 3px 50px 13px 10px;
     line-height: 1.4;
 }
 
