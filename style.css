@@ -628,7 +628,7 @@ body.dark-mode #statsContent {
 
 .modal-header h3 {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: normal;
   position: absolute !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
@@ -662,7 +662,7 @@ body.dark-mode #statsContent {
 .yearly-grid::before {
     content: "";
     grid-column: 1 / span 3 !important; 
-    height: 15px !important;
+    height: 12px !important;
     display: block !important;
 }
 
@@ -736,7 +736,7 @@ body.dark-mode #statsContent {
     background-color: rgba(128, 128, 128, 0.3);
     border-radius: 10px;
 }
-
+/*------------------------------------영양제 정보 모달 시작-------------------------------*/
 /* 기본 초기화 및 모달 입력창 스타일 */
 .modal input, .modal select {
   -webkit-appearance: none;
@@ -885,15 +885,20 @@ body.dark-mode .memo-line-style { color: #9E9EA4; }
 
 /* 오른쪽 단위 텍스트 */
 .unit-text, .unit-select-inside, .unit-placeholder {
-  color: #76767a;
+  color: #76767a !important;
   font-size: 15px;
+  font-weight: normal;
   text-align: left;
   flex-shrink: 0;
   background: transparent;
   min-width: 31px;
 }
 
-body.dark-mode .unit-text, .unit-select-inside, .unit-placeholder { color: #9E9EA4; }
+body.dark-mode .unit-text, 
+body.dark-mode .unit-select-inside, 
+body.dark-mode .unit-placeholder { 
+  color: #9E9EA4 !important; 
+}
 
 /* 단위 선택기(Select) 아이폰 전용 여백 제거 */
 select.unit-select-inside {
@@ -901,7 +906,7 @@ select.unit-select-inside {
   margin: 0;
   appearance: none;
   -webkit-appearance: none;
-  background-color: transparent;
+  outline: none;
   border: none;
   padding-right: 15px;
   margin-right: -10px;
@@ -918,8 +923,7 @@ select.unit-select-inside {
   justify-content: flex-end;
   flex: 1;
 }
-
-/* 아코디언 애니메이션 핵심 */
+/*---------------------------------대상 및 시간 아코디언 시작----------------------------*/
 .accordion-section {
   width: 100%;
 }
@@ -931,8 +935,8 @@ select.unit-select-inside {
 .accordion-content {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-              border-top 0.4s ease;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-top 0.3s ease;
   overflow: hidden;
   border-top: 0.8px solid transparent;
 }
@@ -948,6 +952,7 @@ select.unit-select-inside {
 
 .selected-text {
   font-size: 15px;
+  font-weight: normal;
   opacity: 1;
   transition: opacity 0.3s ease-in-out;
   color: #76767a;
@@ -978,7 +983,7 @@ body.dark-mode .selected-text { color: #9E9EA4; }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-size: contain;
   background-repeat: no-repeat;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .accordion-section.active .dropdown-icon::after {
@@ -1005,6 +1010,7 @@ body.dark-mode .selected-text { color: #9E9EA4; }
 
 .checkbox-label-text {
   font-size: 15px;
+  font-weight: normal;
   flex: 1;
   height: 100%;
   display: flex;
@@ -1070,7 +1076,7 @@ input[type="checkbox"]::before {
 input[type="checkbox"]:checked::before {
   transform: scale(1);
 }
-
+/*---------------------------------메모 입력란 시작----------------------------*/
 .memo-paper-group.checkbox-group {
   margin-top: 25px;
 }
@@ -1096,7 +1102,7 @@ body.dark-mode .memo-paper-group {
 
 .input-label {
   font-size: 15px;
-  font-weight: bold;
+  font-weight: normal;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1118,8 +1124,9 @@ body.dark-mode .input-label {
   border: none;
   outline: none;
   font-size: 15px;
+  font-weight: normal;
   text-align: left;
-  margin-left: -6px;
+  margin-left: -4px;
   color: var(--text-color);
 }
 
@@ -1128,7 +1135,7 @@ body.dark-mode .input-label {
   background-color: var(--calendar-line);
   border: none;
 }
-
+/*---------------------------------삭제 버튼 시작----------------------------*/
 /* 버튼을 하단 중앙에 배치하는 컨테이너 */
 .delete-btn-container {
   display: flex;
@@ -1137,7 +1144,6 @@ body.dark-mode .input-label {
   width: 100%;
 }
 
-/* 삭제 버튼 */
 .delete-glass-btn {
   position: relative;
   padding: 12px 13px;
@@ -1191,13 +1197,13 @@ body.dark-mode .delete-glass-btn::before {
     rgba(255, 255, 255, 0.3) 360deg
   );
 }
-
+/*---------------------------------저장 버튼 시작----------------------------*/
 /* 저장(체크) 버튼 */
 .check-btn {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: #EB504B;
+  background-color: #ff504a;
   border: none;
   cursor: pointer;
   position: relative;
@@ -1209,31 +1215,26 @@ body.dark-mode .delete-glass-btn::before {
   z-index: 0;
 }
 
-/* 둥근 모서리 체크(V) 아이콘 그리기 */
+/* 둥근 모서리 체크(V) 아이콘 */
 .check-btn::before {
   content: "";
   position: absolute;
-  top: 45%; 
+  width: 22px; 
+  height: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fccacc' stroke-width='4.0' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 5 10 19 4 13'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  top: 50%;
   left: 50%;
-  width: 13px;
-  height: 8px;
-  border-left: 4px solid;
-  border-bottom: 4px solid;
-  transform: translate(-50%, -50%) rotate(-50deg);
-  border-radius: 2px;
+  transform: translate(-50%, -50%);
   z-index: 1;
 }
 
-body:not(.dark-mode) .check-btn::before {
-  border-color: #F7D0D2;
-  filter: brightness(1.1);
-}
-
+body:not(.dark-mode) .check-btn::before,
 body.dark-mode .check-btn::before {
-  border-color: #F7D0D2;
   filter: brightness(1.1);
 }
-
 /*---------------------------------닫기 버튼 시작----------------------------*/
 .close-btn.right {
   position: relative;
@@ -1303,8 +1304,8 @@ body.dark-mode .close-btn::before {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 19px;
-  height: 3px;
+  width: 19.5px;
+  height: 3.2px;
   background-color: var(--text-color);
   border-radius: 10px;
   z-index: 2;
@@ -1318,15 +1319,16 @@ body.dark-mode .close-btn::before {
 .close-btn span {
   transform: translate(-50%, -50%) rotate(-45deg);
 }
-/*---------------------------------닫기 버튼 끝----------------------------------*/
-/*--------------------------월별 비용 모달_비용 탭 시작----------------------------*/
+/*------------------------------------영양제 정보 모달 끝---------------------------------*/
+/*--------------------------------월별 비용 모달_비용 탭 시작------------------------------*/
 #monthlyCostContent {
   display: flex;
   flex-direction: column;
   padding: 0px 20px 40px 20px !important;
 }
 
-#monthlyCostContent::before {
+#monthlyCostContent::before,
+#calcTabContent::before {
     content: "";
     display: block !important;
     min-height: 10px !important;
@@ -1338,7 +1340,8 @@ body.dark-mode .close-btn::before {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-bottom: 15px;
+  margin-top: 5px;
+  margin-bottom: 18px;
 }
 
 .cost-item-header {
@@ -1358,7 +1361,7 @@ body.dark-mode .cost-item-header span:last-child { color: #9E9EA4;}
 .cost-bar-bg {
   width: 100%;
   height: 1px;
-  background: rgb(226, 226, 226);
+  background: #ffffff;
   border-radius: 6px;
   overflow: hidden;
 }
@@ -1370,19 +1373,19 @@ body.dark-mode .cost-item-header span:last-child { color: #9E9EA4;}
 
 /* 상자 밖 왼쪽 위 타이틀 */
 .summary-box-outside-title {
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 15px;
+    font-weight: normal;
     margin-left: 15px;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     color: var(--text-color);
 }
 
 /* 요약 상자 컨테이너 */
 .cost-summary-box {
-    background-color: #f3f0f0;
-    border-radius: 30px;
-    padding: 20px 18px;
-    margin-bottom: 25px;
+    background-color: #c0c0c033;
+    border-radius: 22px;
+    padding: 10px 13px;
+    margin-bottom: 15px;
 }
 
 body.dark-mode .cost-summary-box {
@@ -1394,25 +1397,32 @@ body.dark-mode .cost-summary-box {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 5px;
+    padding: 0px;
+    margin-bottom: 5px;
 }
 
 .total-cost-label {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: normal;
   color: var(--text-color);
-  opacity: 0.6;
 }
 
 .total-cost-amount {
-  font-size: 20px;
+  font-size: 15px;
   font-weight: normal;
-  color: var(--text-color);
+  color: #76767a;
 }
 
-/* 숫자 입력란 정렬 최적화 */
-input[type="number"], .total-cost-amount, .stats-count-text {
-  font-variant-numeric: tabular-nums;
+body.dark-mode .total-cost-amount { color: #9E9EA4; }
+
+/* 요약 상자 아래 안내 텍스트 */
+.cost-notice-text {
+    font-size: 12px;
+    color: #8E8E93;
+    line-height: 1.3;          /* 줄 간격 */
+    margin: -8px 15px 20px;    /* 상자 바로 아래 붙도록 상단 마진은 음수 혹은 작게 조절 */
+    font-weight: normal;
+    word-break: keep-all;      /* 한글 단어 단위 끊김 방지 */
 }
 
 .family-cost-container {
@@ -1443,8 +1453,7 @@ body.dark-mode .family-cost-card {
 
 .family-cost-name {
     font-size: 14px;
-    font-weight: 600;
-    opacity: 0.5;
+    font-weight: normal;
     color: var(--text-color);
     font-variant-numeric: tabular-nums;
     text-align: left;
@@ -1453,30 +1462,72 @@ body.dark-mode .family-cost-card {
 .family-cost-amount {
     font-size: 14px;
     font-weight: normal;
-    color: var(--text-color);
+    color: #76767a;
     font-variant-numeric: tabular-nums;
 }
+
+body.dark-mode .family-cost-amount { color: #9E9EA4; }
 /*--------------------------월별 비용 모달_계산 탭 시작----------------------------*/
-/* 제품 리스트 아이템 */
-.calc-list-item {
+#calcTabContent {
+    display: none;
+    flex-direction: column;
+    padding: 0 20px 40px 20px !important;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.calc-inner-wrapper {
+    display: flex; 
+    flex-direction: column; 
+    width: 100%;
+    margin-top: -10px;
+}
+
+/* 제품 목록을 감싸는 전체 큰 상자 */
+.calc-list-container {
+    background-color: #c0c0c033;
+    border-radius: 22px;
+    padding: 0px;
+    margin-bottom: 0px;
+    overflow: hidden;
+}
+
+body.dark-mode .calc-list-container {
+    background-color: #2c2c2e !important;
+}
+
+/* 각 제품 행 */
+.calc-row {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
-    padding: 10px;
-    border-radius: 50px;
-    background: #c0c0c033;
+    padding: 10px 12px;
+    cursor: pointer;
+    position: relative;
+}
+
+/* 클릭 효과 */
+.calc-row:active { background-color: rgba(0, 0, 0, 0.158); }
+body.dark-mode .calc-row:active { background-color: rgba(255, 255, 255, 0.158); }
+
+/* 구분선: 체크박스 너비를 건너뛰고 텍스트부터 시작 */
+.calc-row:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 45px; /* 체크박스(약 20px) + 간격 고려하여 조절 */
+    right: 11px;
+    height: 1px;
+    background-color: rgba(128, 128, 128, 0.2);
 }
 
 /* 입력 박스 (실제 결제 금액 입력 구간) */
 .calc-input-box {
-    margin-top: 25px;
-    padding: 15px;
-    border-radius: 22px;
+    margin-top: 0px;
+    padding: 12px;
+    border-radius: 50px;
     background: #c0c0c033;
 }
 
-body.dark-mode .calc-list-item,
 body.dark-mode .calc-input-box {
     background-color: #2c2c2e !important;
 }
@@ -1484,39 +1535,59 @@ body.dark-mode .calc-input-box {
 /* --- 텍스트 및 상세 요소 --- */
 .calc-main-title {
     margin-bottom: 10px;
-    margin-left: 10px;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.calc-product-name {
+    margin-left: 15px;
     font-size: 15px;
-}
-
-.calc-product-price {
-    font-size: 14px;
     font-weight: normal;
 }
 
-.selected-sum-display {
-    text-align: center;
-    font-size: 12px;
-    opacity: 0.5;
-    margin-top: 10px;
+.calc-product-name {
+    flex: 1;
+    font-size: 15px;
+    font-weight: normal;
+    color: var(--text-color);
 }
 
-.calc-input-label {
-    font-size: 13px;
-    opacity: 0.6;
-    display: block;
-    margin-bottom: 8px;
+.calc-product-price {
+    font-size: 15px;
+    font-weight: normal;
+    color: #76767a;
+    font-variant-numeric: tabular-nums;
+}
+
+body.dark-mode .calc-product-price { color: #9E9EA4; }
+
+.selected-sum-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 48px;
+    font-size: 15px;
+    color: var(--text-color);
+    font-weight: normal;
+}
+
+.selected-sum-amount {
+    color: #76767a;
+    margin-right: -35px;
+    font-variant-numeric: tabular-nums;
+}
+
+body.dark-mode .selected-sum-amount { color: #9E9EA4; }
+
+/* 상자 아래 안내 텍스트 */
+.calc-notice-text {
+    font-size: 12px;
+    color: #8e8e93;
+    margin: 5px 10px 20px;
+    line-height: 1.3;
+    word-break: keep-all;
 }
 
 .actual-paid-input {
     width: 100%;
     border: none;
     background: transparent;
-    font-size: 18px;
+    font-size: 15px;
     font-weight: normal;
     color: var(--text-color);
     outline: none;
@@ -1524,7 +1595,7 @@ body.dark-mode .calc-input-box {
 
 .calc-status-msg {
     margin-top: 10px;
-    font-size: 13px;
+    font-size: 12px;
     text-align: center;
     color: #05d339;
     font-weight: 600;
@@ -1841,6 +1912,7 @@ body.dark-mode .onboarding-container {
   padding-right: 15px;
   padding-left: 50px; /* 이모지 너비만큼 들여쓰기 */
   margin-bottom: 0;
+  word-break: keep-all;
 }
 
 .onboarding-bottom {
@@ -1859,6 +1931,16 @@ body.dark-mode .onboarding-container {
   color: #98989E;
   padding-left: 4px;  /* 입력창 글자와 수직 정렬을 맞추기 위한 미세 조정 */
   text-transform: uppercase; /* 영문일 경우 세련되게 대문자로 표시 */
+  word-break: keep-all;
+}
+
+/* 하단 안내문 */
+.onboarding-notice p {
+  font-size: 12px;
+  color: #8E8E93;
+  line-height: 1.3;
+  word-break: keep-all;
+  margin-bottom: 24px;
 }
 
 /* 입력창 */
@@ -1897,13 +1979,6 @@ body.dark-mode .onboarding-container {
   font-size: 17px;
   font-weight: 600;
   cursor: pointer;
-}
-
-/* 하단 안내문 */
-.onboarding-notice p {
-  font-size: 11px;
-  color: #8E8E93;
-  margin-bottom: 24px;
 }
 /*--------------------------------------온보딩 끝--------------------------------------*/
 #footerBackupLink, #footerVersion {

@@ -1,4 +1,4 @@
-const APP_VERSION = "3.15a";
+const APP_VERSION = "3.15w";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -248,15 +248,13 @@ themeToggleBtn.addEventListener("click", () => {
 monthlyCostBtn.addEventListener("click", () => {
     const year = dt.getFullYear();
     const month = dt.getMonth() + 1;
-
-    // 탭 초기화 함수 호출 (기존 함수 유지)
+    
     initCostModalTabs();
 
     let totalCost = 0;
     const monthlyItems = [];
     const familyCosts = {};
 
-    // 1. 데이터 계산 로직
     supplements.forEach(sup => {
         const supInputDate = sup.schedule?.[0] ?? "";
         const [y, m] = supInputDate.split("-").map(x => parseInt(x));
@@ -285,7 +283,6 @@ monthlyCostBtn.addEventListener("click", () => {
         }
     });
 
-    // 2. 제품별 목록 HTML 생성
     let itemsHtml = "";
     if (monthlyItems.length > 0) {
         monthlyItems.forEach(item => {
@@ -294,7 +291,7 @@ monthlyCostBtn.addEventListener("click", () => {
                 <div class="cost-item">
                     <div class="cost-item-header">
                         <span>${item.name}</span>
-                        <span>${item.cost.toLocaleString()}원</span>
+                        <span>${item.cost.toLocaleString()} 원</span>
                     </div>
                     <div class="cost-bar-bg">
                         <div class="cost-bar-fill" style="width: ${ratio}%; background-color: ${item.color};"></div>
@@ -304,7 +301,6 @@ monthlyCostBtn.addEventListener("click", () => {
         });
     }
 
-    // 3. 상자 외부 타이틀 및 내부 요약 상자 조립
     let costContentHtml = "";
     if (totalCost > 0) {
         costContentHtml = `
@@ -317,10 +313,14 @@ monthlyCostBtn.addEventListener("click", () => {
                 </div>
                 <div class="summary-box-divider"></div>
                 <div class="total-cost-row">
-                    <span class="total-cost-label">총 비용</span>
-                    <span class="total-cost-amount">₩ ${Math.round(totalCost).toLocaleString()}</span>
+                    <span class="total-cost-label">총 합계</span>
+                    <span class="total-cost-amount">${Math.round(totalCost).toLocaleString()} 원</span>
                 </div>
             </div>
+
+            <p class="cost-notice-text">
+            이번 달 구매한 영양제의 한 달 치 비용입니다. 각 구성원에 할당된 비용은 아래에 표시됩니다.
+            </p>
         `;
     } else {
         costContentHtml = `
@@ -330,7 +330,6 @@ monthlyCostBtn.addEventListener("click", () => {
         `;
     }
 
-    // 4. 가족별 카드 생성 (상자 외부에 배치)
     let familySummaryHtml = "";
     const names = Object.keys(familyCosts);
     if (names.length > 0) {
@@ -346,13 +345,11 @@ monthlyCostBtn.addEventListener("click", () => {
         familySummaryHtml += `</div>`;
     }
 
-    // 5. 최종 렌더링
     document.getElementById("monthlyCostContent").innerHTML = `
         ${costContentHtml}
         ${familySummaryHtml}
     `;
 
-    // 모달 표시 (기존 클래스/함수 유지)
     monthlyCostModal.classList.add("active");
     document.body.classList.add("modal-open");
 });
@@ -1005,18 +1002,13 @@ function showStatsForFamily(name) {
   const stats = {};
 
   supplements.forEach(sup => {
-    // 1. 해당 가족 구성원이 포함되어 있는지 확인
     if (!sup.family || !sup.family.includes(name)) return;
-
-    // 2. 선택한 기간 내에 이 영양제의 스케줄이 하루라도 있는지 확인 (핵심 필터)
     const hasScheduleInPeriod = sup.schedule.some(date => date >= startStr && date <= endStr);
-    if (!hasScheduleInPeriod) return; // 기간 내 스케줄 없으면 아예 건너뜀
+    if (!hasScheduleInPeriod) return;
 
     const initialTotal = parseFloat(sup.totalCapsules) || 0;
     if (initialTotal <= 0) return;
 
-    // 해당 기간 동안 이 사람이 먹어야 했던 총 횟수 계산 (목표치)
-    // 전체 기간 대비가 아니라, '선택한 기간' 내의 스케줄 개수 기준
     const periodScheduleCount = sup.schedule.filter(date => date >= startStr && date <= endStr).length;
     const targetForPeriod = periodScheduleCount * (sup.times.length); 
 
@@ -1026,7 +1018,6 @@ function showStatsForFamily(name) {
         if (dateStr >= startStr && dateStr <= endStr) {
           const dayStatus = sup.takenStatus[dateStr];
           for (const key in dayStatus) {
-            // 해당 구성원(name)의 체크 여부 확인
             if (key.includes(`_${name}`) && dayStatus[key] === true && !key.includes("_extended")) {
               actualTakenCount++;
             }
@@ -1061,7 +1052,7 @@ function showStatsForFamily(name) {
           </div>
           <div class="stats-info">
             <span class="stats-product-name">${key}</span>
-            <span class="stats-count-text">${info.taken} / ${info.target}회 복용</span>
+            <span class="stats-count-text">${info.taken} / ${info.target}회</span>
           </div>
         </div>`;
     });
@@ -1182,7 +1173,6 @@ function switchStatsTab(tab) {
     const btns = document.querySelectorAll('#statsTabContainer .tab-btn');
     const slider = document.querySelector('#statsTabContainer .tab-slider');
 
-    // 1. 초기화: 모든 내용을 비우고 탭 설정
     statsContent.innerHTML = ""; 
 
     if (tab === 'stats') {
@@ -1193,7 +1183,6 @@ function switchStatsTab(tab) {
         familyWrapper.style.display = 'flex';
         periodWrapper.style.display = 'flex';
         
-        // 이전에 선택된 가족이 있다면 바로 통계 표시
         const selectedBtn = familyWrapper.querySelector('.family-btn.selected');
         if (selectedBtn) {
             showStatsForFamily(selectedBtn.dataset.name);
@@ -1208,11 +1197,10 @@ function switchStatsTab(tab) {
         familyWrapper.style.display = 'none';
         periodWrapper.style.display = 'none';
         
-        renderAnalysisTab(); // 분석 데이터 렌더링
+        renderAnalysisTab();
     }
 }
 
-// 기간 선택 시 실시간 업데이트 (이벤트 리스너에 추가 필요)
 [periodStart, periodEnd].forEach(el => {
     el.addEventListener('change', () => {
         const selectedBtn = document.querySelector('.family-btn.selected');
@@ -1222,20 +1210,17 @@ function switchStatsTab(tab) {
     });
 });
 
-// 분석 탭 렌더링 (실제 데이터 계산)
 function renderAnalysisTab() {
   const statsContent = document.getElementById('statsContent');
   
-  // 1. 데이터 분석용 변수 초기화
   let totalChecks = 0;
   let timeStats = { "아침": 0, "점심": 0, "저녁": 0, "공복": 0 };
-  let dayStats = [0, 0, 0, 0, 0, 0, 0]; // 일~토
+  let dayStats = [0, 0, 0, 0, 0, 0, 0];
   const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
   
   let bestProduct = { name: "기록 없음", rate: 0 };
   let refillList = [];
 
-  // 2. 전체 영양제 순회 분석
   supplements.forEach(sup => {
     let supTotal = 0;
     let supTaken = 0;
@@ -1247,7 +1232,6 @@ function renderAnalysisTab() {
         const dayIdx = dateObj.getDay();
 
         Object.keys(dayData).forEach(key => {
-          // 순수 복용 체크(true)만 집계 (연장 데이터 제외)
           if (dayData[key] === true && !key.includes("_extended")) {
             totalChecks++;
             supTaken++;
@@ -1262,7 +1246,6 @@ function renderAnalysisTab() {
       });
     }
 
-    // 복용 성실도 계산 (스케줄 대비 실제 복용량)
     const scheduleCount = sup.schedule ? sup.schedule.length : 0;
     const targetCount = scheduleCount * sup.family.length * sup.times.length;
     let rate = targetCount > 0 ? (supTaken / targetCount) * 100 : 0;
@@ -1271,10 +1254,8 @@ function renderAnalysisTab() {
       bestProduct = { name: sup.productName, rate: Math.round(rate) };
     }
 
-    // 재구매 알림 계산 (남은 알약 수 기반)
     const dailyDose = parseFloat(sup.dose) || 0; 
     const totalProvision = parseFloat(sup.totalCapsules) || 0;
-    // 실제 소모량 = (체크된 총 횟수 * 1회 분량) / (가족 수 * 시간대 수) 로직 보정
     const consumedAmount = (supTaken * (dailyDose / sup.times.length));
     const remains = totalProvision - consumedAmount;
     const daysLeft = dailyDose > 0 ? Math.floor(remains / dailyDose) : 999;
@@ -1284,12 +1265,10 @@ function renderAnalysisTab() {
     }
   });
 
-  // 요일 및 시간대 최댓값 추출
   const bestDayIdx = dayStats.indexOf(Math.max(...dayStats));
   const bestDayName = totalChecks > 0 ? dayNames[bestDayIdx] : "-";
   const bestTime = Object.keys(timeStats).reduce((a, b) => timeStats[a] > timeStats[b] ? a : b);
 
-  // 3. UI 렌더링
   statsContent.innerHTML = `
     <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px; padding-bottom:100px;">
       
@@ -1329,10 +1308,10 @@ function renderAnalysisTab() {
           ${refillList.length > 0 
             ? refillList.map(item => `
                 <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,77,77,0.05); padding:10px; border-radius:12px; border:1px solid rgba(255,77,77,0.1);">
-                  <span style="font-size:13px; font-weight:500;">⚠️ ${item.name}</span>
+                  <span style="font-size:13px; font-weight:500;">${item.name}</span>
                   <span style="font-size:12px; color:#ff4d4d; font-weight:bold;">약 ${item.days}일분 남음</span>
                 </div>`).join('')
-            : `<p style="font-size:13px; margin:5px 0; text-align:center; opacity:0.5;">✅ 모든 영양제가 넉넉합니다.</p>`}
+            : `<p style="font-size:13px; margin:5px 0; text-align:center; opacity:0.5;">모든 영양제가 넉넉합니다.</p>`}
         </div>
       </div>
 
@@ -1988,11 +1967,8 @@ function switchCostTab(tab) {
         renderCalcTab(); 
     }
 }
-
+/*-----------------------------------비용 모달 계산 탭 시작--------------------------------*/
 function updateCalcSum() {
-    if (event && event.target && event.target.classList.contains('calc-check')) {
-        const target = event.target;
-    }
     const checkboxes = document.querySelectorAll('.calc-check');
     let newSum = 0;
     
@@ -2002,9 +1978,9 @@ function updateCalcSum() {
         }
     });
     
-    const sumDisplay = document.getElementById('selectedSumDisplay');
-    if (sumDisplay) {
-        sumDisplay.innerText = `선택 제품 합계: ${newSum.toLocaleString()}원`;
+    const sumAmountDisplay = document.querySelector('.selected-sum-amount');
+    if (sumAmountDisplay) {
+        sumAmountDisplay.innerText = `${newSum.toLocaleString()}원`;
     }
 }
 
@@ -2021,7 +1997,7 @@ function renderCalcTab() {
 
     if (thisMonthSups.length === 0) {
         calcDiv.innerHTML = `
-            <div style="flex:1; display:flex; align-items:center; justify-content:center;">
+            <div style="flex:1; display:flex; align-items:center; justify-content:center; padding-top:50px;">
                 <p style="opacity:0.6;">이번 달 등록된 제품이 없습니다.</p>
             </div>`;
         return;
@@ -2030,40 +2006,52 @@ function renderCalcTab() {
     let totalOriginal = 0;
     let listHtml = `<h4 class="calc-main-title">${month}월 구매가</h4>`;
     
+    // 제품들을 감싸는 큰 상자 시작
+    listHtml += `<div class="calc-list-container">`;
+
     thisMonthSups.forEach(sup => {
         const price = (sup.price || 0);
         totalOriginal += price;
+        // onclick="toggleCalcRow(this)" 추가로 행 전체 클릭 지원
         listHtml += `
-            <div class="calc-list-item">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <input type="checkbox" class="calc-check" 
-                           data-id="${sup.id}" 
-                           data-price="${price}" 
-                           onchange="updateCalcSum()" 
-                           checked>
-                    <span class="calc-product-name">${sup.productName}</span>
-                </div>
+            <div class="calc-row" onclick="toggleCalcRow(this)">
+                <input type="checkbox" class="calc-check" 
+                       data-id="${sup.id}" 
+                       data-price="${price}" 
+                       onchange="updateCalcSum(); event.stopPropagation();" 
+                       onclick="event.stopPropagation();"
+                       checked>
+                <span class="calc-product-name" style="margin-left:12px;">${sup.productName}</span>
                 <span class="calc-product-price">${price.toLocaleString()}원</span>
             </div>
         `;
     });
 
-    listHtml += `<div id="selectedSumDisplay" class="selected-sum-display">선택 제품 합계: ${totalOriginal.toLocaleString()}원</div>`;
+    // 상자 내부 마지막에 합계 표시
+    listHtml += `
+        <div id="selectedSumDisplay" class="selected-sum-display">
+            <span>총 합계</span>
+            <span class="selected-sum-amount">${totalOriginal.toLocaleString()}원</span>
+        </div>
+    </div>`; // 큰 상자 끝
 
+    // 상자 아래 안내 텍스트
+    listHtml += `<p class="calc-notice-text">영양제를 구매할 때 할인을 받았다면 각 제품의 가격을 할인된 가격으로 수정할 수 있습니다.</p>`;
+
+    // calcDiv.innerHTML 부분 (여백은 CSS에서 처리하므로 깔끔하게 유지)
     calcDiv.innerHTML = `
-        <div class="calc-inner-wrapper" style="display:flex; flex-direction:column; width:100%;">
+        <div class="calc-inner-wrapper">
             ${listHtml}
             
             <div class="calc-input-box">
-                <label class="calc-input-label">실제 총 결제 금액</label>
                 <div style="display:flex; align-items:center; gap:5px;">
-                    <span style="font-size:18px;">₩</span>
+                    <span style="font-size:15px; color:defualt;">₩</span>
                     <input type="number" id="actualPaidInput" class="actual-paid-input" 
-                           placeholder="할인 적용된 금액 입력" inputmode="numeric">
+                           placeholder="할인 적용된 실 결제 금액 입력" inputmode="numeric">
                 </div>
             </div>
 
-            <div class="delete-btn-container">
+            <div class="delete-btn-container" style="margin-top: 20px;">
                 <button onclick="processDiscount()" class="delete-glass-btn">
                     할인율 적용
                 </button>
@@ -2075,6 +2063,13 @@ function renderCalcTab() {
     applyIOSButtonEffect();
 }
 
+// 행 전체 클릭 시 체크박스 토글 함수
+function toggleCalcRow(rowEl) {
+    const checkbox = rowEl.querySelector('.calc-check');
+    checkbox.checked = !checkbox.checked;
+    updateCalcSum();
+}
+/*-----------------------------------비용 모달 계산 탭 끝--------------------------------*/
 async function processDiscount() {
     const actualPaid = parseInt(document.getElementById('actualPaidInput').value);
     if (!actualPaid || actualPaid <= 0) return alert("금액을 입력하세요.");
