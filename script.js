@@ -1,4 +1,4 @@
-const APP_VERSION = "3.15w";
+const APP_VERSION = "3.15e";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -832,7 +832,7 @@ function openTakenCheckUI(date) {
         }
 
         let confirmMsg = `📍 ${formattedDate}\n\n` +
-          `미복용 체크 슬롯: ${leftUnTakenSlots}개\n` +
+          `미섭취 체크 슬롯: ${leftUnTakenSlots}개\n` +
           `예상 추가 일정: ${additionalDays}일\n\n` +
           `이대로 연장할까요?`;
 
@@ -928,7 +928,7 @@ function openTakenCheckUI(date) {
   document.body.classList.add("modal-open");
 }
 
-// 복용체크모달 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
+// 섭취체크모달 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
 document.getElementById("closeTakenCheckBtn").addEventListener("click", async () => {
   renderCalendar();
   closeBottomSheet("takenCheckModal");
@@ -1036,7 +1036,7 @@ function showStatsForFamily(name) {
   let html = "";
   const keys = Object.keys(stats);
   if (keys.length === 0) {
-    html = "<p style='text-align:center; font-size:16px; opacity:0.5; margin-top:150px;'>해당 기간에 복용 기록이 없습니다.</p>";
+    html = "<p style='text-align:center; font-size:16px; opacity:0.5; margin-top:150px;'>해당 기간에 섭취 기록이 없습니다.</p>";
   } else {
     keys.forEach(key => {
       const info = stats[key];
@@ -1083,7 +1083,7 @@ function renderFamilyUI() {
           if (newName === null) return;
           const trimmed = newName.trim();
           if (trimmed === "") {
-            if (confirm(`'${name}' 님을 삭제할까요?\n복용 데이터도 사라집니다.`)) {
+            if (confirm(`'${name}' 님을 삭제할까요?\n섭취 데이터도 사라집니다.`)) {
               await deleteFamilyMemberFromDB(name);
               familyMembers.splice(index, 1);
               localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
@@ -1274,19 +1274,19 @@ function renderAnalysisTab() {
       
       <div style="background: var(--bg-paper); padding: 20px; border-radius: 20px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
         <div style="border-right: 1px solid rgba(128,128,128,0.15);">
-          <p style="font-size:11px; opacity:0.6; margin:0;">복용 성실도 1위</p>
+          <p style="font-size:11px; opacity:0.6; margin:0;">섭취 성실도 1위</p>
           <h4 style="margin:5px 0 0 0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${bestProduct.name}</h4>
           <span style="color:#05d339; font-size:12px; font-weight:bold;">${bestProduct.rate}%</span>
         </div>
         <div style="padding-left:10px;">
           <p style="font-size:11px; opacity:0.6; margin:0;">가장 성실한 요일</p>
           <h4 style="margin:5px 0 0 0; font-size:15px;">${bestDayName}요일</h4>
-          <span style="font-size:12px; opacity:0.5;">주로 ${bestTime} 복용</span>
+          <span style="font-size:12px; opacity:0.5;">주로 ${bestTime} 섭취</span>
         </div>
       </div>
 
       <div style="background: var(--bg-paper); padding: 20px; border-radius: 20px;">
-        <p style="font-size:13px; opacity:0.6; margin:0 0 15px 0;">시간대별 복용 비중</p>
+        <p style="font-size:13px; opacity:0.6; margin:0 0 15px 0;">시간대별 섭취 비중</p>
         <div style="display:flex; flex-direction:column; gap:12px;">
           ${Object.entries(timeStats).map(([time, count]) => {
             const ratio = totalChecks > 0 ? (count / totalChecks * 100).toFixed(1) : 0;
@@ -1859,10 +1859,18 @@ function renderYearlyCalendar(year) {
   const now = new Date();
   const currentMonthIdx = (now.getFullYear() === year) ? now.getMonth() : -1;
 
-  // 집계용 변수
-  let countComplete = 0; // 완복
-  let countPartial = 0;  // 부분
-  let countNone = 0;     // 미복
+  let countComplete = 0;
+  let countPartial = 0;
+  let countNone = 0;
+  let totalYearlyCost = 0;
+
+  supplements.forEach(sup => {
+    const firstDate = sup.schedule?.[0] || "";
+    const [y] = firstDate.split("-").map(Number);
+    if (y === year) {
+      totalYearlyCost += (Number(sup.price) || 0);
+    }
+  });
 
   for (let m = 0; m < 12; m++) {
     const monthDiv = document.createElement("div");
@@ -1894,13 +1902,13 @@ function renderYearlyCalendar(year) {
         });
 
         if (takenSlots === 0) {
-          style = "background-color: #ff4d4d; color: #fff;"; // 미복용
+          style = "background-color: #ff4d4d; color: #fff;";
           countNone++;
         } else if (takenSlots < totalSlots) {
-          style = "background-color: #ffbb00; color: #fff;"; // 부분
+          style = "background-color: #ffbb00; color: #fff;";
           countPartial++;
         } else {
-          style = "background-color: #02bb30; color: #fff;"; // 완료
+          style = "background-color: #02bb30; color: #fff;";
           countComplete++;
         }
       }
@@ -1910,22 +1918,27 @@ function renderYearlyCalendar(year) {
     container.appendChild(monthDiv);
   }
 
-  // 집계 카드 추가 (그리드 내부 맨 마지막에 3컬럼을 차지하도록 추가)
+  // 집계 카드
   const summaryDiv = document.createElement("div");
-  summaryDiv.style = "grid-column: 1 / span 3; margin-top: 5px; padding: 20px; background: var(--bg-paper); border-radius: 20px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px;";
+  summaryDiv.className = "yearly-summary-card";
   summaryDiv.innerHTML = `
-    <h4 style="margin:0; font-size:16px; opacity:0.8;">${year}년 리포트</h4>
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <div style="display:flex; align-items:center; gap:8px;"><div style="width:12px; height:12px; background:#02bb30; border-radius:50%;"></div> 완전 복용</div>
-      <span style="font-weight:bold;">${countComplete}일</span>
+    <h4 style="margin:2px; font-size:15px;">${year}년 리포트</h4>
+    <div class="summary-row">
+      <div><span class="summary-dot" style="background:#02bb30;"></span>완전 섭취</div>
+      <span>${countComplete}일</span>
     </div>
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <div style="display:flex; align-items:center; gap:8px;"><div style="width:12px; height:12px; background:#ffbb00; border-radius:50%;"></div> 부분 복용</div>
-      <span style="font-weight:bold;">${countPartial}일</span>
+    <div class="summary-row">
+      <div><span class="summary-dot" style="background:#ffbb00;"></span>부분 섭취</div>
+      <span>${countPartial}일</span>
     </div>
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <div style="display:flex; align-items:center; gap:8px;"><div style="width:12px; height:12px; background:#ff4d4d; border-radius:50%;"></div> 미복용 날짜</div>
-      <span style="font-weight:bold;">${countNone}일</span>
+    <div class="summary-row">
+      <div><span class="summary-dot" style="background:#ff4d4d;"></span>미섭취 날짜</div>
+      <span>${countNone}일</span>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-row summary-total">
+      <span>총 구매 금액</span>
+      <span>${totalYearlyCost.toLocaleString()}원</span>
     </div>
   `;
   container.appendChild(summaryDiv);
@@ -2036,7 +2049,7 @@ function renderCalcTab() {
     </div>`; // 큰 상자 끝
 
     // 상자 아래 안내 텍스트
-    listHtml += `<p class="calc-notice-text">영양제를 구매할 때 할인을 받았다면 각 제품의 가격을 할인된 가격으로 수정할 수 있습니다.</p>`;
+    listHtml += `<p class="calc-notice-text">영양제를 구매할 때 할인을 받았다면 각 제품의 가격을 할인된 가격으로 계산하여 반영합니다.</p>`;
 
     // calcDiv.innerHTML 부분 (여백은 CSS에서 처리하므로 깔끔하게 유지)
     calcDiv.innerHTML = `
@@ -2047,7 +2060,7 @@ function renderCalcTab() {
                 <div style="display:flex; align-items:center; gap:5px;">
                     <span style="font-size:15px; color:defualt;">₩</span>
                     <input type="number" id="actualPaidInput" class="actual-paid-input" 
-                           placeholder="할인 적용된 실 결제 금액 입력" inputmode="numeric">
+                           placeholder="할인 적용된 결제 금액 입력" inputmode="numeric">
                 </div>
             </div>
 
@@ -2069,7 +2082,7 @@ function toggleCalcRow(rowEl) {
     checkbox.checked = !checkbox.checked;
     updateCalcSum();
 }
-/*-----------------------------------비용 모달 계산 탭 끝--------------------------------*/
+
 async function processDiscount() {
     const actualPaid = parseInt(document.getElementById('actualPaidInput').value);
     if (!actualPaid || actualPaid <= 0) return alert("금액을 입력하세요.");
@@ -2091,7 +2104,7 @@ async function processDiscount() {
     renderCalendar();
     setTimeout(() => { monthlyCostBtn.click(); }, 1200);
 }
-
+/*-----------------------------------비용 모달 계산 탭 끝--------------------------------*/
 function applyIOSButtonEffect() {
     const selectors = [
         'button',
@@ -2100,7 +2113,6 @@ function applyIOSButtonEffect() {
         '.fab-add-btn', 
         '.family-btn', 
         '.menu-btn', 
-        '.primary-btn', 
         '.close-btn', 
         '.check-btn', 
         '.extend-btn',

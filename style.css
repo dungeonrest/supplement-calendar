@@ -83,8 +83,7 @@ button,
 .fab-today-btn, 
 .fab-add-btn, 
 .family-btn, 
-.menu-btn, 
-.primary-btn, 
+.menu-btn,
 .close-btn, 
 .check-btn,
 .extend-btn,
@@ -103,7 +102,6 @@ button:not(.tab-btn).ios-active,
 .fab-add-btn.ios-active, 
 .family-btn.ios-active, 
 .menu-btn.ios-active, 
-.primary-btn.ios-active, 
 .close-btn.ios-active,
 .check-btn.ios-active,
 .extend-btn.ios-active,
@@ -117,9 +115,9 @@ button:not(.tab-btn).ios-active,
 
 @keyframes ios-jelly-bounce {
   0% { transform: scale(1.25); }
-  65% { transform: scale(1.0); }    
-  70% { transform: scale(1.015); }    
-  100% { transform: scale(1.0); }    
+  65% { transform: scale(1.0); }
+  70% { transform: scale(1.015); }
+  100% { transform: scale(1.0); }
 }
 
 button:not(.tab-btn).ios-release,
@@ -127,7 +125,6 @@ button:not(.tab-btn).ios-release,
 .fab-add-btn.ios-release,
 .family-btn.ios-release,
 .menu-btn.ios-release,
-.primary-btn.ios-release,
 .close-btn.ios-release,
 .check-btn.ios-release,
 .extend-btn.ios-release,
@@ -219,7 +216,7 @@ button:not(.tab-btn).ios-release,
 }
 
 .theme-icon::before {
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) rotate(0deg);
 }
 
 .theme-icon::after {
@@ -252,10 +249,14 @@ body.dark-mode .theme-icon {
   transform: rotate(-20deg);
 }
 
-body.dark-mode .theme-icon::before,
-body.dark-mode .theme-icon::after {
+body.dark-mode .theme-icon::before {
   opacity: 0;
   transform: translate(-50%, -50%) rotate(90deg);
+}
+
+body.dark-mode .theme-icon::after {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(135deg);
 }
 /*----------------------------------------테마 아이콘 끝----------------------------*/
 /*---------------------------------월별 비용, 통계 아이콘 시작----------------------------*/
@@ -735,6 +736,43 @@ body.dark-mode #statsContent {
 .yearly-grid::-webkit-scrollbar-thumb {
     background-color: rgba(128, 128, 128, 0.3);
     border-radius: 10px;
+}
+
+.yearly-summary-card {
+    grid-column: 1 / span 3;
+    margin: 10px 0 20px 0;
+    padding: 20px;
+    background: var(--bg-paper);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+}
+
+.summary-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.summary-divider {
+    height: 1px;
+    background: var(--calendar-line);
+    margin: 2px;
+}
+
+.summary-total {
+    font-weight: normal;
+    margin-top: 2px;
 }
 /*------------------------------------영양제 정보 모달 시작-------------------------------*/
 /* 기본 초기화 및 모달 입력창 스타일 */
@@ -1252,7 +1290,7 @@ body.dark-mode .check-btn::before {
   align-items: center;
   justify-content: center;
   padding: 0;
-  background-color: rgba(192, 192, 192, 0.2);
+  background-color: rgb(216, 216, 216);
   transition: background-color 0.3s, transform 0.2s;
   overflow: visible;
 }
@@ -1607,7 +1645,7 @@ body.dark-mode .selected-sum-amount { color: #9E9EA4; }
     accent-color: #05d339;
 }
 /*-----------------------------월별 비용 모달 끝-------------------------------*/
-/*----------------------------복용 체크 모달 시작------------------------------*/
+/*----------------------------섭취 체크 모달 시작------------------------------*/
 #takenCheckBody {
   display: block !important;
   width: 100%;
@@ -1807,7 +1845,7 @@ body.dark-mode .extend-btn {
   height: 43px;
   font-size: 16px;
   font-weight: normal;
-  margin-top: 30px;
+  margin-top: 100px;
   background: #c0c0c033;
   color: var(--text-color);
   border: none;
