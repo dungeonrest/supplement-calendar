@@ -165,16 +165,56 @@ button:not(.tab-btn).ios-release,
 }
 
 .header-right-group {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  border-radius: 50px;
-  border: none;
+  padding: 2px 2px;
+  border-radius: 30px;
   background-color: rgba(216, 213, 213, 0.171);
-  }
+  overflow: hidden;
+}
 
   body.dark-mode .header-right-group {
-  background-color: #19191B;
+  background-color: #19191aab;
+}
+
+.header-right-group::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  padding: 0.8px;
+  background: conic-gradient(
+    from 180deg,
+    rgba(128, 128, 128, 0.4) 0deg,
+    rgba(128, 128, 128, 0.4) 40deg,   
+    rgba(128, 128, 128, 0) 80deg,
+    rgba(128, 128, 128, 0.4) 100deg,  
+    rgba(128, 128, 128, 0.4) 240deg, 
+    rgba(128, 128, 128, 0) 250deg,
+    rgba(128, 128, 128, 0.4) 300deg, 
+    rgba(128, 128, 128, 0.4) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+body.dark-mode .header-right-group::before {
+  background: conic-gradient(
+    from 180deg,
+    rgba(255, 255, 255, 0.3) 0deg,
+    rgba(255, 255, 255, 0.3) 40deg,
+    rgba(255, 255, 255, 0) 80deg,    
+    rgba(255, 255, 255, 0.3) 100deg,
+    rgba(255, 255, 255, 0.3) 240deg,
+    rgba(255, 255, 255, 0) 250deg,   
+    rgba(255, 255, 255, 0.3) 300deg,
+    rgba(255, 255, 255, 0.3) 360deg
+  );
 }
 /*----------------------------------------테마 아이콘 시작----------------------------*/
 .theme-btn {
@@ -1761,14 +1801,14 @@ body.dark-mode .extend-btn {
   bottom: 21px;
   width: auto;
   height: auto;
-  padding: 10px 13px;
-  border-radius: 20px;
+  padding: 11px 14px;
+  border-radius: 50px;
   border: none;
-  background-color: rgba(243, 243, 243, 0.788);
+  background-color: #f3f3f3c9;
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: normal;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1776,6 +1816,31 @@ body.dark-mode .extend-btn {
   z-index: 1000;
   color: var(--text-color);
   -webkit-tap-highlight-color: transparent;
+  overflow: visible;
+}
+
+.fab-today-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50px;
+  padding: 0.8px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(128, 128, 128, 0.4) 0deg,
+    rgba(128, 128, 128, 0.4) 10deg,   
+    rgba(128, 128, 128, 0) 15deg,
+    rgba(128, 128, 128, 0.4) 20deg,  
+    rgba(128, 128, 128, 0.4) 190deg, 
+    rgba(128, 128, 128, 0) 195deg,
+    rgba(128, 128, 128, 0.4) 200deg, 
+    rgba(128, 128, 128, 0.4) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .fab-today-btn { left: 25px;  }
@@ -1783,42 +1848,67 @@ body.dark-mode .extend-btn {
 
 .dark-mode .fab-today-btn, 
 .dark-mode .fab-add-btn {
-   background-color: #19191bce;
+   background-color: #19191aab;
    backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
 }
 
-/* 더하기 버튼 내부의 둥근 모서리 (+) 막대 구현 */
-.fab-add-btn::before,
+.fab-add-btn span::before,
+.fab-add-btn span::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background-color: var(--text-color);
+  border-radius: 50px;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+.fab-add-btn span::before { width: 15px; height: 3px; }
+.fab-add-btn span::after { width: 3px; height: 15px; }
+
 .fab-add-btn::after {
   content: "";
   position: absolute;
-  background-color: var(--text-color);
-  border-radius: 10px;
+  inset: 0;
+  border-radius: 50px;
+  padding: 0.8px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(128, 128, 128, 0.4) 0deg,
+    rgba(128, 128, 128, 0.4) 20deg,   
+    rgba(128, 128, 128, 0) 50deg,    
+    rgba(128, 128, 128, 0.4) 100deg,  
+    rgba(128, 128, 128, 0.4) 200deg, 
+    rgba(128, 128, 128, 0) 220deg,   
+    rgba(128, 128, 128, 0.4) 300deg, 
+    rgba(128, 128, 128, 0.4) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
-/* 가로 막대 */
-.fab-add-btn::before {
-  width: 18px;
-  height: 4px;
-}
-
-/* 세로 막대 */
-.fab-add-btn::after {
-  width: 4px;
-  height: 18px;
+.dark-mode .fab-today-btn::after,
+.dark-mode .fab-add-btn::after {
+  background: conic-gradient(
+    from 180deg,
+    rgba(255, 255, 255, 0.3) 0deg,
+    rgba(255, 255, 255, 0.3) 20deg,
+    rgba(255, 255, 255, 0) 50deg,    
+    rgba(255, 255, 255, 0.3) 100deg,
+    rgba(255, 255, 255, 0.3) 200deg,
+    rgba(255, 255, 255, 0) 220deg,   
+    rgba(255, 255, 255, 0.3) 300deg,
+    rgba(255, 255, 255, 0.3) 360deg
+  );
 }
 
 .fab-add-btn {
   padding: 20px 26px;
 }
-
-.fab-today-btn span {
-  display: block;
-  will-change: transform; 
-  pointer-events: none;
-}
-
 
 /* 하단 백업/복원 링크 */
 .footer-backup-area {
