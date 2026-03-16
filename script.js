@@ -1,4 +1,4 @@
-const APP_VERSION = "3.15";
+const APP_VERSION = "3.15a";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -85,6 +85,11 @@ document.addEventListener("change", (e) => {
 
 function openSupplementModal(sup) {
   currentEditId = sup.id;
+  if (typeof renderFamilyCheckboxes === 'function') {
+    renderFamilyCheckboxes();
+  } else if (typeof renderFamilyUI === 'function') {
+    renderFamilyUI();
+  }
   const deleteContainer = document.querySelector(".delete-btn-container");
   if (deleteContainer) deleteContainer.style.display = "flex";
   modalOverlay.classList.add("active");
@@ -1342,23 +1347,22 @@ document.getElementById("closeStatsModal").onclick = function() {
 };
 
 function renderFamilyCheckboxes() {
-  const familyGroup = document.querySelector(".input-group.family-group");
-  if (!familyGroup) return;
+  const container = document.getElementById('familyListContainer');
+  if (!container) return;
 
-  familyGroup.innerHTML = "<label>복용 가족</label>"; 
+  container.innerHTML = ''; 
 
   familyMembers.forEach(name => {
-    const label = document.createElement("label");
-    label.className = "check-label";
-    const chk = document.createElement("input");
-    chk.type = "checkbox";
-    chk.className = "inputFamily";
-    chk.value = name;
-    chk.checked = false; 
+    const div = document.createElement("div");
+    div.className = "checkbox-wrapper-line";
 
-    label.appendChild(chk);
-    label.appendChild(document.createTextNode(` ${name}`));
-    familyGroup.appendChild(label);
+    div.innerHTML = `
+      <label class="checkbox-item">
+        <input type="checkbox" class="inputFamily" value="${name}">
+        <span class="checkbox-label-text">${name}</span>
+      </label>
+    `;
+    container.appendChild(div);
   });
 }
 

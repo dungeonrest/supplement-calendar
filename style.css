@@ -658,12 +658,11 @@ body.dark-mode #statsContent {
     row-gap: 10px !important;
     padding: 10px 6px 10px 10px !important;
 }
-
+/*헤더 제목과 미니 달력 사이의 간격*/
 .yearly-grid::before {
     content: "";
-    /* grid-column: 1 / span 3; 을 주면 가로 한 줄 전체를 차지하는 빈 공간이 됩니다 */
     grid-column: 1 / span 3 !important; 
-    height: 1px !important; /* 이 수치로 간격을 조절하세요. (헤더 높이 60px 제외 순수 간격) */
+    height: 15px !important;
     display: block !important;
 }
 
@@ -1784,20 +1783,25 @@ body.dark-mode #familyConfigModal {
 /* 컨테이너 레이아웃 */
 .onboarding-container {
   width: 100%;
-  max-width: 440px;
-  height: 100%;
-  max-height: 900px;
+  height: 100vh;
   padding: 60px 38px 40px;
   background-color: var(--bg-color);
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  animation: iosSlideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow-y: auto;
+}
+
+body.dark-mode .onboarding-container {
+  background-color: #000000 !important;
 }
 
 /* 상단 섹션 (제목 및 설명) */
 .onboarding-top {
-  margin-bottom: 20px; /* 키보드 대응 최소 여백 */
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .onboarding-header h1 {
@@ -1840,9 +1844,13 @@ body.dark-mode #familyConfigModal {
 }
 
 .onboarding-bottom {
-  margin-top: auto; /* 핵심: 이 설정이 위쪽 여백을 모두 차지하여 아래로 밉니다 */
+  margin-top: auto; 
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .input-sub-label {
@@ -1896,12 +1904,6 @@ body.dark-mode #familyConfigModal {
   font-size: 11px;
   color: #8E8E93;
   margin-bottom: 24px;
-}
-
-/* iOS 특유의 슬라이드 업 애니메이션 */
-@keyframes iosSlideUp {
-  from { transform: translateY(100vh); }
-  to { transform: translateY(0); }
 }
 /*--------------------------------------온보딩 끝--------------------------------------*/
 #footerBackupLink, #footerVersion {
@@ -2250,7 +2252,7 @@ body.dark-mode .family-btn.selected {
     padding: 12px 13px;
     transform: translateY(100px);
     transition: transform 0.2s ease;
-    margin-bottom: calc(env(safe-area-inset-bottom) + 20px);
+    margin-bottom: calc(env(safe-area-inset-bottom) + 15px);
     overflow: hidden;
 }
 
