@@ -1,4 +1,4 @@
-const APP_VERSION = "3.16w";
+const APP_VERSION = "3.17";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1038,113 +1038,164 @@ function showStatsForFamily(name) {
     };
   });
 
-  let html = "";
-  const keys = Object.keys(stats);
-  if (keys.length === 0) {
-    html = "<p style='text-align:center; font-size:16px; opacity:0.5; margin-top:150px;'>해당 기간에 섭취 기록이 없습니다.</p>";
-  } else {
-    keys.forEach(key => {
-      const info = stats[key];
-      let percent = info.target > 0 ? Math.round((info.taken / info.target) * 100) : 0;
-      if (percent > 100) percent = 100;
-      
-      html += `
-        <div class="stats-item">
-          <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
-            <div class="pie-inner" style="background-color: ${innerBg}">
-              <span class="pie-percent">${percent}%</span>
-            </div>
-          </div>
-          <div class="stats-info">
-            <span class="stats-product-name">${key}</span>
-            <span class="stats-count-text">${info.taken} / ${info.target}회</span>
-          </div>
-        </div>`;
-    });
-  }
   const content = document.getElementById("statsContent");
-  content.innerHTML = html;
-  content.scrollTop = 0;
+    const keys = Object.keys(stats);
+    const count = keys.length;
+
+    if (count === 0) {
+        content.classList.remove('grid-mode');
+        content.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:180px;'>해당 기간에 섭취 기록이 없습니다.</p>";
+    } 
+    
+    // 🔴 1개일 때
+    else if (count === 1) {
+        content.classList.remove('grid-mode'); // 2열 그리드 해제
+        
+        const key = keys[0];
+        const info = stats[key];
+        let percent = info.target > 0 ? Math.round((info.taken / info.target) * 100) : 0;
+        if (percent > 100) percent = 100;
+
+        content.innerHTML = `
+            <div class="stats-item" style="width: 100%; max-width: 100%; padding: 20px 10px; box-sizing: border-box;">
+                <div class="pie-chart" style="width: 55px !important; height: 55px !important; margin: 0 auto 5px auto; background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
+                    <div class="pie-inner" style="width: 30px !important; height: 30px !important; background-color: ${innerBg}">
+                        <span class="pie-percent" style="font-size: 10px !important;">${percent}%</span>
+                    </div>
+                </div>
+                <div class="stats-info" style="align-items: center; text-align: center;">
+                    <span class="stats-product-name" style="font-size: 13px !important; margin-bottom: 1px;">${key}</span>
+                    <span class="stats-count-text" style="font-size: 11px !important; opacity: 0.6;">
+                        ${info.taken} / ${info.target}회
+                    </span>
+                </div>
+            </div>`;
+    } 
+
+    // 3. 2개 이상일 때: 촘촘한 2열 그리드
+    else {
+        content.classList.add('grid-mode');
+        let html = "";
+        keys.forEach(key => {
+            const info = stats[key];
+            let percent = info.target > 0 ? Math.round((info.taken / info.target) * 100) : 0;
+            if (percent > 100) percent = 100;
+
+            html += `
+                <div class="stats-item">
+                    <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
+                        <div class="pie-inner" style="background-color: ${innerBg}">
+                            <span class="pie-percent">${percent}%</span>
+                        </div>
+                    </div>
+                    <div class="stats-info">
+                        <span class="stats-product-name">${key}</span>
+                        <span class="stats-count-text">${info.taken} / ${info.target}회</span>
+                    </div>
+                </div>`;
+        });
+        content.innerHTML = html;
+    }
+    content.scrollTop = 0;
 }
 
 function renderFamilyUI() {
   const statsFamilyContainer = document.querySelector(".family-buttons");
-  if (statsFamilyContainer) {
-    statsFamilyContainer.innerHTML = ""; 
-    familyMembers.forEach((name, index) => {
-      const btn = document.createElement("button");
-      btn.className = "family-btn";
-      btn.dataset.name = name;
-      btn.innerText = name;
-      
-      let timer;
-      let isLongPress = false;
+  
+  if (!statsFamilyContainer) return;
 
-      const startPress = () => {
-        isLongPress = false;
-        timer = setTimeout(async () => {
-          isLongPress = true; 
-          const newName = prompt(`'${name}' 님의 이름을 변경하세요.\n(빈칸으로 두면 삭제됩니다.)`, name);
-          if (newName === null) return;
-          const trimmed = newName.trim();
-          if (trimmed === "") {
-            if (confirm(`'${name}' 님을 삭제할까요?\n섭취 데이터도 사라집니다.`)) {
-              await deleteFamilyMemberFromDB(name);
-              familyMembers.splice(index, 1);
-              localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
-              location.reload();
-            }
-          } else if (trimmed !== name) {
-            await updateSupplementFamilyName(name, trimmed);
-            familyMembers[index] = trimmed;
+  statsFamilyContainer.innerHTML = ""; 
+
+  const slider = document.createElement("div");
+  slider.className = "family-slider";
+  statsFamilyContainer.appendChild(slider);
+
+  familyMembers.forEach((name, index) => {
+    const btn = document.createElement("button");
+    btn.className = "family-btn";
+    btn.dataset.name = name;
+    btn.innerText = name;
+    
+    let timer;
+    let isLongPress = false;
+    const startPress = () => {
+      isLongPress = false;
+      timer = setTimeout(async () => {
+        isLongPress = true; 
+        const newName = prompt(`'${name}' 님의 이름을 변경하세요.\n(빈칸으로 두면 삭제됩니다.)`, name);
+        if (newName === null) return;
+        const trimmed = newName.trim();
+        if (trimmed === "") {
+          if (confirm(`'${name}' 님을 삭제할까요?\n섭취 데이터도 사라집니다.`)) {
+            await deleteFamilyMemberFromDB(name);
+            familyMembers.splice(index, 1);
             localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
-            alert(`'${name}' 님이 '${trimmed}' 님으로 변경되었습니다.`);
             location.reload();
           }
-        }, 900);
-      };
-      const endPress = () => clearTimeout(timer);
-
-      btn.addEventListener("click", () => {
-        if (!isLongPress) {
-          document.querySelectorAll(".family-btn").forEach(b => b.classList.remove("selected"));
-          btn.classList.add("selected");
-          showStatsForFamily(name);
+        } else if (trimmed !== name) {
+          await updateSupplementFamilyName(name, trimmed);
+          familyMembers[index] = trimmed;
+          localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+          alert(`'${name}' 님이 '${trimmed}' 님으로 변경되었습니다.`);
+          location.reload();
         }
-      });
+      }, 900);
+    };
+    const endPress = () => clearTimeout(timer);
 
-      btn.addEventListener("touchstart", startPress, { passive: true });
-      btn.addEventListener("touchend", endPress);
-      btn.addEventListener("mousedown", startPress);
-      btn.addEventListener("mouseup", endPress);
-      btn.addEventListener("mouseleave", endPress);
-      statsFamilyContainer.appendChild(btn);
+    btn.addEventListener("click", () => {
+      if (!isLongPress) {
+        document.querySelectorAll(".family-btn").forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        showStatsForFamily(name);
+        updateSliderPosition();
+      }
     });
 
-    if (familyMembers.length < 4) {
-      const addBtn = document.createElement("button");
-      addBtn.className = "family-btn";
-      addBtn.innerText = "추가";
-      
-      addBtn.addEventListener("click", async () => {
-        const n = prompt("새로운 이름을 입력하세요.");
-        if (n && n.trim()) {
-          const newName = n.trim();
-          familyMembers.push(newName);
-          localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+    btn.addEventListener("touchstart", startPress, { passive: true });
+    btn.addEventListener("touchend", endPress);
+    btn.addEventListener("mousedown", startPress);
+    btn.addEventListener("mouseup", endPress);
+    btn.addEventListener("mouseleave", endPress);
+    statsFamilyContainer.appendChild(btn);
+  });
 
-          const transaction = db.transaction(["supplements"], "readwrite");
-          const store = transaction.objectStore("supplements");
-          
-          transaction.oncomplete = () => {
-            alert(`'${newName}' 님이 추가되었습니다.`);
-            location.reload(); 
-          };
-        }
-      });
-      statsFamilyContainer.appendChild(addBtn);
+  if (familyMembers.length < 4) {
+    const addBtn = document.createElement("button");
+    addBtn.className = "family-btn";
+    addBtn.innerText = "추가";
+    addBtn.addEventListener("click", async () => {
+      const n = prompt("새로운 이름을 입력하세요.");
+      if (n && n.trim()) {
+        const newName = n.trim();
+        familyMembers.push(newName);
+        localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+        alert(`'${newName}' 님이 추가되었습니다.`);
+        location.reload(); 
+      }
+    });
+    statsFamilyContainer.appendChild(addBtn);
+  }
+
+  function updateSliderPosition() {
+  const statsFamilyContainer = document.querySelector(".family-buttons");
+  const slider = statsFamilyContainer.querySelector(".family-slider");
+  const buttons = statsFamilyContainer.querySelectorAll(".family-btn");
+  const selectedBtn = statsFamilyContainer.querySelector(".family-btn.selected");
+  const selectedIndex = Array.from(buttons).indexOf(selectedBtn);
+
+  if (buttons.length > 0 && slider) {
+    const btnWidth = (statsFamilyContainer.offsetWidth - 4) / buttons.length;
+    slider.style.width = `${btnWidth}px`;
+
+    if (selectedIndex !== -1) {
+      const moveX = selectedIndex * btnWidth;
+      slider.style.transform = `translateX(${moveX}px)`;
     }
   }
+}
+  setTimeout(updateSliderPosition, 100);
+}
 
   const inputFamilyContainer = document.querySelector(".checkbox-group .checkbox-line-row:first-child");
   if (inputFamilyContainer) {
@@ -1168,7 +1219,6 @@ function renderFamilyUI() {
       inputFamilyContainer.appendChild(label);
     });
   }
-}
 
 // 탭 전환 함수 수정
 function switchStatsTab(tab) {
@@ -1181,6 +1231,8 @@ function switchStatsTab(tab) {
     statsContent.innerHTML = ""; 
 
     if (tab === 'stats') {
+        statsContent.style.padding = "13px";
+        statsContent.classList.add('grid-mode');
         slider.style.transform = 'translateX(0%)';
         btns[0].classList.add('active');
         btns[1].classList.remove('active');
@@ -1192,9 +1244,29 @@ function switchStatsTab(tab) {
         if (selectedBtn) {
             showStatsForFamily(selectedBtn.dataset.name);
         } else {
-            statsContent.innerHTML = "<p style='text-align:center; font-size:14px; opacity:0.5; margin-top:100px;'>가족 구성원을 선택해주세요.</p>";
+            statsContent.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.5; margin-top:180px;'>가족 구성원을 선택해주세요.</p>";
         }
+
+        setTimeout(() => {
+            const statsFamilyContainer = document.querySelector(".family-buttons");
+            const slider = statsFamilyContainer?.querySelector('.family-slider');
+            const buttons = statsFamilyContainer?.querySelectorAll('.family-btn');
+            const selectedBtn = statsFamilyContainer?.querySelector('.family-btn.selected');
+
+            if (slider && buttons.length > 0 && selectedBtn) {
+                
+                const containerWidth = statsFamilyContainer.offsetWidth - 4;
+                const btnWidth = containerWidth / buttons.length;
+                const selectedIndex = Array.from(buttons).indexOf(selectedBtn);
+
+                slider.style.width = `${btnWidth}px`;
+                slider.style.transform = `translateX(${selectedIndex * btnWidth}px)`;
+            }
+        }, 50);
+
     } else {
+        statsContent.style.padding = "13px 0";
+        statsContent.classList.remove('grid-mode');
         slider.style.transform = 'translateX(100%)';
         btns[0].classList.remove('active');
         btns[1].classList.add('active');
@@ -1217,111 +1289,111 @@ function switchStatsTab(tab) {
 
 function renderAnalysisTab() {
   const statsContent = document.getElementById('statsContent');
-  
-  let totalChecks = 0;
-  let timeStats = { "아침": 0, "점심": 0, "저녁": 0, "공복": 0 };
-  let dayStats = [0, 0, 0, 0, 0, 0, 0];
-  const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
-  
-  let bestProduct = { name: "기록 없음", rate: 0 };
+  statsContent.style.padding = "15px 0"; 
+
+  const routine = { "아침": [], "점심": [], "저녁": [], "공복": [] };
   let refillList = [];
 
   supplements.forEach(sup => {
-    let supTotal = 0;
     let supTaken = 0;
-
     if (sup.takenStatus) {
       Object.keys(sup.takenStatus).forEach(dateStr => {
         const dayData = sup.takenStatus[dateStr];
-        const dateObj = new Date(dateStr);
-        const dayIdx = dateObj.getDay();
-
         Object.keys(dayData).forEach(key => {
-          if (dayData[key] === true && !key.includes("_extended")) {
-            totalChecks++;
-            supTaken++;
-            dayStats[dayIdx]++;
-            
-            if (key.includes("아침")) timeStats["아침"]++;
-            else if (key.includes("점심")) timeStats["점심"]++;
-            else if (key.includes("저녁")) timeStats["저녁"]++;
-            else if (key.includes("공복")) timeStats["공복"]++;
-          }
+          if (dayData[key] === true && !key.includes("_extended")) supTaken++;
         });
       });
     }
 
-    const scheduleCount = sup.schedule ? sup.schedule.length : 0;
-    const targetCount = scheduleCount * sup.family.length * sup.times.length;
-    let rate = targetCount > 0 ? (supTaken / targetCount) * 100 : 0;
-    
-    if (rate > bestProduct.rate) {
-      bestProduct = { name: sup.productName, rate: Math.round(rate) };
-    }
-
-    const dailyDose = parseFloat(sup.dose) || 0; 
     const totalProvision = parseFloat(sup.totalCapsules) || 0;
-    const consumedAmount = (supTaken * (dailyDose / sup.times.length));
-    const remains = totalProvision - consumedAmount;
+    const dailyDose = parseFloat(sup.dose) || 0; 
+    const remains = totalProvision - supTaken;
     const daysLeft = dailyDose > 0 ? Math.floor(remains / dailyDose) : 999;
 
-    if (daysLeft <= 7 && daysLeft >= 0) {
+    if (sup.times && Array.isArray(sup.times)) {
+      sup.times.forEach(time => {
+        if (routine[time]) {
+          routine[time].push({ 
+            name: sup.productName, 
+            dose: sup.dose, 
+            unit: sup.unit || "캡슐",
+            color: sup.circleColor || "#4e73df"
+          });
+        }
+      });
+    }
+
+    if (totalProvision > 0 && daysLeft <= 14) {
       refillList.push({ name: sup.productName, days: daysLeft });
     }
   });
 
-  const bestDayIdx = dayStats.indexOf(Math.max(...dayStats));
-  const bestDayName = totalChecks > 0 ? dayNames[bestDayIdx] : "-";
-  const bestTime = Object.keys(timeStats).reduce((a, b) => timeStats[a] > timeStats[b] ? a : b);
+  let html = `<div style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px;">`;
 
-  statsContent.innerHTML = `
-    <div style="padding: 20px; display: flex; flex-direction: column; gap: 15px; padding-bottom:100px;">
+  // [섹션 1] 스마트 알림 (생략 가능)
+  if (refillList.length > 0) {
+    html += `<div><label class="input-label">스마트 알림</label><div class="memo-paper-group">`;
+    refillList.sort((a, b) => a.days - b.days).forEach((item, idx) => {
+      const color = item.days <= 7 ? "#ff4d4d" : "#ffcc00";
+      html += `<div class="info-row" style="justify-content: space-between; padding: 0 15px;"><span style="font-size: 15px;">${item.days <= 7 ? '🚨' : '⚠️'} ${item.name}</span><span style="font-size: 14px; color: ${color}; font-weight: bold;">약 ${item.days}일분</span></div>`;
+      if (idx < refillList.length - 1) html += `<div class="memo-divider"></div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // [섹션 2] 복용 루틴 정리
+  html += `<div><label class="input-label">복용 루틴 정리</label>`;
+  html += `<div class="memo-paper-group" style="padding: 0;">`;
+
+  const activeTimes = Object.keys(routine).filter(t => routine[t].length > 0);
+  
+  activeTimes.forEach((time, timeIdx) => {
+    const list = routine[time];
+    const isLastTimeSection = timeIdx === activeTimes.length - 1;
+
+    // 복용 시간 헤더
+    html += `
+      <div style="padding: 10px 15px 8px 15px;">
+        <span style="font-size: 12px; font-weight: bold; opacity: 0.5;">${time}</span>
+      </div>
+      <div class="memo-divider"></div>`;
+
+    // 영양제 그리드 컨테이너
+    html += `<div style="display: grid; grid-template-columns: 1fr 1fr; width: 100%;">`;
+    
+    list.forEach((item, i) => {
+      // 아이템 간 세로 구분선 없이 깔끔하게 배치
+      html += `
+        <div style="display: flex; align-items: center; gap: 10px; padding: 12px 15px;">
+          <div style="width: 20px; height: 20px; border-radius: 5px; 
+                      background: linear-gradient(135deg, ${item.color}, ${item.color}bb); 
+                      flex-shrink: 0; box-shadow: inset 0 0 2px rgba(0,0,0,0.1);"></div>
+          <div style="display: flex; flex-direction: column; overflow: hidden;">
+            <span style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;">${item.name}</span>
+            <span style="font-size: 11px; opacity: 0.5;">${item.dose}${item.unit}</span>
+          </div>
+        </div>`;
       
-      <div style="background: var(--bg-paper); padding: 20px; border-radius: 20px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-        <div style="border-right: 1px solid rgba(128,128,128,0.15);">
-          <p style="font-size:11px; opacity:0.6; margin:0;">섭취 성실도 1위</p>
-          <h4 style="margin:5px 0 0 0; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${bestProduct.name}</h4>
-          <span style="color:#05d339; font-size:12px; font-weight:bold;">${bestProduct.rate}%</span>
-        </div>
-        <div style="padding-left:10px;">
-          <p style="font-size:11px; opacity:0.6; margin:0;">가장 성실한 요일</p>
-          <h4 style="margin:5px 0 0 0; font-size:15px;">${bestDayName}요일</h4>
-          <span style="font-size:12px; opacity:0.5;">주로 ${bestTime} 섭취</span>
-        </div>
-      </div>
+      // 홀수 번째 아이템(왼쪽)이고, 그게 해당 시간대의 마지막 아이템이면 빈 칸을 채워줌 (그리드 깨짐 방지)
+      if (i === list.length - 1 && list.length % 2 !== 0) {
+        html += `<div></div>`;
+      }
+    });
+    
+    html += `</div>`; // 그리드 끝
 
-      <div style="background: var(--bg-paper); padding: 20px; border-radius: 20px;">
-        <p style="font-size:13px; opacity:0.6; margin:0 0 15px 0;">시간대별 섭취 비중</p>
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          ${Object.entries(timeStats).map(([time, count]) => {
-            const ratio = totalChecks > 0 ? (count / totalChecks * 100).toFixed(1) : 0;
-            return `
-              <div style="display:flex; align-items:center; gap:10px;">
-                <span style="width:30px; font-size:11px; opacity:0.8;">${time}</span>
-                <div style="flex:1; height:6px; background:rgba(128,128,128,0.1); border-radius:3px; overflow:hidden;">
-                  <div style="width:${ratio}%; height:100%; background:#007aff; border-radius:3px;"></div>
-                </div>
-                <span style="width:35px; font-size:10px; text-align:right; opacity:0.6;">${ratio}%</span>
-              </div>`;
-          }).join('')}
-        </div>
-      </div>
+    // 섹션 마감 가로선: 전체 상자의 맨 마지막이 아닐 때만 꽉 찬 가로선 추가
+    if (!isLastTimeSection) {
+      html += `<div class="memo-divider"></div>`;
+    }
+  });
 
-      <div style="background: var(--bg-paper); padding: 20px; border-radius: 20px;">
-        <p style="font-size:13px; opacity:0.6; margin:0 0 10px 0;">재구매 및 관리</p>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          ${refillList.length > 0 
-            ? refillList.map(item => `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,77,77,0.05); padding:10px; border-radius:12px; border:1px solid rgba(255,77,77,0.1);">
-                  <span style="font-size:13px; font-weight:500;">${item.name}</span>
-                  <span style="font-size:12px; color:#ff4d4d; font-weight:bold;">약 ${item.days}일분 남음</span>
-                </div>`).join('')
-            : `<p style="font-size:13px; margin:5px 0; text-align:center; opacity:0.5;">모든 영양제가 넉넉합니다.</p>`}
-        </div>
-      </div>
+  if (activeTimes.length === 0) {
+    html += `<div style="padding: 40px; text-align: center; opacity: 0.5;">기록된 루틴이 없습니다.</div>`;
+  }
 
-    </div>
-  `;
+  html += `</div></div></div>`;
+  statsContent.innerHTML = html;
 }
 
 const originalCloseStatsModal = document.getElementById("closeStatsModal").onclick;
@@ -2116,7 +2188,6 @@ function applyIOSButtonEffect() {
         '.tab-btn',
         '.fab-today-btn', 
         '.fab-add-btn', 
-        '.family-btn', 
         '.menu-btn', 
         '.close-btn', 
         '.check-btn', 

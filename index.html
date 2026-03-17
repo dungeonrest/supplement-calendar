@@ -291,28 +291,28 @@
       <div class="tab-container" id="statsTabContainer">
         <div class="tab-slider"></div>
         <button class="tab-btn active" onclick="switchStatsTab('stats')">통계</button>
-        <button class="tab-btn" onclick="switchStatsTab('period')">분석</button>
+        <button class="tab-btn" onclick="switchStatsTab('analysis')">분석</button>
       </div>
       <button id="closeStatsModal" class="close-btn right"><span></span></button>
     </div>
 
     <div id="statsFilters">
-      <div id="familyBtnsWrapper" class="family-buttons">
-        </div>
+      <div id="familyBtnsWrapper" class="family-buttons"></div>
 
-      <div id="periodWrapper" class="period-select-container" style="display: none;">
-        <div class="period-input-group">
-          <label>시작</label>
-          <input type="month" id="periodStart" />
-        </div>
-        <div class="period-input-group">
-          <label>종료</label>
-          <input type="month" id="periodEnd" />
+      <div class="period-select-container" id="periodWrapper">
+        <div class="period-input-group" style="flex-direction: column; gap: 0; padding: 1px 15px;">
+          <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; height: 45px;">
+            <label for="periodStart">시작</label>
+            <input type="month" id="periodStart">
+          </div>
+          <div style="width: 100%; height: 1px; background: rgba(128, 128, 128, 0.15);"></div>
+          <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; height: 45px;">
+            <label for="periodEnd">종료</label>
+            <input type="month" id="periodEnd">
+          </div>
         </div>
       </div>
-    </div>
-
-    <div id="statsContent"></div>
+    </div> <div id="statsContent"></div>
   </div>
 </div>
 
