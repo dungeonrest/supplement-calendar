@@ -1,4 +1,4 @@
-const APP_VERSION = "3.16";
+const APP_VERSION = "3.16w";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -130,6 +130,7 @@ function openSupplementModal(sup) {
   updateSelectedDisplay('inputFamily', 'selectedFamilyText');
   updateSelectedDisplay('inputTime', 'selectedTimeText');
   document.querySelector(".info-row.split").classList.remove("select-color");
+  validateInputs();
 }
 
 // 상태
@@ -366,6 +367,7 @@ addBtn.addEventListener("click", () => {
   if (deleteContainer) deleteContainer.style.display = "none";
   renderFamilyCheckboxes();
   modalOverlay.classList.add("active");
+  document.getElementById('saveInfo').classList.remove('ready');
   document.body.classList.add("modal-open");
   history.pushState({ modal: "add" }, "");
 
@@ -401,6 +403,8 @@ fabAddBtn.addEventListener("click", () => {
 closeModalBtn.addEventListener("click", () => {
   closeBottomSheet("modalOverlay");
   resetAccordions();
+  document.getElementById('saveInfo').classList.remove('ready');
+  validateInputs();
 });
 
 // 달력 렌더 //
@@ -598,6 +602,7 @@ listArea.appendChild(bar);
 
 // 저장
 saveInfoBtn.addEventListener("click", async (e) => {
+  if (!saveInfoBtn.classList.contains('ready')) return;
   const start = inputDate.value;
   const product = inputProduct.value.trim();
   const totalCaps = parseInt(inputTotal.value) || 0;
@@ -2245,19 +2250,30 @@ function resetAccordions() {
 
 //액션 시트
 const deleteBtnInModal = document.getElementById('deleteInfoBtn');
+
 if (deleteBtnInModal) {
     deleteBtnInModal.onclick = function() {
         if (typeof currentEditId !== 'undefined' && currentEditId) {
-            openActionSheet();
+            // 클릭된 버튼 요소(this)를 넘겨줍니다.
+            openActionSheet(this); 
         } else {
             alert("삭제할 항목을 선택할 수 없습니다.");
         }
     };
 }
 
-function openActionSheet() {
+function openActionSheet(targetBtn) {
     const overlay = document.getElementById('actionSheetOverlay');
-    if (overlay) {
+    const container = overlay.querySelector('.action-sheet-container');
+    
+    if (overlay && container && targetBtn) {
+        const rect = targetBtn.getBoundingClientRect();
+  
+        container.style.left = `${rect.left + (rect.width / 2)}px`;
+
+        const gap = 5;
+        container.style.top = `${rect.top - 87}px`;
+
         overlay.style.visibility = 'visible';
         overlay.classList.add('active');
     }
@@ -2299,3 +2315,26 @@ document.getElementById('confirmDeleteBtn').onclick = async function() {
         }
     }
 };
+
+function validateInputs() {
+    const product = document.getElementById('inputProduct').value.trim();
+    const totalCaps = document.getElementById('inputTotal').value.trim();
+    const dose = document.getElementById('inputDose').value.trim();
+    
+    const familyChecked = document.querySelectorAll(".inputFamily:checked").length > 0;
+    const timeChecked = document.querySelectorAll(".inputTime:checked").length > 0;
+    
+    const saveBtn = document.getElementById('saveInfo');
+
+    if (product && totalCaps && dose && familyChecked && timeChecked) {
+        saveBtn.classList.add('ready');
+    } else {
+        saveBtn.classList.remove('ready');
+    }
+}
+
+document.getElementById('inputProduct').addEventListener('input', validateInputs);
+document.getElementById('inputTotal').addEventListener('input', validateInputs);
+document.getElementById('inputDose').addEventListener('input', validateInputs);
+document.getElementById('familyListContainer').addEventListener('change', validateInputs);
+document.querySelector('.checkbox-group').addEventListener('change', validateInputs);
