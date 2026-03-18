@@ -924,7 +924,7 @@ body.dark-mode .info-row.split::before { background: #6a6a6e; }
   display: flex;
   align-items: center;
   height: 44px;
-  padding: 0 2px;
+  padding: 0px;
   box-sizing: border-box;
   width: 100%;
 }
@@ -947,13 +947,24 @@ body.dark-mode .info-row.split::before { background: #6a6a6e; }
   font-size: 15px;
   font-weight: normal;
   color: #76767a;
-  text-align: right; 
   background: transparent;
-  margin-right: 10px;
-  padding: 0;
+  margin-right: 0 !important; 
+  padding: 0 28px 0 0 !important; /* 지우기 버튼을 위한 우측 공간 28px 고정 */
+  box-sizing: border-box;
 }
 
 body.dark-mode .memo-line-style { color: #9E9EA4; }
+
+/* 기본 상태: 오른쪽 정렬 (입력 완료 후) */
+#inputProduct, #inputPrice, #inputTotal, #inputDose {
+    text-align: right; 
+    transition: text-align 0.2s ease; /* 정렬 전환을 부드럽게 */
+}
+
+/* 입력 중(포커스)일 때: 왼쪽 정렬 */
+#inputProduct:focus, #inputPrice:focus, #inputTotal:focus, #inputDose:focus {
+    text-align: left;
+}
 
 /* 오른쪽 단위 텍스트 */
 .unit-text, .unit-select-inside, .unit-placeholder {
@@ -963,7 +974,10 @@ body.dark-mode .memo-line-style { color: #9E9EA4; }
   text-align: left;
   flex-shrink: 0;
   background: transparent;
-  min-width: 31px;
+  width: 40px; 
+  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
 }
 
 body.dark-mode .unit-text, 
@@ -974,14 +988,12 @@ body.dark-mode .unit-placeholder {
 
 /* 단위 선택기(Select) 아이폰 전용 여백 제거 */
 select.unit-select-inside {
-  padding: 0;
-  margin: 0;
   appearance: none;
   -webkit-appearance: none;
   outline: none;
   border: none;
-  padding-right: 15px;
-  margin-right: -10px;
+  margin: 0 !important;
+  padding: 0 !important;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='7 15 12 20 17 15'%3E%3C/polyline%3E%3Cpolyline points='7 9 12 4 17 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right center;
@@ -1566,7 +1578,7 @@ body.dark-mode .close-btn::before {
 }
 
 #costPeriodWrapper {
-    margin-top: 55px; /* 헤더와의 간격 */
+    margin-top: 50px; /* 헤더와의 간격 */
     margin-bottom: -60px; /* 아래 컨텐츠와의 간격 */
     z-index: 1; /* 헤더보다 뒤에 있다면 앞으로 끌어올림 */
     position: relative;
@@ -1757,14 +1769,6 @@ body.dark-mode .calc-row:active { background-color: rgba(255, 255, 255, 0.158); 
 
 body.dark-mode .calc-input-box {
     background-color: #2c2c2e !important;
-}
-
-/* --- 텍스트 및 상세 요소 --- */
-.calc-main-title {
-    margin-bottom: 10px;
-    margin-left: 15px;
-    font-size: 15px;
-    font-weight: normal;
 }
 
 .calc-product-name {
@@ -2440,13 +2444,14 @@ body.dark-mode .tab-slider {
   padding: 10px;
   display: flex;
   flex-direction: column;
+  margin-bottom: -5px;
 }
 
 .period-input-group {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #c0c0c033;
+  background: #ececec;
   padding: 10px 15px;
   border-radius: 20px;
 }
@@ -2486,7 +2491,7 @@ body.dark-mode .period-input-group {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-content: start; /* 위에서부터 정렬 */
-  gap: 12px;
+  gap: 10px;
   padding: 15px;
 }
 
@@ -2638,7 +2643,7 @@ body.dark-mode .family-btn.selected {
 .analysis-container {
     display: flex;
     flex-direction: column;
-    gap: 8px; /* 섹션 간 간격 조절 */
+    gap: 3px; /* 섹션 간 간격 조절 */
     padding-bottom: 100px;
 }
 
@@ -2665,11 +2670,17 @@ body.dark-mode .family-btn.selected {
 }
 
 .routine-time-label {
-    padding: 8px 18px;
+    display: flex;
+    align-items: center; /* 글자를 세로 중앙에 배치 */
+    height: 45px;
+    padding: 0 18px;
     font-size: 15px;
     font-weight: normal;
     opacity: 0.7;
+    background-color: #e2e2e2;
 }
+
+body.dark-mode .routine-time-label { background-color: #303030; }
 
 .supplement-grid {
     display: grid;
@@ -2682,12 +2693,16 @@ body.dark-mode .family-btn.selected {
     align-items: center;
     gap: 10px;
     padding: 10px 19px;
+    height: 53px;
+    box-sizing: border-box;
 }
 
 .sup-info {
     display: flex;
     flex-direction: column;
+    justify-content: center; /* 텍스트 상하 중앙 정렬 */
     overflow: hidden;
+    height: 100%;
 }
 
 .sup-name {
@@ -2701,4 +2716,69 @@ body.dark-mode .family-btn.selected {
 .sup-dose {
     font-size: 12px;
     opacity: 0.7;
+}
+/*-----------------------------입력창 지우기 버튼-------------------------*/
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1; /* 부모 안에서 꽉 차게 */
+    height: 100%;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding-right: 28px !important; /* X 버튼이 들어갈 공간만 확보 */
+    box-sizing: border-box;
+}
+
+.clear-btn {
+    position: absolute;
+    right: 5px; /* 입력창 안쪽 오른쪽에 고정 */
+    width: 14px;
+    height: 14px;
+    background-color: rgba(0, 0, 0, 0.158);
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+body.dark-mode .clear-btn {
+    background-color: rgba(255, 255, 255, 0.171);
+}
+
+
+.clear-btn span,
+.clear-btn::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 1.6px;
+    background-color: #f5f5f5 !important;
+    border-radius: 10px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.clear-btn::after { transform: translate(-50%, -50%) rotate(45deg); }
+.clear-btn span { transform: translate(-50%, -50%) rotate(-45deg); }
+
+body.dark-mode .clear-btn span, .clear-btn::after {
+  background-color: #2c2c2e !important;
+}
+
+.input-wrapper.show-clear .clear-btn {
+    display: flex; /* 활성화 시 보임 */
+}
+
+#inputProduct, #inputPrice, #inputTotal, #inputDose {
+    padding-right: 28px !important; /* 버튼 공간만큼 비워두기 */
+    text-align: right;
+    box-sizing: border-box;
 }

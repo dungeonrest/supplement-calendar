@@ -77,6 +77,7 @@
       
       <div class="input-wrapper">
         <input type="text" id="familyInput" placeholder="쉼표로 이름 구분 (예: 철수, 엄마)" autocomplete="off">
+        <span class="clear-btn"><span></span></span></div>
       </div>
 
       <div class="onboarding-footer">
@@ -132,21 +133,25 @@
       <div class="memo-paper-group info-group">
         <div class="info-row">
           <span class="row-label">제품명</span>
+          <div class="input-wrapper" style="flex: 1;">
           <input type="text" id="inputProduct" class="memo-line-style" placeholder="">
-          <span class="unit-placeholder"></span>
-        </div>
+          <span class="clear-btn"><span></span></span></div>
+          <span class="unit-placeholder"></span></div>
         <div class="memo-divider"></div>
 
         <div class="info-row">
           <span class="row-label">가격</span>
+          <div class="input-wrapper" style="flex: 1;">
           <input type="text" id="inputPrice" class="memo-line-style" placeholder="" inputmode="numeric">
-          <span class="unit-text">원</span>
-        </div>
+          <span class="clear-btn"><span></span></span></div>
+          <span class="unit-text">원</span></div>
         <div class="memo-divider"></div>
 
         <div class="info-row">
           <span class="row-label">제공량</span>
+          <div class="input-wrapper" style="flex: 1;">
           <input type="text" id="inputTotal" class="memo-line-style" placeholder="" inputmode="numeric">
+          <span class="clear-btn"><span></span></span></div>
           <select id="inputUnit" class="unit-select-inside">
             <option value="캡슐">캡슐</option>
             <option value="정">정</option>
@@ -157,9 +162,10 @@
 
         <div class="info-row">
           <span class="row-label">섭취량</span>
+          <div class="input-wrapper" style="flex: 1;">
           <input type="text" id="inputDose" class="memo-line-style" placeholder="" inputmode="numeric">
-          <span id="unitDisplay" class="unit-text">캡슐</span>
-        </div>
+          <span class="clear-btn"><span></span></span></div>
+          <span id="unitDisplay" class="unit-text">캡슐</span></div>
       </div>
 
 <div class="memo-paper-group checkbox-group">
@@ -245,11 +251,17 @@
       <div class="memo-container">
         <label class="input-label">메모</label>
         <div class="memo-paper-group">
+          <div class="input-wrapper">
           <input type="text" id="memoLine1" class="memo-line" placeholder="" autocomplete="off">
+          <span class="clear-btn"><span></span></span></div>
           <div class="memo-divider"></div>
+          <div class="input-wrapper">
           <input type="text" id="memoLine2" class="memo-line" placeholder="" autocomplete="off">
+          <span class="clear-btn"><span></span></span></div>
           <div class="memo-divider"></div>
+          <div class="input-wrapper">
           <input type="text" id="memoLine3" class="memo-line" placeholder="" autocomplete="off">
+          <span class="clear-btn"><span></span></span></div>
         </div>
       </div>
 

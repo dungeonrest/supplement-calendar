@@ -1,4 +1,4 @@
-const APP_VERSION = "3.17q";
+const APP_VERSION = "3.18";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -131,6 +131,12 @@ function openSupplementModal(sup) {
   updateSelectedDisplay('inputTime', 'selectedTimeText');
   document.querySelector(".info-row.split").classList.remove("select-color");
   validateInputs();
+
+  if (typeof updateTimeCheckboxes === 'function') {
+    updateTimeCheckboxes();
+  }
+  setTimeout(() => initClearButtons(), 100);
+  setTimeout(() => setupInputAlignment(), 50);
 }
 
 // 상태
@@ -246,11 +252,9 @@ themeToggleBtn.addEventListener("click", () => {
 });
 
 /*--------------------------------------월별 비용 시작-----------------------------------*/
-// 1. 비용 모달 열기 버튼 이벤트
 monthlyCostBtn.addEventListener("click", () => {
     initCostModalTabs();
 
-    // 현재 메인 화면의 날짜(dt)를 기준으로 월 선택기(Picker) 초기값 설정
     const picker = document.getElementById('costMonthPicker');
     if (picker) {
         const year = dt.getFullYear();
@@ -258,25 +262,19 @@ monthlyCostBtn.addEventListener("click", () => {
         picker.value = `${year}-${month}`;
     }
 
-    // 데이터 렌더링 함수 실행
     renderMonthlyCostData();
 
-    // 모달 표시
     monthlyCostModal.classList.add("active");
     document.body.classList.add("modal-open");
-    // history.pushState({ modal: "monthlyCost" }, ""); // 뒤로가기 대응이 필요하다면 추가
 });
 
-// 2. [조회 월 변경] 선택기 이벤트 리스너
 document.getElementById('costMonthPicker')?.addEventListener('change', (e) => {
     if (!e.target.value) return;
     
-    // 글로벌 날짜 객체(dt)를 사용자가 선택한 월로 동기화
     const [y, m] = e.target.value.split("-").map(Number);
     dt.setFullYear(y);
     dt.setMonth(m - 1);
     
-    // 현재 보고 있는 탭('비용' 또는 '계산')에 따라 화면 갱신
     const activeTabBtn = document.querySelector('#costTabContainer .tab-btn.active');
     const activeTabText = activeTabBtn ? activeTabBtn.innerText : '비용';
     
@@ -287,7 +285,6 @@ document.getElementById('costMonthPicker')?.addEventListener('change', (e) => {
     }
 });
 
-// 3. [비용 데이터 렌더링] 함수 분리
 function renderMonthlyCostData() {
     const year = dt.getFullYear();
     const month = dt.getMonth() + 1;
@@ -366,11 +363,9 @@ function renderMonthlyCostData() {
         familySummaryHtml += `</div>`;
     }
 
-    // 최종 대입
     document.getElementById("monthlyCostContent").innerHTML = costContentHtml + familySummaryHtml;
 }
 
-// 4. 모달 닫기 이벤트
 document.getElementById("closeMonthlyCostModal").addEventListener("click", () => {
     closeBottomSheet("monthlyCostModal");
     switchCostTab('cost');
@@ -408,6 +403,14 @@ addBtn.addEventListener("click", () => {
   document.getElementById("memoLine1").value = "";
   document.getElementById("memoLine2").value = "";
   document.getElementById("memoLine3").value = "";
+
+  document.querySelectorAll(".inputTime").forEach(cb => {
+    cb.disabled = false;
+    cb.parentElement.style.opacity = "1";
+    cb.parentElement.style.pointerEvents = "auto";
+  });
+  setTimeout(() => initClearButtons(), 100);
+  setTimeout(() => setupInputAlignment(), 50);
 });
 
 const fabAddBtn = document.getElementById("fabAddBtn");
@@ -630,11 +633,6 @@ saveInfoBtn.addEventListener("click", async (e) => {
   const memo1 = document.getElementById("memoLine1").value;
   const memo2 = document.getElementById("memoLine2").value;
   const memo3 = document.getElementById("memoLine3").value;
-  if (!start || !product || !totalCaps || !dose || family.length === 0 || times.length === 0) {
-    alert("모든 정보를 입력해주세요.");
-    return;
-  }
-
   const totalPerDay = dose * family.length;
   const totalDays = Math.ceil(totalCaps / totalPerDay);
 
@@ -1010,8 +1008,8 @@ function showStatsForFamily(name) {
   const innerBg = isDark ? "#1c1c1e" : "#ffffff";
   const trackColor = isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.08)";
 
-  const start = document.getElementById("periodStart").value; // 예: "2026-01"
-  const end = document.getElementById("periodEnd").value;     // 예: "2026-03"
+  const start = document.getElementById("periodStart").value;
+  const end = document.getElementById("periodEnd").value;
   
   if (!start || !end) return;
 
@@ -1023,96 +1021,68 @@ function showStatsForFamily(name) {
   const stats = {};
 
   supplements.forEach(sup => {
-    if (!sup.family || !sup.family.includes(name)) return;
-    const hasScheduleInPeriod = sup.schedule.some(date => date >= startStr && date <= endStr);
-    if (!hasScheduleInPeriod) return;
+  if (!sup.family || !sup.family.includes(name)) return;
 
-    const initialTotal = parseFloat(sup.totalCapsules) || 0;
-    if (initialTotal <= 0) return;
+  const totalCaps = parseFloat(sup.totalCapsules) || 0;
+  const perPersonCaps = totalCaps / (sup.family.length || 1);
+  const dailyDose = parseFloat(sup.dose) || 0;
+  const timeCount = (sup.times && sup.times.length > 0) ? sup.times.length : 1;
+  const capsPerCheck = dailyDose / timeCount;
+  const targetTotalCount = Math.round(perPersonCaps / capsPerCheck);
 
-    const periodScheduleCount = sup.schedule.filter(date => date >= startStr && date <= endStr).length;
-    const targetForPeriod = periodScheduleCount * (sup.times.length); 
-
-    let actualTakenCount = 0;
-    if (sup.takenStatus) {
-      Object.keys(sup.takenStatus).forEach(dateStr => {
-        if (dateStr >= startStr && dateStr <= endStr) {
-          const dayStatus = sup.takenStatus[dateStr];
-          for (const key in dayStatus) {
-            if (key.includes(`_${name}`) && dayStatus[key] === true && !key.includes("_extended")) {
-              actualTakenCount++;
-            }
+  let actualTakenCount = 0;
+  if (sup.takenStatus) {
+    Object.keys(sup.takenStatus).forEach(dateStr => {
+      if (dateStr >= startStr && dateStr <= endStr) {
+        const dayStatus = sup.takenStatus[dateStr];
+        for (const key in dayStatus) {
+          if (key.includes(`_${name}`) && dayStatus[key] === true && !key.includes("_extended")) {
+            actualTakenCount++;
           }
         }
-      });
-    }
+      }
+    });
+  }
 
-    stats[sup.productName] = {
-      taken: actualTakenCount,
-      target: targetForPeriod,
-      color: sup.circleColor
-    };
-  });
+  stats[sup.productName] = {
+    taken: actualTakenCount, 
+    target: targetTotalCount,
+    color: sup.circleColor
+  };
+});
 
   const content = document.getElementById("statsContent");
-    const keys = Object.keys(stats);
-    const count = keys.length;
+  const keys = Object.keys(stats);
 
-    if (count === 0) {
-        content.classList.remove('grid-mode');
-        content.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:180px;'>해당 기간에 섭취 기록이 없습니다.</p>";
-    } 
-    
-    // 🔴 1개일 때
-    else if (count === 1) {
-        content.classList.remove('grid-mode'); // 2열 그리드 해제
-        
-        const key = keys[0];
-        const info = stats[key];
-        let percent = info.target > 0 ? Math.round((info.taken / info.target) * 100) : 0;
-        if (percent > 100) percent = 100;
+  if (keys.length === 0) {
+    content.classList.remove('grid-mode');
+    content.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:180px;'>해당 기간에 섭취 기록이 없습니다.</p>";
+  } else {
+    content.classList.add('grid-mode');
+    if (keys.length === 1) content.classList.remove('grid-mode');
 
-        content.innerHTML = `
-            <div class="stats-item" style="width: 100%; max-width: 100%; padding: 20px 10px; box-sizing: border-box;">
-                <div class="pie-chart" style="width: 55px !important; height: 55px !important; margin: 0 auto 5px auto; background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
-                    <div class="pie-inner" style="width: 30px !important; height: 30px !important; background-color: ${innerBg}">
-                        <span class="pie-percent" style="font-size: 10px !important;">${percent}%</span>
-                    </div>
-                </div>
-                <div class="stats-info" style="align-items: center; text-align: center;">
-                    <span class="stats-product-name" style="font-size: 13px !important; margin-bottom: 1px;">${key}</span>
-                    <span class="stats-count-text" style="font-size: 11px !important; opacity: 0.6;">
-                        ${info.taken} / ${info.target}회
-                    </span>
-                </div>
-            </div>`;
-    } 
+    let html = "";
+    keys.forEach(key => {
+      const info = stats[key];
+      let percent = info.target > 0 ? Math.round((info.taken / info.target) * 100) : 0;
+      if (percent > 100) percent = 100;
 
-    // 3. 2개 이상일 때: 촘촘한 2열 그리드
-    else {
-        content.classList.add('grid-mode');
-        let html = "";
-        keys.forEach(key => {
-            const info = stats[key];
-            let percent = info.target > 0 ? Math.round((info.taken / info.target) * 100) : 0;
-            if (percent > 100) percent = 100;
-
-            html += `
-                <div class="stats-item">
-                    <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
-                        <div class="pie-inner" style="background-color: ${innerBg}">
-                            <span class="pie-percent">${percent}%</span>
-                        </div>
-                    </div>
-                    <div class="stats-info">
-                        <span class="stats-product-name">${key}</span>
-                        <span class="stats-count-text">${info.taken} / ${info.target}회</span>
-                    </div>
-                </div>`;
-        });
-        content.innerHTML = html;
-    }
-    content.scrollTop = 0;
+      html += `
+        <div class="stats-item" style="${keys.length === 1 ? 'width: 100%; max-width: 100%; padding: 20px 10px;' : ''}">
+          <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
+            <div class="pie-inner" style="background-color: ${innerBg}">
+              <span class="pie-percent">${percent}%</span>
+            </div>
+          </div>
+          <div class="stats-info" style="${keys.length === 1 ? 'align-items: center;' : ''}">
+            <span class="stats-product-name">${key}</span>
+            <span class="stats-count-text">${info.taken} / ${info.target}회</span>
+          </div>
+        </div>`;
+    });
+    content.innerHTML = html;
+  }
+  content.scrollTop = 0;
 }
 
 function renderFamilyUI() {
@@ -1236,7 +1206,6 @@ function renderFamilyUI() {
     });
   }
 
-// 탭 전환 함수 수정
 function switchStatsTab(tab) {
     const familyWrapper = document.getElementById('familyBtnsWrapper');
     const periodWrapper = document.getElementById('periodWrapper');
@@ -1305,7 +1274,8 @@ function switchStatsTab(tab) {
 
 function renderAnalysisTab() {
   const statsContent = document.getElementById('statsContent');
-  statsContent.style.padding = "10px 0";
+  statsContent.scrollTop = 0;
+  statsContent.style.padding = "0px 0";
 
   const baseDate = selectedDateForList ? new Date(selectedDateForList) : new Date();
   const targetMonth = baseDate.getMonth();
@@ -1363,36 +1333,33 @@ function renderAnalysisTab() {
     const remains = totalCaps - supTaken;
     const dailyDose = parseFloat(sup.dose) || 0;
     const daysLeft = dailyDose > 0 ? Math.floor(remains / dailyDose) : 0;
-
-    // 마지막 스케줄 날짜 확인
     const lastScheduleDate = sup.schedule && sup.schedule.length > 0 ? sup.schedule[sup.schedule.length - 1] : null;
     
-    // [수정] 아직 기간이 남은 영양제 중에서만 14일 이내인 것을 골라냅니다.
     if (totalCaps > 0 && lastScheduleDate >= todayStr) {
       if (daysLeft >= 0 && daysLeft <= 14) {
         refillList.push({ name: sup.productName, days: daysLeft });
       }
     }
 
-    if (sup.times && Array.isArray(sup.times)) {
-      const timeCount = sup.times.length;
-      const dosePerTime = timeCount > 0 ? (dailyDose / timeCount) : dailyDose;
+    if (remains > 0 && sup.times && Array.isArray(sup.times)) {
+  const timeCount = sup.times.length;
+  const dosePerTime = timeCount > 0 ? (dailyDose / timeCount) : dailyDose;
 
-      sup.times.forEach(time => {
-        if (routine[time]) {
-          routine[time].push({ 
-            ...sup, 
-            displayDose: dosePerTime,
-            color: sup.circleColor || "#4e73df" 
-          });
-        }
+  sup.times.forEach(time => {
+    if (routine[time]) {
+      routine[time].push({ 
+        ...sup, 
+        displayDose: dosePerTime,
+        color: sup.circleColor || "#4e73df" 
       });
     }
+  });
+}
   });
 
   let html = `<div class="analysis-container">`;
 
-  // [섹션 1] 스마트 알림 (항상 표시되도록 수정)
+  // [섹션 1] 스마트 알림
   html += `<div><label class="input-label">스마트 알림</label><div class="memo-paper-group">`;
   if (refillList.length > 0) {
     refillList.sort((a, b) => a.days - b.days).forEach((item, idx) => {
@@ -1405,7 +1372,6 @@ function renderAnalysisTab() {
       if (idx < refillList.length - 1) html += `<div class="memo-divider"></div>`;
     });
   } else {
-    // 알림 내용이 없을 때 보여줄 문구
     html += `<div style="padding: 10px; text-align: left; font-size: 15px; opacity: 0.7;">모든 영양제가 넉넉합니다.</div>`;
   }
   html += `</div></div>`;
@@ -1420,28 +1386,59 @@ function renderAnalysisTab() {
       </div>
     </div>`;
 
-  // [섹션 3] 영양제 리스트 (기존과 동일)
-  html += `<div><label class="input-label">현재 섭취 중인 영양제 리스트</label><div class="memo-paper-group" style="padding: 0;">`;
-  const activeTimes = Object.keys(routine).filter(t => routine[t].length > 0);
-  activeTimes.forEach((time, timeIdx) => {
-    html += `<div class="routine-time-label"><span>${time}</span></div><div class="memo-divider"></div><div class="supplement-grid">`;
-    routine[time].forEach((item, i) => {
+  // [섹션 3] 영양제 리스트 부분 (수정본)
+html += `<div><label class="input-label">현재 섭취 중인 영양제 리스트</label><div class="memo-paper-group" style="padding: 0px 0;">`; // 상하 패딩만 살짝 줌
+
+const activeTimes = Object.keys(routine).filter(t => routine[t].length > 0);
+activeTimes.forEach((time, timeIdx) => {
+
+  html += `<div class="routine-time-label"><span>${time}</span></div>`;
+
+  const items = routine[time];
+  for (let i = 0; i < items.length; i += 2) {
+    const item1 = items[i];
+    const item2 = items[i + 1];
+
+    html += `<div class="supplement-grid">`;
+    
+    // 왼쪽 아이템
+    html += `
+      <div class="supplement-item">
+        <div class="color-dot" style="background: linear-gradient(180deg, ${item1.color}, ${item1.color}bb);"></div>
+        <div class="sup-info">
+          <span class="sup-name">${item1.productName}</span>
+          <span class="sup-dose">${item1.displayDose}${item1.unit || '캡슐'}</span>
+        </div>
+      </div>`;
+
+    // 오른쪽 아이템
+    if (item2) {
       html += `
         <div class="supplement-item">
-          <div class="color-dot" style="background: linear-gradient(180deg, ${item.color}, ${item.color}bb);"></div>
+          <div class="color-dot" style="background: linear-gradient(180deg, ${item2.color}, ${item2.color}bb);"></div>
           <div class="sup-info">
-            <span class="sup-name">${item.productName}</span>
-            <span class="sup-dose">${item.displayDose}${item.unit || '캡슐'}</span>
+            <span class="sup-name">${item2.productName}</span>
+            <span class="sup-dose">${item2.displayDose}${item2.unit || '캡슐'}</span>
           </div>
         </div>`;
-      if (i === routine[time].length - 1 && routine[time].length % 2 !== 0) html += `<div></div>`;
-    });
-    html += `</div>`;
-    if (timeIdx !== activeTimes.length - 1) html += `<div class="memo-divider"></div>`;
-  });
-  if (activeTimes.length === 0) html += `<div style="padding: 40px; text-align: center; opacity: 0.6;">기록된 루틴이 없습니다.</div>`;
+    } else {
+      html += `<div></div>`; 
+    }
+    
+    html += `</div>`; // 한 줄 닫기
 
-  html += `</div></div></div>`;
+    if (i + 2 < items.length) {
+      html += `<div style="padding: 0 15px;"><div class="memo-divider"></div></div>`;
+    }
+  }
+
+  if (timeIdx !== activeTimes.length - 1) {
+    html += `<div style="margin-bottom: 8px;"></div>`;
+  }
+});
+
+if (activeTimes.length === 0) html += `<div style="padding: 40px; text-align: center; opacity: 0.6;">기록된 루틴이 없습니다.</div>`;
+html += `</div></div></div>`;
   statsContent.innerHTML = html;
 }
 
@@ -2145,7 +2142,7 @@ function renderCalcTab() {
     }
 
     let totalOriginal = 0;
-    let listHtml = `<h4 class="calc-main-title">${month}월 구매가</h4>`;
+    let listHtml = ``;
     
     // 제품들을 감싸는 큰 상자 시작
     listHtml += `<div class="calc-list-container">`;
@@ -2460,3 +2457,96 @@ document.getElementById('inputTotal').addEventListener('input', validateInputs);
 document.getElementById('inputDose').addEventListener('input', validateInputs);
 document.getElementById('familyListContainer').addEventListener('change', validateInputs);
 document.querySelector('.checkbox-group').addEventListener('change', validateInputs);
+
+function updateTimeCheckboxes() {
+  const doseValue = parseInt(document.getElementById("inputDose").value) || 0;
+  const timeCheckboxes = document.querySelectorAll(".inputTime");
+  const checkedCount = [...timeCheckboxes].filter(cb => cb.checked).length;
+
+  timeCheckboxes.forEach(cb => {
+
+    if (!cb.checked) {
+      cb.disabled = (doseValue > 0 && checkedCount >= doseValue);
+      cb.parentElement.style.opacity = cb.disabled ? "0.3" : "1";
+      cb.parentElement.style.pointerEvents = cb.disabled ? "none" : "auto";
+    } else {
+      cb.disabled = false;
+      cb.parentElement.style.opacity = "1";
+      cb.parentElement.style.pointerEvents = "auto";
+    }
+  });
+}
+
+document.getElementById("inputDose").addEventListener("input", updateTimeCheckboxes);
+document.addEventListener("change", (e) => {
+  if (e.target.classList.contains("inputTime")) {
+    updateTimeCheckboxes();
+  }
+});
+
+function initClearButtons() {
+    const wrappers = document.querySelectorAll('.input-wrapper');
+    
+    wrappers.forEach(wrapper => {
+        const input = wrapper.querySelector('input');
+        const btn = wrapper.querySelector('.clear-btn');
+        if (!input || !btn) return;
+
+        const toggleBtn = () => {
+
+            if (input.value.length > 0 && document.activeElement === input) {
+                wrapper.classList.add('show-clear');
+            } else {
+                wrapper.classList.remove('show-clear');
+            }
+        };
+
+        input.addEventListener('input', toggleBtn);
+        input.addEventListener('focus', toggleBtn);
+        input.addEventListener('blur', () => {
+            setTimeout(() => {
+                wrapper.classList.remove('show-clear');
+            }, 30);
+        });
+
+        btn.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            input.value = '';
+            if (typeof validateInputs === 'function') validateInputs();
+            input.focus();
+            toggleBtn();
+        });
+    });
+}
+
+window.addEventListener('DOMContentLoaded', initClearButtons);
+
+function setupInputAlignment() {
+    const targetInputs = document.querySelectorAll('#inputProduct, #inputPrice, #inputTotal, #inputDose');
+
+    const updateAlignment = (input) => {
+        if (document.activeElement === input) {
+            input.style.textAlign = 'left';
+        } else {
+            input.style.textAlign = input.value.length > 0 ? 'right' : 'left';
+        }
+    };
+
+    allInputs.forEach(input => {
+        updateAlignment(input);
+
+        input.addEventListener('focus', () => {
+            input.style.textAlign = 'left';
+        });
+
+        input.addEventListener('blur', () => {
+            updateAlignment(input);
+        });
+
+        input.addEventListener('input', () => {
+            if (document.activeElement !== input) updateAlignment(input);
+        });
+    });
+}
+
+window.addEventListener('DOMContentLoaded', setupInputAlignment);
