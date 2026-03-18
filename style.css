@@ -1565,6 +1565,13 @@ body.dark-mode .close-btn::before {
     clear: both;
 }
 
+#costPeriodWrapper {
+    margin-top: 55px; /* 헤더와의 간격 */
+    margin-bottom: -60px; /* 아래 컨텐츠와의 간격 */
+    z-index: 1; /* 헤더보다 뒤에 있다면 앞으로 끌어올림 */
+    position: relative;
+}
+
 .cost-item {
   display: flex;
   flex-direction: column;
@@ -1589,7 +1596,7 @@ body.dark-mode .cost-item-header span:last-child { color: #9E9EA4;}
 /* 비용 전용 막대 그래프 */
 .cost-bar-bg {
   width: 100%;
-  height: 1px;
+  height: 5px;
   background: #ffffff;
   border-radius: 6px;
   overflow: hidden;
@@ -1598,15 +1605,6 @@ body.dark-mode .cost-item-header span:last-child { color: #9E9EA4;}
 .cost-bar-fill {
   height: 100%;
   border-radius: 6px;
-}
-
-/* 상자 밖 왼쪽 위 타이틀 */
-.summary-box-outside-title {
-    font-size: 15px;
-    font-weight: normal;
-    margin-left: 15px;
-    margin-bottom: 8px;
-    color: var(--text-color);
 }
 
 /* 요약 상자 컨테이너 */
@@ -1830,10 +1828,37 @@ body.dark-mode .selected-sum-amount { color: #9E9EA4; }
     font-weight: 600;
 }
 
-.calc-check {
-    width: 20px;
-    height: 20px;
-    accent-color: #05d339;
+input[type="checkbox"].calc-check {
+  border: none !important;      /* 동그란 테두리 제거 */
+  background-color: transparent !important; /* 배경색 제거 */
+  width: 22px;
+  height: 22px;
+}
+
+body.dark-mode input[type="checkbox"].calc-check {
+  border: none !important;
+  background-color: transparent !important;
+}
+
+/* 체크되었을 때 배경색이 변하지 않도록 고정 */
+input[type="checkbox"].calc-check:checked {
+  background-color: transparent !important;
+}
+body.dark-mode input[type="checkbox"].calc-check:checked {
+  background-color: transparent !important;
+  background-color: #0084ff;
+}
+
+/* 체크 표시(SVG) 커스텀*/
+input[type="checkbox"].calc-check::before {
+  width: 18px;
+  height: 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007AFF' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='17 3 9 17 3 11'%3E%3C/polyline%3E%3C/svg%3E") !important;
+}
+
+/* 5. 다크모드용 체크 표시 색상 (iOS 다크 블루) */
+body.dark-mode input[type="checkbox"].calc-check::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230084ff' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='17 3 9 17 3 11'%3E%3C/polyline%3E%3C/svg%3E") !important;
 }
 /*-----------------------------월별 비용 모달 끝-------------------------------*/
 /*----------------------------섭취 체크 모달 시작------------------------------*/
@@ -2083,7 +2108,7 @@ body.dark-mode .extend-btn {
   display: block;
   margin: 0 auto;
   width: 50%;
-  height: 43px;
+  height: 44px;
   font-size: 16px;
   font-weight: normal;
   margin-top: 100px;
@@ -2115,7 +2140,7 @@ body.dark-mode .menu-btn {
 /* 온보딩 전용 배경 */
 #familyConfigModal {
   background-color: #ffffff;
-  display: flex;
+  display: fixed;
   align-items: center;
   justify-content: center;
   position: fixed;
@@ -2124,23 +2149,18 @@ body.dark-mode .menu-btn {
   z-index: 2000;
 }
 
-@media (prefers-color-scheme: dark) { #familyConfigModal {
-  background-color: #000000; }}
-
 /* 컨테이너 레이아웃 */
 .onboarding-container {
   width: 100%;
-  height: 100vh;
+  height: 100%;
   padding: 60px 38px 40px;
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
-
-@media (prefers-color-scheme: dark) { .onboarding-container {
-  background-color: #000000; }}
 
 /* 상단 섹션 (제목 및 설명) */
 .onboarding-top {
@@ -2159,9 +2179,6 @@ body.dark-mode .menu-btn {
   margin-bottom: 5px;
   margin-left: 10px;
 }
-
-@media (prefers-color-scheme: dark) { .onboarding-header h1 {
-  color: #ffffff; }}
 
 /* 설명줄: 이모지와 텍스트 나란히 */
 .description-row {
@@ -2182,9 +2199,6 @@ body.dark-mode .menu-btn {
   color: #000000;
   font-weight: 400;
 }
-
-@media (prefers-color-scheme: dark) { .description-text {
-  color: #ffffff; }}
 
 .limit-notice {
   font-size: 15px;
@@ -2234,14 +2248,7 @@ body.dark-mode .menu-btn {
 
 #familyInput::placeholder {color: #8E8E93; }
 
-@media (prefers-color-scheme: dark) { #familyInput {
-  background-color: #313136 !important;
-  color: #FFFFFF !important;
-}}
-
-.input-sub-label {
-  margin-bottom: 8px;
-}
+.input-sub-label { margin-bottom: 8px; }
 
 /* 버튼: 하단 고정 및 iOS 블루 */
 .onboarding-footer {
@@ -2336,7 +2343,7 @@ body.dark-mode #statsModal .stats-modal {
     z-index: 2000;
     overflow: visible !important;
 }
-
+/*---------------------------------------통계 모달 시작-----------------------------------*/
 .stats-modal {
     display: flex;
     flex-direction: column;
@@ -2427,7 +2434,7 @@ body.dark-mode .tab-slider {
   z-index: 2;
   cursor: pointer;
 }
-
+/*---------------------------------------통계 탭 시작-----------------------------------*/
 /* 기간 설정 레이아웃 */
 .period-select-container {
   padding: 10px;
@@ -2625,4 +2632,73 @@ body.dark-mode .family-slider {
 
 body.dark-mode .family-btn.selected {
   color: #fff !important;
+}
+/*---------------------------------------분석 탭 시작-----------------------------------*/
+/* 분석 탭 전용 스타일 */
+.analysis-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* 섹션 간 간격 조절 */
+    padding-bottom: 100px;
+}
+
+.analysis-cost-box {
+    padding: 15px;
+}
+
+.cost-comparison {
+    font-size: 14px;
+    font-weight: normal;
+    margin-bottom: 8px;
+    opacity: 0.7;
+}
+
+.cost-result {
+    font-size: 15px;
+    font-weight: normal;
+    line-height: 1.4;
+}
+
+.cost-highlight {
+    color: #0b89fe;
+    font-weight: normal;
+}
+
+.routine-time-label {
+    padding: 8px 18px;
+    font-size: 15px;
+    font-weight: normal;
+    opacity: 0.7;
+}
+
+.supplement-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+}
+
+.supplement-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 19px;
+}
+
+.sup-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.sup-name {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: normal;
+}
+
+.sup-dose {
+    font-size: 12px;
+    opacity: 0.7;
 }

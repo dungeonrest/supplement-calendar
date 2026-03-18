@@ -1,4 +1,4 @@
-const APP_VERSION = "3.17";
+const APP_VERSION = "3.17q";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -246,12 +246,52 @@ themeToggleBtn.addEventListener("click", () => {
 });
 
 /*--------------------------------------월별 비용 시작-----------------------------------*/
+// 1. 비용 모달 열기 버튼 이벤트
 monthlyCostBtn.addEventListener("click", () => {
+    initCostModalTabs();
+
+    // 현재 메인 화면의 날짜(dt)를 기준으로 월 선택기(Picker) 초기값 설정
+    const picker = document.getElementById('costMonthPicker');
+    if (picker) {
+        const year = dt.getFullYear();
+        const month = String(dt.getMonth() + 1).padStart(2, '0');
+        picker.value = `${year}-${month}`;
+    }
+
+    // 데이터 렌더링 함수 실행
+    renderMonthlyCostData();
+
+    // 모달 표시
+    monthlyCostModal.classList.add("active");
+    document.body.classList.add("modal-open");
+    // history.pushState({ modal: "monthlyCost" }, ""); // 뒤로가기 대응이 필요하다면 추가
+});
+
+// 2. [조회 월 변경] 선택기 이벤트 리스너
+document.getElementById('costMonthPicker')?.addEventListener('change', (e) => {
+    if (!e.target.value) return;
+    
+    // 글로벌 날짜 객체(dt)를 사용자가 선택한 월로 동기화
+    const [y, m] = e.target.value.split("-").map(Number);
+    dt.setFullYear(y);
+    dt.setMonth(m - 1);
+    
+    // 현재 보고 있는 탭('비용' 또는 '계산')에 따라 화면 갱신
+    const activeTabBtn = document.querySelector('#costTabContainer .tab-btn.active');
+    const activeTabText = activeTabBtn ? activeTabBtn.innerText : '비용';
+    
+    if (activeTabText === '비용') {
+        renderMonthlyCostData();
+    } else {
+        renderCalcTab();
+    }
+});
+
+// 3. [비용 데이터 렌더링] 함수 분리
+function renderMonthlyCostData() {
     const year = dt.getFullYear();
     const month = dt.getMonth() + 1;
     
-    initCostModalTabs();
-
     let totalCost = 0;
     const monthlyItems = [];
     const familyCosts = {};
@@ -275,15 +315,14 @@ monthlyCostBtn.addEventListener("click", () => {
             if (sup.family && Array.isArray(sup.family) && sup.family.length > 0) {
                 const perPersonCost = Math.round(monthlyPart / sup.family.length);
                 sup.family.forEach(member => {
-                    if (!familyCosts[member]) {
-                        familyCosts[member] = 0;
-                    }
+                    if (!familyCosts[member]) familyCosts[member] = 0;
                     familyCosts[member] += perPersonCost;
                 });
             }
         }
     });
 
+    // --- HTML 생성 부분 ---
     let itemsHtml = "";
     if (monthlyItems.length > 0) {
         monthlyItems.forEach(item => {
@@ -297,39 +336,21 @@ monthlyCostBtn.addEventListener("click", () => {
                     <div class="cost-bar-bg">
                         <div class="cost-bar-fill" style="width: ${ratio}%; background-color: ${item.color};"></div>
                     </div>
-                </div>
-            `;
+                </div>`;
         });
     }
-
-    let costContentHtml = "";
-    if (totalCost > 0) {
-        costContentHtml = `
-            <div style="height: 10px; width: 100%;"></div>
-            <div class="summary-box-outside-title">${month}월</div>
-            
-            <div class="cost-summary-box">
-                <div class="summary-box-items">
-                    ${itemsHtml}
-                </div>
-                <div class="summary-box-divider"></div>
-                <div class="total-cost-row">
-                    <span class="total-cost-label">총 합계</span>
-                    <span class="total-cost-amount">${Math.round(totalCost).toLocaleString()} 원</span>
-                </div>
+    
+    let costContentHtml = totalCost > 0 ? `
+        <div class="cost-summary-box">
+            <div class="summary-box-items">${itemsHtml}</div>
+            <div class="summary-box-divider"></div>
+            <div class="total-cost-row">
+                <span class="total-cost-label">총 합계</span>
+                <span class="total-cost-amount">${Math.round(totalCost).toLocaleString()} 원</span>
             </div>
-
-            <p class="cost-notice-text">
-            이번 달 구매한 영양제의 한 달 치 비용입니다. 각 구성원에 할당된 비용은 아래에 표시됩니다.
-            </p>
-        `;
-    } else {
-        costContentHtml = `
-            <p style='text-align:center; font-size:20px; font-weight:bold; margin-top:100px; padding-bottom:80px;'>
-                비용 없음
-            </p>
-        `;
-    }
+        </div>
+        <p class="cost-notice-text">구매한 영양제의 한 달 치 비용입니다. 각 구성원에 할당된 비용은 아래에 표시됩니다.</p>
+    ` : `<p style='text-align:center; font-size:20px; font-weight:bold; margin-top:230px; padding-bottom:80px;'>비용 없음</p>`;
 
     let familySummaryHtml = "";
     const names = Object.keys(familyCosts);
@@ -340,24 +361,19 @@ monthlyCostBtn.addEventListener("click", () => {
                 <div class="family-cost-card">
                     <span class="family-cost-name">${name}</span>
                     <span class="family-cost-amount">${familyCosts[name].toLocaleString()}원</span>
-                </div>
-            `;
+                </div>`;
         });
         familySummaryHtml += `</div>`;
     }
 
-    document.getElementById("monthlyCostContent").innerHTML = `
-        ${costContentHtml}
-        ${familySummaryHtml}
-    `;
+    // 최종 대입
+    document.getElementById("monthlyCostContent").innerHTML = costContentHtml + familySummaryHtml;
+}
 
-    monthlyCostModal.classList.add("active");
-    document.body.classList.add("modal-open");
-});
-
-closeMonthlyCostModal.addEventListener("click", () => {
-  closeBottomSheet("monthlyCostModal");
-  switchCostTab('cost');
+// 4. 모달 닫기 이벤트
+document.getElementById("closeMonthlyCostModal").addEventListener("click", () => {
+    closeBottomSheet("monthlyCostModal");
+    switchCostTab('cost');
 });
 /*--------------------------------------월별 비용 끝-----------------------------------*/
 // + 버튼 클릭 //
@@ -1289,108 +1305,141 @@ function switchStatsTab(tab) {
 
 function renderAnalysisTab() {
   const statsContent = document.getElementById('statsContent');
-  statsContent.style.padding = "15px 0"; 
+  statsContent.style.padding = "10px 0";
+
+  const baseDate = selectedDateForList ? new Date(selectedDateForList) : new Date();
+  const targetMonth = baseDate.getMonth();
+  const targetYear = baseDate.getFullYear();
+  const prevMonthDate = new Date(targetYear, targetMonth - 1, 1);
+  const prevMonth = prevMonthDate.getMonth();
+  const prevMonthYear = prevMonthDate.getFullYear();
+
+  let targetMonthCost = 0;
+  let prevMonthCost = 0;
+
+  supplements.forEach(sup => {
+    if (sup.schedule && sup.schedule.length > 0) {
+      const purchaseDate = new Date(sup.schedule[0]);
+      const pPrice = parseInt(sup.price) || 0;
+      if (purchaseDate.getFullYear() === targetYear && purchaseDate.getMonth() === targetMonth) {
+        targetMonthCost += pPrice;
+      } else if (purchaseDate.getFullYear() === prevMonthYear && purchaseDate.getMonth() === prevMonth) {
+        prevMonthCost += pPrice;
+      }
+    }
+  });
+
+  const diff = targetMonthCost - prevMonthCost;
+  const monthTitle = `${targetMonth + 1}월`;
+  let costAnalysisText = "";
+  let showComparison = (targetMonthCost !== 0 || prevMonthCost !== 0);
+
+  if (!showComparison) {
+    costAnalysisText = `${monthTitle} 전후에 지출 기록이 없습니다.`;
+  } else if (prevMonthCost === 0 && targetMonthCost > 0) {
+    costAnalysisText = `지난 달 지출 기록이 없습니다.`;
+  } else if (diff !== 0) {
+    const status = diff > 0 ? "더" : "덜";
+    costAnalysisText = `지난 달보다 <b class="cost-highlight">${Math.abs(diff).toLocaleString()}원 ${status}</b> 지출했습니다.`;
+  } else {
+    costAnalysisText = `지난 달과 동일하게 지출했습니다.`;
+  }
 
   const routine = { "아침": [], "점심": [], "저녁": [], "공복": [] };
   let refillList = [];
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   supplements.forEach(sup => {
     let supTaken = 0;
     if (sup.takenStatus) {
-      Object.keys(sup.takenStatus).forEach(dateStr => {
-        const dayData = sup.takenStatus[dateStr];
+      Object.values(sup.takenStatus).forEach(dayData => {
         Object.keys(dayData).forEach(key => {
           if (dayData[key] === true && !key.includes("_extended")) supTaken++;
         });
       });
     }
 
-    const totalProvision = parseFloat(sup.totalCapsules) || 0;
-    const dailyDose = parseFloat(sup.dose) || 0; 
-    const remains = totalProvision - supTaken;
-    const daysLeft = dailyDose > 0 ? Math.floor(remains / dailyDose) : 999;
+    const totalCaps = parseFloat(sup.totalCapsules) || 0;
+    const remains = totalCaps - supTaken;
+    const dailyDose = parseFloat(sup.dose) || 0;
+    const daysLeft = dailyDose > 0 ? Math.floor(remains / dailyDose) : 0;
+
+    // 마지막 스케줄 날짜 확인
+    const lastScheduleDate = sup.schedule && sup.schedule.length > 0 ? sup.schedule[sup.schedule.length - 1] : null;
+    
+    // [수정] 아직 기간이 남은 영양제 중에서만 14일 이내인 것을 골라냅니다.
+    if (totalCaps > 0 && lastScheduleDate >= todayStr) {
+      if (daysLeft >= 0 && daysLeft <= 14) {
+        refillList.push({ name: sup.productName, days: daysLeft });
+      }
+    }
 
     if (sup.times && Array.isArray(sup.times)) {
+      const timeCount = sup.times.length;
+      const dosePerTime = timeCount > 0 ? (dailyDose / timeCount) : dailyDose;
+
       sup.times.forEach(time => {
         if (routine[time]) {
           routine[time].push({ 
-            name: sup.productName, 
-            dose: sup.dose, 
-            unit: sup.unit || "캡슐",
-            color: sup.circleColor || "#4e73df"
+            ...sup, 
+            displayDose: dosePerTime,
+            color: sup.circleColor || "#4e73df" 
           });
         }
       });
     }
-
-    if (totalProvision > 0 && daysLeft <= 14) {
-      refillList.push({ name: sup.productName, days: daysLeft });
-    }
   });
 
-  let html = `<div style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px;">`;
+  let html = `<div class="analysis-container">`;
 
-  // [섹션 1] 스마트 알림 (생략 가능)
+  // [섹션 1] 스마트 알림 (항상 표시되도록 수정)
+  html += `<div><label class="input-label">스마트 알림</label><div class="memo-paper-group">`;
   if (refillList.length > 0) {
-    html += `<div><label class="input-label">스마트 알림</label><div class="memo-paper-group">`;
     refillList.sort((a, b) => a.days - b.days).forEach((item, idx) => {
       const color = item.days <= 7 ? "#ff4d4d" : "#ffcc00";
-      html += `<div class="info-row" style="justify-content: space-between; padding: 0 15px;"><span style="font-size: 15px;">${item.days <= 7 ? '🚨' : '⚠️'} ${item.name}</span><span style="font-size: 14px; color: ${color}; font-weight: bold;">약 ${item.days}일분</span></div>`;
+      const dayText = item.days === 0 ? "오늘 완료" : `약 ${item.days}일분`;
+      html += `<div class="info-row" style="justify-content: space-between; padding: 0 5px;">
+                <span style="font-size: 15px;">${item.days <= 7 ? '🚨' : '⚠️'} ${item.name}</span>
+                <span style="font-size: 14px; color: ${color}; font-weight: bold;">${dayText}</span>
+              </div>`;
       if (idx < refillList.length - 1) html += `<div class="memo-divider"></div>`;
     });
-    html += `</div></div>`;
+  } else {
+    // 알림 내용이 없을 때 보여줄 문구
+    html += `<div style="padding: 10px; text-align: left; font-size: 15px; opacity: 0.7;">모든 영양제가 넉넉합니다.</div>`;
   }
+  html += `</div></div>`;
 
-  // [섹션 2] 복용 루틴 정리
-  html += `<div><label class="input-label">복용 루틴 정리</label>`;
-  html += `<div class="memo-paper-group" style="padding: 0;">`;
-
-  const activeTimes = Object.keys(routine).filter(t => routine[t].length > 0);
-  
-  activeTimes.forEach((time, timeIdx) => {
-    const list = routine[time];
-    const isLastTimeSection = timeIdx === activeTimes.length - 1;
-
-    // 복용 시간 헤더
-    html += `
-      <div style="padding: 10px 15px 8px 15px;">
-        <span style="font-size: 12px; font-weight: bold; opacity: 0.5;">${time}</span>
+  // [섹션 2] 소비 분석
+  html += `
+    <div>
+      <label class="input-label">${monthTitle} 소비 분석</label>
+      <div class="memo-paper-group analysis-cost-box">
+        ${showComparison ? `<div class="cost-comparison">${prevMonthCost.toLocaleString()}원 → ${targetMonthCost.toLocaleString()}원</div>` : ''}
+        <div class="cost-result">${costAnalysisText}</div>
       </div>
-      <div class="memo-divider"></div>`;
+    </div>`;
 
-    // 영양제 그리드 컨테이너
-    html += `<div style="display: grid; grid-template-columns: 1fr 1fr; width: 100%;">`;
-    
-    list.forEach((item, i) => {
-      // 아이템 간 세로 구분선 없이 깔끔하게 배치
+  // [섹션 3] 영양제 리스트 (기존과 동일)
+  html += `<div><label class="input-label">현재 섭취 중인 영양제 리스트</label><div class="memo-paper-group" style="padding: 0;">`;
+  const activeTimes = Object.keys(routine).filter(t => routine[t].length > 0);
+  activeTimes.forEach((time, timeIdx) => {
+    html += `<div class="routine-time-label"><span>${time}</span></div><div class="memo-divider"></div><div class="supplement-grid">`;
+    routine[time].forEach((item, i) => {
       html += `
-        <div style="display: flex; align-items: center; gap: 10px; padding: 12px 15px;">
-          <div style="width: 20px; height: 20px; border-radius: 5px; 
-                      background: linear-gradient(135deg, ${item.color}, ${item.color}bb); 
-                      flex-shrink: 0; box-shadow: inset 0 0 2px rgba(0,0,0,0.1);"></div>
-          <div style="display: flex; flex-direction: column; overflow: hidden;">
-            <span style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500;">${item.name}</span>
-            <span style="font-size: 11px; opacity: 0.5;">${item.dose}${item.unit}</span>
+        <div class="supplement-item">
+          <div class="color-dot" style="background: linear-gradient(180deg, ${item.color}, ${item.color}bb);"></div>
+          <div class="sup-info">
+            <span class="sup-name">${item.productName}</span>
+            <span class="sup-dose">${item.displayDose}${item.unit || '캡슐'}</span>
           </div>
         </div>`;
-      
-      // 홀수 번째 아이템(왼쪽)이고, 그게 해당 시간대의 마지막 아이템이면 빈 칸을 채워줌 (그리드 깨짐 방지)
-      if (i === list.length - 1 && list.length % 2 !== 0) {
-        html += `<div></div>`;
-      }
+      if (i === routine[time].length - 1 && routine[time].length % 2 !== 0) html += `<div></div>`;
     });
-    
-    html += `</div>`; // 그리드 끝
-
-    // 섹션 마감 가로선: 전체 상자의 맨 마지막이 아닐 때만 꽉 찬 가로선 추가
-    if (!isLastTimeSection) {
-      html += `<div class="memo-divider"></div>`;
-    }
+    html += `</div>`;
+    if (timeIdx !== activeTimes.length - 1) html += `<div class="memo-divider"></div>`;
   });
-
-  if (activeTimes.length === 0) {
-    html += `<div style="padding: 40px; text-align: center; opacity: 0.5;">기록된 루틴이 없습니다.</div>`;
-  }
+  if (activeTimes.length === 0) html += `<div style="padding: 40px; text-align: center; opacity: 0.6;">기록된 루틴이 없습니다.</div>`;
 
   html += `</div></div></div>`;
   statsContent.innerHTML = html;
@@ -1533,7 +1582,10 @@ closeBackupMenu.addEventListener("click", () => {
 });
 
 // 백업 동작
-exportBtn.addEventListener("click", () => {
+exportBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
   if (supplements.length === 0) {
     alert("백업할 데이터가 없습니다.");
     return;
@@ -1543,12 +1595,18 @@ exportBtn.addEventListener("click", () => {
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");
+  a.style.display = "none";
+  document.body.appendChild(a);
   a.href = url;
   a.download = `supplements-auto-backup.json`;
   a.click();
 
-  URL.revokeObjectURL(url);
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
   closeBottomSheet("backupMenuModal");
+  }, 100);
 });
 
 // 복원 트리거
@@ -1845,20 +1903,13 @@ window.addEventListener("popstate", () => {
     history.scrollRestoration = 'manual';
   }
 
-  const allModals = [
-    modalOverlay,
-    statsModal, 
-    backupMenuModal, 
-    document.getElementById("familyConfigModal"),
-    document.getElementById("takenCheckModal"),
-    monthlyCostModal
-  ];
-  
-  allModals.forEach(modal => {
-    if (modal) modal.classList.remove("active");
+  const activeModals = document.querySelectorAll('.active');
+  activeModals.forEach(modal => {
+    modal.classList.remove("active");
+  });
+
     document.body.classList.remove("modal-open");
   });
-});
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
