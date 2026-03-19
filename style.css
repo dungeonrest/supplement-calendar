@@ -1,0 +1,2847 @@
+html, body {
+  /* 브라우저의 뒤로가기/앞으로가기 스와이프 동작을 막으려는 시도 */
+  overscroll-behavior-x: none;
+}
+
+/* 기본 색상 변수*/
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+  --calendar-line: #dad9d96c;
+  --sun-color: #df2222;
+  --sat-color: #2956df;
+}
+
+body.dark-mode {
+  --bg-color: #000000;
+  --text-color: #ffffff;
+  --calendar-line: #404043;
+  --sun-color: #df2222;
+  --sat-color: #3767f7;
+}
+
+body {
+  margin: 0;
+  font-family: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+  background: var(--bg-color);
+  color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: none;
+  -webkit-tap-highlight-color: transparent;
+
+  user-select: none;
+  -webkit-user-select: none;         /* iOS 사파리 텍스트 선택 방지 */
+  -webkit-touch-callout: none;       /* iOS 롱 프레스 시스템 메뉴 방지 */
+
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain; /* 위로 당겨서 새로고침 되는 동작 방지 */
+}
+
+input, textarea {
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  -webkit-touch-callout: default !important; /* 입력창에서는 시스템 메뉴 허용 */
+}
+
+/* 더블탭 확대 억제 */
+.no-double-tap-zoom {
+  touch-action: manipulation;
+}
+
+/* 모든 버튼, 날짜 셀, 리스트 요소에 돋보기/복사 금지 강제 적용 */
+button,
+.date,
+.supplement-bar, 
+.family-btn, 
+.fab-today-btn, 
+.fab-add-btn, 
+.check-btn, 
+.close-btn,
+.icon-btn,
+.menu-btn,
+.primary-btn,
+.checkbox-item,
+.delete-glass-btn,
+.month-display,
+.header-right-group {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* 버벅임 방지 및 즉각적인 터치 반응 */
+button,
+.fab-today-btn, 
+.fab-add-btn,
+.menu-btn,
+.close-btn, 
+.check-btn,
+.extend-btn,
+.delete-glass-btn,
+.month-display {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              filter 0.4s ease-out;
+  touch-action: none; /* 더블탭 확대 대기를 없애서 클릭 반응 속도 향상 */
+  -webkit-tap-highlight-color: transparent; /* 기본 회색 하이라이트 제거 */
+  will-change: transform;
+}
+
+button:not(.tab-btn).ios-active,
+.fab-today-btn.ios-active, 
+.fab-add-btn.ios-active, 
+.menu-btn.ios-active, 
+.close-btn.ios-active,
+.check-btn.ios-active,
+.extend-btn.ios-active,
+.delete-glass-btn.ios-active,
+.month-display.ios-active {
+  transition: transform 0.2s;
+  transform: scale(1.15) !important;
+  filter: contrast(1.25) saturate(1.25);
+  z-index: 9999;
+}
+
+@keyframes ios-jelly-bounce {
+  0% { transform: scale(1.15); }
+  65% { transform: scale(1.0); }
+  70% { transform: scale(1.015); }
+  100% { transform: scale(1.0); }
+}
+
+button:not(.tab-btn).ios-release,
+.fab-today-btn.ios-release,
+.fab-add-btn.ios-release,
+.menu-btn.ios-release,
+.close-btn.ios-release,
+.check-btn.ios-release,
+.extend-btn.ios-release,
+.delete-glass-btn.ios-release,
+.month-display.ios-release {
+  animation: ios-jelly-bounce 0.55s cubic-bezier(0.9, 1.8, 0.2, 1) forwards !important;
+}
+
+.supplement-bar:active {
+  transform: scale(1.2);
+  filter: brightness(1.1);
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 1px 10px 10px 10px;
+}
+
+.month-display {
+  font-size: 26px;
+  font-weight: bold;
+  color: var(--text-color);
+  letter-spacing: -0.5px;
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+  touch-action: none;
+  user-select: none;
+}
+
+.header-right-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 2px;
+  border-radius: 30px;
+  background-color: rgba(216, 213, 213, 0.171);
+  overflow: hidden;
+}
+
+  body.dark-mode .header-right-group {
+  background-color: #19191aab;
+}
+
+.header-right-group::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  padding: 1px;
+  background: conic-gradient(
+    from 180deg,
+    rgba(128, 128, 128, 0.1) 0deg,
+    rgba(128, 128, 128, 0.1) 65deg,   
+    rgba(128, 128, 128, 0) 80deg,
+    rgba(128, 128, 128, 0.1) 95deg,  
+    rgba(128, 128, 128, 0.1) 240deg, 
+    rgba(128, 128, 128, 0) 255deg,
+    rgba(128, 128, 128, 0.1) 270deg, 
+    rgba(128, 128, 128, 0.1) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+body.dark-mode .header-right-group::before {
+  background: conic-gradient(
+    from 180deg,
+    rgba(255, 255, 255, 0.1) 0deg,
+    rgba(255, 255, 255, 0.1) 65deg,
+    rgba(255, 255, 255, 0) 80deg,    
+    rgba(255, 255, 255, 0.1) 95deg,
+    rgba(255, 255, 255, 0.1) 240deg,
+    rgba(255, 255, 255, 0) 255deg,   
+    rgba(255, 255, 255, 0.1) 270deg,
+    rgba(255, 255, 255, 0.1) 360deg
+  );
+}
+/*----------------------------------------테마 아이콘 시작----------------------------*/
+.theme-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-icon {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  background-color: var(--text-color);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theme-icon,
+.theme-icon::before,
+.theme-icon::after {
+  pointer-events: none;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-icon::before,
+.theme-icon::after {
+ content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2px;
+  height: 4px; 
+  background-color: var(--text-color);
+  border-radius: 10px;
+}
+
+.theme-icon::before {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.theme-icon::after {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.theme-icon::before,
+.theme-icon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 24px;
+  height: 24px;
+  background: 
+    linear-gradient(to bottom, transparent 2px, var(--text-color) 2px, var(--text-color) 5px, transparent 5px, transparent 19px, var(--text-color) 19px, var(--text-color) 22px, transparent 22px),
+    linear-gradient(to right, transparent 2px, var(--text-color) 2px, var(--text-color) 5px, transparent 5px, transparent 19px, var(--text-color) 19px, var(--text-color) 22px, transparent 22px);
+  background-size: 2px 24px, 24px 2px;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 1;
+}
+
+body.dark-mode .theme-icon {
+  width: 16px;
+  height: 16px;
+  border: none;
+  background-color: transparent;
+  box-shadow: inset -5px -3px 0 0 var(--text-color);
+  transform: rotate(-20deg);
+}
+
+body.dark-mode .theme-icon::before {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+body.dark-mode .theme-icon::after {
+  opacity: 0;
+  transform: translate(-50%, -50%) rotate(135deg);
+}
+/*----------------------------------------테마 아이콘 끝----------------------------*/
+/*---------------------------------월별 비용, 통계 아이콘 시작----------------------------*/
+.monthly-cost-btn, .stats-btn {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: var(--text-color);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.monthly-cost-btn {
+  position: relative;
+}
+
+.monthly-cost-btn::before,
+.monthly-cost-btn::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 3px;
+  background-color: var(--text-color);
+  border-radius: 2px;
+}
+
+.monthly-cost-btn::before { transform: translateY(-3px); }
+.monthly-cost-btn::after { transform: translateY(3px); }
+
+.stats-btn {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  height: 32px;
+  padding-bottom: 8px;
+}
+
+.stats-btn span {
+  width: 3.5px;
+  background-color: var(--text-color);
+  border-radius: 10px;
+}
+
+/* 막대별 높이 차이 부여 */
+.stats-btn .bar-1 { height: 8px; }
+.stats-btn .bar-2 { height: 14px; }
+.stats-btn .bar-3 { height: 18px; }
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/*---------------------------------월별 비용, 통계 아이콘 끝----------------------------*/
+.day-labels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 3px;
+  padding: 0 5px;
+  box-sizing: border-box;
+}
+
+.day.sun { color: var(--sun-color); }
+.day.sat { color: var(--sat-color); }
+
+/* 달력 */
+.dates-container {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-top: 4px;
+  padding: 0 5px;
+  box-sizing: border-box;
+  column-gap: 0;
+  row-gap: 0px;
+  gap: 0;
+}
+
+#dates-wrapper {
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.date {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  box-sizing: border-box;
+  padding-bottom: 100%;
+  border-bottom: 0.8px solid var(--calendar-line) !important;
+  cursor: pointer;
+}
+
+.date .number {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  width: 21px;
+  height: 21px;
+  min-width: 21px;
+  min-height: 21px;
+  
+  border: 1.5px solid transparent;
+  border-radius: 50%;
+  
+  box-sizing: border-box;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  z-index: 1;
+  margin: 0 auto 4px auto;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s;
+}
+
+.date .number:active {
+  transform: scale(0.8);
+  transition: transform 0.1s ease-out;
+}
+
+.date {
+    cursor: default;
+}
+
+.date.today-date .number {
+  border-color: var(--main-color, #ff4040);
+  color: var(--text-color);
+}
+
+.date.selected .number {
+  background-color: var(--main-color, #ff4040) !important;
+  border-color: var(--main-color, #ff4040) !important;
+  color: #ffffff !important;
+}
+
+body.dark-mode .date.selected .number {
+  background-color: var(--main-color, #ff4040) !important;
+  color: #000000 !important;
+}
+
+.date.inactive .number {
+  border: none !important;
+  background-color: transparent !important;
+}
+
+/*날짜셀 고정 높이 */
+.dates-container .date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 120px;
+  box-sizing: border-box;
+  padding: 5px 0px;
+  overflow: hidden; /* 내용이 넘쳐도 밖으로 나오지 않게 */
+}
+
+/* 막대바 스타일 (영양제 표시)*/
+  .supplement-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  width: 80%;
+  height: 9px;
+  margin: 1px auto;
+  border-radius: 5px;
+  overflow: hidden;
+  background-color: rgba(255,255,255,0.35);
+}
+
+.supplement-bar .bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 0%;
+  background-color: inherit;
+  transition: width 0.25s ease;
+  z-index: 0;
+}
+
+.supplement-bar-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  line-height: 1;
+  font-size: 7px;
+  font-weight: 700;
+  height: 100%;
+  width: 100%;
+  color: white;
+  pointer-events: none;
+  white-space: nowrap;
+  padding: 0;
+  margin: 0;
+}
+
+@supports (-webkit-touch-callout: none) {
+  .supplement-bar-label {
+    transform: translateY(0px);
+  }
+}
+
+body.dark-mode .supplement-bar-label.unTaken {
+  opacity: 0.4;
+  color: #e2e2e2;
+}
+
+body.dark-mode .supplement-bar-label:not(.unTaken) {
+  opacity: 1;
+  color: #ffffff;
+}
+
+/* 날짜셀 안에 영양제 리스트 공간 */
+.supplement-list {
+  width: 100%;
+  padding-top: 0px;
+}
+
+/* 주 첫 텍스트 스타일 */
+.supplement-text-week {
+  display: block;
+  width: 100%;
+  padding: 0px 0px;
+  margin-top: 0px;
+  font-size: 8px;
+  font-weight: 600;
+  text-align: center;
+  color: white;
+  border-radius: 0px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.date.sun span.number { color: var(--sun-color); }
+.date.sat span.number { color: var(--sat-color); }
+.date.holiday span.number { color: var(--sun-color); }
+
+/* 이전/다음달 날짜는 흐리게 표시 */
+.date.inactive {
+  opacity: 0.3;
+  pointer-events: none; /* 클릭 안 되게 */
+}
+
+.date.inactive.sun span.number { color: var(--sun-color); }
+.date.inactive.sat span.number { color: var(--sat-color); }
+
+.last-week-bar {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.507),
+    rgba(255, 255, 255, 0.507) 4px,
+    transparent 4px,
+    transparent 8px
+  ) !important;
+}
+
+body.dark-mode .last-week-bar {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.507),
+    rgba(0, 0, 0, 0.507) 4px,
+    transparent 4px,
+    transparent 8px
+  ) !important;
+}
+
+/* 모달 오픈 시 배경 스크롤 잠금 */
+body.modal-open {
+  position: fixed; /* 배경을 화면에 박아버림 */
+  width: 100%;
+  height: 100%;
+  overflow: hidden !important;
+  touch-action: none !important;
+}
+
+.modal {
+  width: 100% !important; 
+  height: calc(100svh - env(safe-area-inset-top)) !important;
+  max-height: calc(100svh - env(safe-area-inset-top)) !important;
+  margin-top: env(safe-area-inset-top) !important;
+  
+  background-color: #f8f8f8 !important;
+  border-radius: 30px 30px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+  position: relative;
+  transform: translateY(100%);
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1) !important;
+}
+
+body.dark-mode .modal {
+    background-color: #1c1c1d !important;
+}
+
+#modalBody {
+  flex: none !important;
+  height: auto !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: space-between !important;
+  align-content: flex-start !important;
+  margin-bottom: 0 !important;
+}
+
+body.dark-mode #modalBody, 
+body.dark-mode #monthlyCostContent, 
+body.dark-mode #takenCheckBody, 
+body.dark-mode #statsContent {
+  background-color: transparent !important;
+}
+
+/* 첫 번째 섹션이 헤더 바로 밑에서 시작하도록 간격 부여 */
+.taken-sup-section:first-child, 
+.input-date, 
+.family-buttons {
+  margin-top: 10px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 2000;
+  touch-action: none;
+  background-color: rgba(0, 0, 0, 0.002) !important;
+  visibility: hidden;
+  pointer-events: none;
+  transition: visibility 0.4s;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-overlay.active {
+  visibility: visible;
+  touch-action: none !important;
+  pointer-events: auto;
+  background-color: rgba(0, 0, 0, 0.002) !important;
+  transition: background-color 0.4s;
+}
+
+.modal-overlay.active .modal,
+.modal-overlay.active .taken-modal,
+.modal-overlay.active .stats-modal,
+.modal-overlay.active .backup-menu-modal,
+.modal-overlay.active .yearly-modal {
+  transform: translateY(0);
+}
+
+.modal-header h3 {
+  font-size: 15px;
+  font-weight: normal;
+  position: absolute !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
+.yearly-modal .modal-header h3 {
+    position: static !important;
+    transform: none !important;
+    margin: 0 !important;
+    text-align: left !important;
+    font-size: 28px !important;
+    font-weight: bold !important;
+    flex: 1 !important;
+    color: var(--text-color) !important;
+    padding: 7px 0px 0px 0px !important;
+}
+
+.yearly-grid {
+    display: grid !important;
+    flex: 1 !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    column-gap: 0 !important;
+    row-gap: 10px !important;
+    padding: 10px 6px 10px 10px !important;
+}
+/*헤더 제목과 미니 달력 사이의 간격*/
+.yearly-grid::before {
+    content: "";
+    grid-column: 1 / span 3 !important; 
+    height: 10px !important;
+    display: block !important;
+}
+
+/* 개별 달: 가로선 구현 */
+.mini-month-container {
+    padding: 0px 8px 15px 4px !important;
+    border-bottom: 1px solid var(--calendar-line) !important;
+    box-sizing: border-box !important;
+}
+
+/* 10, 11, 12월(마지막 줄) 가로선 제거 */
+.mini-month-container:nth-child(n+10) {
+    border-bottom: none !important;
+}
+
+.mini-month-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 4px;
+    color: var(--text-color);
+}
+
+.current-month .mini-month-title {
+    color: #fc2d22 !important; /* 현재 달 강조 */
+}
+
+.mini-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px 2px;
+}
+
+.mini-day {
+    font-size: 8px !important;
+    font-weight: normal !important;
+    width: 100% !important;
+    aspect-ratio: 1/1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 50% !important;
+    color: var(--text-color);
+}
+
+@media screen and (min-width: 800px) {
+    .mini-day {
+        width: 30px !important; 
+        height: 30px !important;
+        font-size: 14px !important;
+    }
+    .mini-month-title {
+        font-size: 25px !important;
+    }
+    .yearly-grid {
+        row-gap: 40px !important;
+    }
+}
+
+.yearly-modal .close-btn {
+    margin-left: auto !important;
+    margin-right: 1px !important;
+    position: relative !important;
+    top: -1px !important;
+}
+
+.yearly-grid::-webkit-scrollbar {
+    width: 5px;
+}
+
+.yearly-grid::-webkit-scrollbar-thumb {
+    background-color: rgba(128, 128, 128, 0.3);
+    border-radius: 10px;
+}
+
+.yearly-summary-card {
+    grid-column: 1 / span 3;
+    margin: 5px 0 20px 0;
+    padding: 20px;
+    background: var(--bg-paper);
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+}
+
+.summary-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.summary-divider {
+    height: 1px;
+    background: var(--calendar-line);
+    margin: 2px;
+}
+
+.summary-total {
+    font-weight: normal;
+    margin-top: 2px;
+}
+/*------------------------------------영양제 정보 모달 시작-------------------------------*/
+/* 기본 초기화 및 모달 입력창 스타일 */
+.modal input, .modal select {
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+  outline: none;
+  border: none;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+/* 날짜/색상 행 레이아웃 */
+.info-row.split {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 28px;
+  position: relative;
+  box-sizing: border-box;
+  z-index: 0;
+  width: calc(100% + 22px) !important; 
+  margin-left: -12px !important; 
+  margin-right: -12px !important;
+}
+
+/* 움직이는 흰색 배경 상자 */
+.info-row.split::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(50% - 1px);
+  height: calc(100% - 4px);
+  background: #ffffff;
+  border-radius: 50px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+}
+
+body.dark-mode .info-row.split::before { background: #6a6a6e; }
+
+/* 색상 선택 시 상자 이동 */
+.info-row.split.select-color::before {
+  transform: translateX(calc(100%));
+}
+
+.info-row.split input[type="date"] {
+  font-size: 13px !important;
+  text-align: center !important;
+  color: var(--text-color);
+  cursor: pointer;
+  margin: 0;
+  background: transparent;
+  width: 100%;
+  border: none;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.info-col {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 100%;
+  z-index: 1;
+  cursor: pointer;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 컬러 피커 스타일 */
+.custom-color-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+#inputColor {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0; cursor: pointer;
+}
+
+.color-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid white;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+  flex-shrink: 0;
+}
+
+#colorHexText {
+  font-size: 12px;
+  font-weight: normal;
+}
+
+/* 기본 정보 행 레이아웃 */
+.info-row {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* 왼쪽 고정 라벨 */
+.row-label {
+  color: var(--text-color);
+  font-size: 15px;
+  font-weight: normal;
+  text-align: left;
+  flex-shrink: 0;
+  margin-right: 15px;
+}
+
+/* 중앙 입력란 */
+.memo-line-style {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  font-size: 15px;
+  font-weight: normal;
+  color: #76767a;
+  background: transparent;
+  margin-right: 0 !important; 
+  padding: 0 28px 0 0 !important; /* 지우기 버튼을 위한 우측 공간 28px 고정 */
+  box-sizing: border-box;
+}
+
+body.dark-mode .memo-line-style { color: #9E9EA4; }
+
+/* 기본 상태: 오른쪽 정렬 (입력 완료 후) */
+#inputProduct, #inputPrice, #inputTotal, #inputDose {
+    text-align: right; 
+    transition: text-align 0.2s ease; /* 정렬 전환을 부드럽게 */
+}
+
+/* 입력 중(포커스)일 때: 왼쪽 정렬 */
+#inputProduct:focus, #inputPrice:focus, #inputTotal:focus, #inputDose:focus {
+    text-align: left;
+}
+
+/* 오른쪽 단위 텍스트 */
+.unit-text, .unit-select-inside, .unit-placeholder {
+  color: #76767a !important;
+  font-size: 15px;
+  font-weight: normal;
+  text-align: left;
+  flex-shrink: 0;
+  background: transparent;
+  width: 40px; 
+  min-width: 40px;
+  display: inline-flex;
+  align-items: center;
+}
+
+body.dark-mode .unit-text, 
+body.dark-mode .unit-select-inside, 
+body.dark-mode .unit-placeholder { 
+  color: #9E9EA4 !important; 
+}
+
+/* 단위 선택기(Select) 아이폰 전용 여백 제거 */
+select.unit-select-inside {
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  border: none;
+  margin: 0 !important;
+  padding: 0 !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='7 15 12 20 17 15'%3E%3C/polyline%3E%3Cpolyline points='7 9 12 4 17 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 15px; /*단위 화살표 크기*/
+  cursor: pointer;
+}
+
+.header-right-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+}
+/*---------------------------------대상 및 시간 아코디언 시작----------------------------*/
+.accordion-section {
+  width: 100%;
+}
+
+.accordion-header {
+  cursor: pointer;
+}
+
+.accordion-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              border-top 0.3s ease;
+  overflow: hidden;
+  border-top: 0.8px solid transparent;
+}
+
+.accordion-section.active .accordion-content {
+  grid-template-rows: 1fr;
+  border-top: 0.8px solid var(--calendar-line);
+}
+
+.accordion-inner {
+  min-height: 0;
+}
+
+.selected-text {
+  font-size: 15px;
+  font-weight: normal;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+  color: #76767a;
+}
+
+body.dark-mode .selected-text { color: #9E9EA4; }
+
+/* 아코디언이 active(열림) 상태일 때 우측 텍스트 숨기기 */
+.accordion-section.active .selected-text {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+/* 화살표 아이콘 및 애니메이션 */
+.dropdown-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 100%;
+}
+
+.dropdown-icon::after {
+  content: "";
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.accordion-section.active .dropdown-icon::after {
+  transform: rotate(180deg);
+}
+
+/* 세로 리스트 내부 체크박스 행 */
+.checkbox-wrapper-line {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  width: 100%;
+}
+
+.checkbox-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.checkbox-label-text {
+  font-size: 15px;
+  font-weight: normal;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-wrapper-line:not(:first-child) .checkbox-label-text {
+  border-top: 0.8px solid var(--calendar-line);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.checkbox-wrapper-line:first-child .checkbox-label-text {
+  border-top: none;
+}
+
+/* 체크박스와 글자 사이 간격 */
+.checkbox-item input[type="checkbox"] {
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+/* 체크박스 커스텀 디자인*/
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  border: 1.8px solid #dddddd;
+  background-color: transparent;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+body.dark-mode input[type="checkbox"] { 
+  border: 1.8px solid #616164;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #05d339;
+  border: none;
+}
+body.dark-mode input[type="checkbox"]:checked {
+  background-color: #0b89fe;
+  border: none;
+}
+
+input[type="checkbox"]::before {
+  content: "";
+  width: 12px;
+  height: 12px;
+  transform: scale(0);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 5 10 19 5 13'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+input[type="checkbox"]:checked::before {
+  transform: scale(1);
+}
+/*---------------------------------메모 입력란 시작----------------------------*/
+.memo-paper-group.checkbox-group {
+  margin-top: 25px;
+}
+
+.memo-container {
+  display: block !important;
+  width: 100%;
+}
+
+.memo-paper-group {
+  width: 92%;
+  margin: 0 auto;
+  padding: 0 12px;
+  background: rgba(192, 192, 192, 0.2) !important;
+  border-radius: 22px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+body.dark-mode .memo-paper-group {
+  background: #2c2c2e !important;
+}
+
+.input-label {
+  font-size: 15px;
+  font-weight: normal;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #454549;
+  width: 92% !important;
+  margin: 20px auto 8px !important;
+  padding: 0 13px !important;
+  box-sizing: border-box;
+}
+
+body.dark-mode .input-label {
+  color: #98989E !important;
+}
+
+.memo-line {
+  width: 100% !important;
+  height: 44px;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  font-weight: normal;
+  text-align: left;
+  margin-left: -4px;
+  color: var(--text-color);
+}
+
+.memo-divider {
+  height: 0.8px;
+  background-color: var(--calendar-line);
+  border: none;
+}
+/*---------------------------------삭제 버튼 시작----------------------------*/
+/* 버튼을 하단 중앙에 배치하는 컨테이너 */
+.delete-btn-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0 20px;
+  width: 100%;
+}
+
+.delete-glass-btn {
+  position: relative;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 30px;
+  background-color: #c0c0c033;
+  color: #ff4646;
+  font-size: 15px;
+  font-weight: normal;
+  cursor: pointer;
+  overflow: hidden;
+  filter: brightness(1.15)
+}
+
+body.dark-mode .delete-glass-btn {
+  background-color: #111113;
+  color: #ff4646;
+  filter: brightness(1.15)
+}
+
+.delete-glass-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  padding: 1px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(128, 128, 128, 0.2) 0deg,
+    rgba(128, 128, 128, 0.2) 50deg,
+    rgba(128, 128, 128, 0) 75deg,
+    rgba(128, 128, 128, 0.2) 90deg,
+    rgba(128, 128, 128, 0.2) 230deg,
+    rgba(128, 128, 128, 0) 245deg,
+    rgba(128, 128, 128, 0.2) 260deg,
+    rgba(128, 128, 128, 0.2) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+body.dark-mode .delete-glass-btn::before {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.1) 0deg,
+    rgba(255, 255, 255, 0.1) 50deg,
+    rgba(255, 255, 255, 0) 75deg,
+    rgba(255, 255, 255, 0.1) 90deg,
+    rgba(255, 255, 255, 0.1) 230deg,
+    rgba(255, 255, 255, 0) 245deg,
+    rgba(255, 255, 255, 0.1) 260deg,
+    rgba(255, 255, 255, 0.1) 360deg
+  );
+}
+/*-------------------------------삭제 컴펌 상자 시작-------------------------------*/
+/* 삭제컴펌 배경 오버레이 */
+.action-sheet-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: block;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 9999;
+}
+
+.action-sheet-overlay.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* 중앙 소형 상자 */
+.action-sheet-container {
+    position: absolute;
+    width: 170px;
+    background: #f3f3f3;
+    border-radius: 30px;
+    padding: 12px 13px;
+    transform: translate(-50%, 10px); 
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0;
+    margin-bottom: 0;
+}
+
+.action-sheet-overlay.active .action-sheet-container {
+    transform: translate(-50%, 0);
+    opacity: 1;
+}
+
+body.dark-mode .action-sheet-container {
+    background: #111113;
+}
+
+.action-sheet-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(128, 128, 128, 0.2) 0deg,
+    rgba(128, 128, 128, 0.2) 40deg,
+    rgba(128, 128, 128, 0) 60deg,
+    rgba(128, 128, 128, 0.2) 80deg,
+    rgba(128, 128, 128, 0.2) 220deg,
+    rgba(128, 128, 128, 0) 240deg,
+    rgba(128, 128, 128, 0.2) 260deg,
+    rgba(128, 128, 128, 0.2) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+body.dark-mode .action-sheet-container::before {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.2) 0deg,
+    rgba(255, 255, 255, 0.2) 40deg,
+    rgba(255, 255, 255, 0) 60deg,
+    rgba(255, 255, 255, 0.2) 80deg,
+    rgba(255, 255, 255, 0.2) 220deg,
+    rgba(255, 255, 255, 0) 240deg,
+    rgba(255, 255, 255, 0.2) 260deg,
+    rgba(255, 255, 255, 0.2) 360deg
+  );
+}
+
+/* 내부 그룹 (상하 배치) */
+.action-sheet-group {
+    display: block;
+    width: 100%;
+}
+
+/* 상단 문구 */
+.action-sheet-header {
+    color: var(--text-color);
+    font-size: 15px;
+    font-weight: normal;
+    text-align: left;
+    margin: 3px 50px 13px 10px;
+    line-height: 1.4;
+}
+
+/* 정보 삭제 버튼 (내부 상자 형태) */
+.action-sheet-btn.delete-text {
+    width: 100%;
+    background-color: #c9c9c9;
+    border: none;
+    padding: 10px 0;
+    color: #ff3b30;
+    font-size: 15px;
+    font-weight: normal;
+    border-radius: 30px;
+    cursor: pointer;
+    filter: brightness(1.15)
+}
+
+body.dark-mode .action-sheet-btn.delete-text {
+  background-color: #2c2c2e;
+  color: #ff3b30;
+  filter: brightness(1.15)
+}
+/*---------------------------------저장 버튼 시작----------------------------*/
+/* 저장(체크) 버튼 */
+.check-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: #cacaca;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  z-index: 0;
+}
+
+body.dark-mode .check-btn { background-color: #4a4a4d; }
+.check-btn.ready { background-color: #ec4540; }
+body.dark-mode .check-btn.ready { background-color: #ec4540; }
+
+/* 둥근 모서리 체크(V) 아이콘 */
+.check-btn::before {
+  content: "";
+  position: absolute;
+  width: 22px; 
+  height: 22px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f1f1f1' stroke-width='4.0' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 5 10 19 4 13'%3E%3C/polyline%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+.check-btn.ready::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffc4c2' stroke-width='4.0' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 5 10 19 4 13'%3E%3C/polyline%3E%3C/svg%3E");
+  filter: brightness(1.2);
+}
+body.dark-mode .check-btn.ready::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffb1ae' stroke-width='4.0' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 5 10 19 4 13'%3E%3C/polyline%3E%3C/svg%3E");
+  filter: brightness(1.2);
+}
+
+.check-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 1px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(128, 128, 128, 0.3) 0deg,
+    rgba(128, 128, 128, 0.3) 30deg,
+    rgba(128, 128, 128, 0) 50deg,
+    rgba(128, 128, 128, 0.3) 120deg,
+    rgba(128, 128, 128, 0.3) 200deg,
+    rgba(128, 128, 128, 0) 230deg,
+    rgba(128, 128, 128, 0.3) 300deg,
+    rgba(128, 128, 128, 0.3) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+body.dark-mode .check-btn::after {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.2) 0deg,
+    rgba(255, 255, 255, 0.2) 30deg,
+    rgba(255, 255, 255, 0) 50deg,
+    rgba(255, 255, 255, 0.2) 120deg,
+    rgba(255, 255, 255, 0.2) 200deg,
+    rgba(255, 255, 255, 0) 230deg,
+    rgba(255, 255, 255, 0.2) 300deg,
+    rgba(255, 255, 255, 0.2) 360deg
+  );
+}
+
+.check-btn.ready::after { opacity: 0; }
+/*---------------------------------닫기 버튼 시작----------------------------*/
+.close-btn.right {
+  position: relative;
+  margin-left: auto;
+}
+
+.close-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  background-color: #e6e5e5;
+  transition: background-color 0.3s, transform 0.2s;
+  overflow: visible;
+}
+
+body.dark-mode .close-btn {
+  background-color: #19191B;
+}
+
+.close-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 1px;
+  background: conic-gradient(
+    from 180deg,
+    rgba(128, 128, 128, 0.3) 0deg,
+    rgba(128, 128, 128, 0.3) 30deg,
+    rgba(128, 128, 128, 0) 50deg,
+    rgba(128, 128, 128, 0.3) 120deg,
+    rgba(128, 128, 128, 0.3) 200deg,
+    rgba(128, 128, 128, 0) 230deg,
+    rgba(128, 128, 128, 0.3) 300deg,
+    rgba(128, 128, 128, 0.3) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+body.dark-mode .close-btn::before {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.2) 0deg,
+    rgba(255, 255, 255, 0.2) 30deg,
+    rgba(255, 255, 255, 0) 50deg,
+    rgba(255, 255, 255, 0.2) 120deg,
+    rgba(255, 255, 255, 0.2) 200deg,
+    rgba(255, 255, 255, 0) 230deg,
+    rgba(255, 255, 255, 0.2) 300deg,
+    rgba(255, 255, 255, 0.2) 360deg
+  );
+}
+
+.close-btn span,
+.close-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 19.5px;
+  height: 3.2px;
+  background-color: var(--text-color);
+  border-radius: 10px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.close-btn::after {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.close-btn span {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+/*------------------------------------영양제 정보 모달 끝---------------------------------*/
+/*--------------------------------월별 비용 모달_비용 탭 시작------------------------------*/
+#monthlyCostContent {
+  display: flex;
+  flex-direction: column;
+  padding: 0px 20px 40px 20px !important;
+}
+
+#monthlyCostContent::before,
+#calcTabContent::before {
+    content: "";
+    display: block !important;
+    min-height: 10px !important;
+    width: 100%;
+    clear: both;
+}
+
+#costPeriodWrapper {
+    position: sticky;
+    background-color: #f8f8f8;
+    margin-top: 50px; /* 헤더와의 간격 */
+    margin-bottom: -60px; /* 아래 컨텐츠와의 간격 */
+    z-index: 10; /* 헤더보다 뒤에 있다면 앞으로 끌어올림 */
+    padding: 10px 20px;
+    box-sizing: border-box;
+}
+
+body.dark-mode #costPeriodWrapper {
+    background-color: #1c1c1d; /* 다크모드 배경색에 맞춰 변경 */
+}
+
+.cost-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 5px;
+  margin-bottom: 18px;
+}
+
+.cost-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 15px;
+  font-weight: normal;
+  color: var(--text-color);
+}
+
+.cost-item-header span:last-child { color: #76767a; font-weight: normal; }
+
+body.dark-mode .cost-item-header span:last-child { color: #656566;}
+
+/* 비용 전용 막대 그래프 */
+.cost-bar-bg {
+  width: 100%;
+  height: 15px;
+  background: #d8d8da;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+body.dark-mode .cost-bar-bg {
+  background: #3a3a3c;
+}
+
+.cost-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  background-color: #0b89fe !important; 
+  transition: width 0.3s ease;
+}
+
+/* 요약 상자 컨테이너 */
+.cost-summary-box {
+    background-color: #c0c0c033;
+    border-radius: 22px;
+    padding: 10px 13px;
+    margin-bottom: 15px;
+}
+
+body.dark-mode .cost-summary-box {
+    background-color: #2c2c2e;
+}
+
+.summary-box-divider {
+    height: 0.8px;
+    background-color: #e5e5ea;
+    margin: 10px 0;
+    border: none;
+}
+
+/* 다크모드 대응 */
+body.dark-mode .summary-box-divider {
+    background-color: #404043;
+}
+
+/* 총액 행 (양끝 정렬) */
+.total-cost-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px;
+    margin-bottom: 5px;
+}
+
+.total-cost-label {
+  font-size: 15px;
+  font-weight: normal;
+  color: var(--text-color);
+}
+
+.total-cost-amount {
+  font-size: 15px;
+  font-weight: normal;
+  color: #76767a;
+}
+
+body.dark-mode .total-cost-amount { color: #b0b0b4; }
+
+/* 요약 상자 아래 안내 텍스트 */
+.cost-notice-text {
+    font-size: 12px;
+    color: #8E8E93;
+    line-height: 1.3;          /* 줄 간격 */
+    margin: -8px 15px 20px;    /* 상자 바로 아래 붙도록 상단 마진은 음수 혹은 작게 조절 */
+    font-weight: normal;
+    word-break: keep-all;      /* 한글 단어 단위 끊김 방지 */
+}
+
+.family-cost-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding: 0;
+}
+
+.family-cost-card {
+    background-color: #c0c0c033;
+    border-radius: 22px;
+    padding: 15px 18px;
+    flex: 1 1 calc(50% - 5px); 
+    min-width: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    box-sizing: border-box;
+}
+
+body.dark-mode .family-cost-card {
+    background-color: #2c2c2e;
+}
+
+.family-cost-name {
+    font-size: 14px;
+    font-weight: normal;
+    color: var(--text-color);
+    font-variant-numeric: tabular-nums;
+    text-align: left;
+}
+
+.family-cost-amount {
+    font-size: 14px;
+    font-weight: normal;
+    color: #76767a;
+    font-variant-numeric: tabular-nums;
+}
+
+body.dark-mode .family-cost-amount { color: #9E9EA4; }
+/*--------------------------월별 비용 모달_계산 탭 시작----------------------------*/
+#calcTabContent {
+    display: none;
+    flex-direction: column;
+    padding: 0 20px 40px 20px !important;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.calc-inner-wrapper {
+    display: flex; 
+    flex-direction: column; 
+    width: 100%;
+    margin-top: -10px;
+}
+
+/* 제품 목록을 감싸는 전체 큰 상자 */
+.calc-list-container {
+    background-color: #c0c0c033;
+    border-radius: 22px;
+    padding: 0px;
+    margin-top: 10px;
+    overflow: hidden;
+}
+
+body.dark-mode .calc-list-container {
+    background-color: #2c2c2e !important;
+}
+
+/* 각 제품 행 */
+.calc-row {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    cursor: pointer;
+    position: relative;
+}
+
+/* 클릭 효과 */
+.calc-row:active { background-color: rgba(0, 0, 0, 0.048); }
+body.dark-mode .calc-row:active { background-color: rgba(255, 255, 255, 0.158); }
+
+/* 구분선: 체크박스 너비를 건너뛰고 텍스트부터 시작 */
+.calc-row:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 45px; /* 체크박스(약 20px) + 간격 고려하여 조절 */
+    right: 11px;
+    height: 1px;
+    background-color: #80808033;
+}
+
+/* 입력 박스 (실제 결제 금액 입력 구간) */
+.calc-input-box {
+    margin-top: 0px;
+    padding: 12px;
+    border-radius: 50px;
+    background: #c0c0c033;
+}
+
+body.dark-mode .calc-input-box {
+    background-color: #2c2c2e !important;
+}
+
+.calc-product-name {
+    flex: 1;
+    font-size: 15px;
+    font-weight: normal;
+    color: var(--text-color);
+}
+
+.calc-product-price {
+    font-size: 15px;
+    font-weight: normal;
+    color: #76767a;
+    font-variant-numeric: tabular-nums;
+}
+
+body.dark-mode .calc-product-price { color: #656566; }
+
+.selected-sum-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 48px;
+    font-size: 15px;
+    color: var(--text-color);
+    font-weight: normal;
+}
+
+.selected-sum-amount {
+    color: #76767a;
+    margin-right: -35px;
+    font-variant-numeric: tabular-nums;
+}
+
+body.dark-mode .selected-sum-amount { color: #b0b0b4; }
+
+/* 상자 아래 안내 텍스트 */
+.calc-notice-text {
+    font-size: 12px;
+    color: #8e8e93;
+    margin: 8px 15px 20px;
+    line-height: 1.3;
+    word-break: keep-all;
+}
+
+.actual-paid-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    font-weight: normal;
+    color: var(--text-color);
+    outline: none;
+}
+
+.calc-status-msg {
+    margin-top: 10px;
+    font-size: 12px;
+    text-align: center;
+    color: #05d339;
+    font-weight: 600;
+}
+
+input[type="checkbox"].calc-check {
+  border: none !important;      /* 동그란 테두리 제거 */
+  background-color: transparent !important; /* 배경색 제거 */
+  width: 22px;
+  height: 22px;
+}
+
+body.dark-mode input[type="checkbox"].calc-check {
+  border: none !important;
+  background-color: transparent !important;
+}
+
+/* 체크되었을 때 배경색이 변하지 않도록 고정 */
+input[type="checkbox"].calc-check:checked {
+  background-color: transparent !important;
+}
+body.dark-mode input[type="checkbox"].calc-check:checked {
+  background-color: transparent !important;
+  background-color: #0084ff;
+}
+
+/* 체크 표시(SVG) 커스텀*/
+input[type="checkbox"].calc-check::before {
+  width: 18px;
+  height: 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007AFF' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='17 3 9 17 3 11'%3E%3C/polyline%3E%3C/svg%3E") !important;
+}
+
+/* 5. 다크모드용 체크 표시 색상 (iOS 다크 블루) */
+body.dark-mode input[type="checkbox"].calc-check::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230084ff' stroke-width='3.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='17 3 9 17 3 11'%3E%3C/polyline%3E%3C/svg%3E") !important;
+}
+/*-----------------------------월별 비용 모달 끝-------------------------------*/
+/*----------------------------섭취 체크 모달 시작------------------------------*/
+#takenCheckBody {
+  display: block !important;
+  width: 100%;
+  height: auto;
+  min-height: calc(100svh - 50px) !important;
+  padding: 10px 0 100px 0 !important;
+  overflow-y: visible;
+  box-sizing: border-box;
+}
+
+.taken-sup-section {
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 5px 20px 5px 20px;
+  margin-bottom: 20px;
+  background: rgba(192, 192, 192, 0.2);
+  border-radius: 22px;
+}
+
+body.dark-mode .taken-sup-section {
+  background-color: #2c2c2e !important;
+}
+
+.taken-sup-title {
+  font-size: 15px;
+  font-weight: normal;
+  margin-bottom: 3px;
+  gap: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #454549 !important;
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 5px 25px 5px 25px;
+}
+
+body.dark-mode .taken-sup-title,
+body.dark-mode .taken-sup-title .sup-dot,
+body.dark-mode .taken-sup-title .sup-name-text {
+  color: #98989E !important;
+}
+
+.sup-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0; /* 크기 고정 */
+  box-shadow: inset 0 0 2px rgba(0,0,0,0.1);
+}
+
+.sup-name-text {
+  flex-grow: 1; /* 글자가 영역을 꽉 채우도록 */
+}
+
+.extend-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  background: rgba(173, 170, 170, 0.1);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 3px 5px;
+  line-height: 1
+}
+
+body.dark-mode .extend-btn {
+  background-color: #656569 !important;
+}
+
+.taken-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.taken-table th {
+  font-size: 13px;
+  font-weight: normal;
+  padding: 12px 0;
+  text-align: center;
+  border-bottom: 1px solid var(--calendar-line);
+}
+
+.taken-table td {
+  text-align: center;
+  padding: 12px 0px;
+  background: transparent !important;
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--calendar-line);
+}
+
+.taken-table tr td:first-child {
+  font-size: 13px;
+  font-weight: normal;
+  width: 40px;
+}
+
+.taken-table tr:last-child td {
+  border-bottom: none;
+}
+/*----------------------------섭취 체크 모달 끝------------------------------*/
+/* 플로팅 버튼 디자인 */
+.fab-today-btn {
+  position: fixed;
+  bottom: 21px;
+  left: 25px;
+  width: auto;
+  height: auto;
+  padding: 11px 14px;
+  border-radius: 30px;
+  border: none;
+  background-color: #f3f3f3c9;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  font-size: 15px;
+  font-weight: bold !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  color: var(--text-color);
+  -webkit-tap-highlight-color: transparent;
+  overflow: visible;
+}
+
+.dark-mode .fab-today-btn {
+   background-color: #19191aab;
+   backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+.fab-today-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  padding: 1px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(128, 128, 128, 0.1) 0deg,
+    rgba(128, 128, 128, 0.1) 20deg,   
+    rgba(128, 128, 128, 0) 50deg,
+    rgba(128, 128, 128, 0.1) 100deg,  
+    rgba(128, 128, 128, 0.1) 200deg, 
+    rgba(128, 128, 128, 0) 220deg,
+    rgba(128, 128, 128, 0.1) 300deg, 
+    rgba(128, 128, 128, 0.1) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.dark-mode .fab-today-btn::after {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.1) 0deg,
+    rgba(255, 255, 255, 0.1) 20deg,
+    rgba(255, 255, 255, 0) 50deg,    
+    rgba(255, 255, 255, 0.1) 100deg,
+    rgba(255, 255, 255, 0.1) 200deg,
+    rgba(255, 255, 255, 0) 220deg,   
+    rgba(255, 255, 255, 0.1) 300deg,
+    rgba(255, 255, 255, 0.1) 360deg
+  );
+}
+
+.fab-settings-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.settings-icon {
+  width: 22px;
+  height: 22px;
+  background-color: var(--text-color);
+  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 24" fill="none" opacity="0.9" stroke="black" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="20" height="16" rx="3"/><line x1="8" y1="10" x2="17" y2="10" stroke-width="2.5"/></svg>') no-repeat center;
+  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 24" fill="none" opacity="0.9" stroke="black" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="20" height="16" rx="3"/><line x1="8" y1="10" x2="17" y2="10" stroke-width="2.5"/></svg>') no-repeat center;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+}
+
+.fab-combined-container {
+  position: fixed;
+  bottom: 21px;
+  right: 25px;
+  display: flex;
+  align-items: center;
+  background-color: #f3f3f3c9;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border-radius: 30px;
+  z-index: 1000;
+  height: 41px;
+  padding: 0 5px; /* 양 끝 여백 */
+}
+
+.dark-mode .fab-combined-container {
+  background-color: #1c1c1ecc;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+/* 공통 버튼 스타일 */
+.combined-btn-left, .combined-btn-right {
+  background: transparent;
+  border: none;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+.plus-icon-inner::before, .plus-icon-inner::after {
+  content: "";
+  position: absolute;
+  background-color: var(--text-color);
+  border-radius: 5px;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  
+}
+.plus-icon-inner::before { width: 15px; height: 3px; }
+.plus-icon-inner::after { width: 3px; height: 15px; }
+
+.fab-combined-container::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  padding: 1px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(128, 128, 128, 0.1) 0deg,
+    rgba(128, 128, 128, 0.1) 50deg,   
+    rgba(128, 128, 128, 0) 65deg,    
+    rgba(128, 128, 128, 0.1) 90deg,  
+    rgba(128, 128, 128, 0.1) 230deg, 
+    rgba(128, 128, 128, 0) 245deg,   
+    rgba(128, 128, 128, 0.1) 260deg, 
+    rgba(128, 128, 128, 0.1) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.dark-mode .fab-combined-container::after {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 255, 255, 0.1) 0deg,
+    rgba(255, 255, 255, 0.1) 50deg,
+    rgba(255, 255, 255, 0) 65deg,    
+    rgba(255, 255, 255, 0.1) 90deg,
+    rgba(255, 255, 255, 0.1) 230deg,
+    rgba(255, 255, 255, 0) 245deg,   
+    rgba(255, 255, 255, 0.1) 260deg,
+    rgba(255, 255, 255, 0.1) 360deg
+  );
+}
+
+.menu-btn {
+  display: block;
+  margin: 0 auto;
+  width: 50%;
+  height: 44px;
+  font-size: 16px;
+  font-weight: normal;
+  margin-top: 100px;
+  background: #c0c0c033;
+  color: var(--text-color);
+  border: none;
+  cursor: pointer;
+  border-radius: 50px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.dark-mode .menu-btn {
+  background-color: #2c2c2e !important;
+  color: white;
+}
+
+/* 전체 스크롤바 숨기기 */
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* 파이어폭스 */
+* { scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+/*--------------------------------------온보딩 시작--------------------------------------*/
+/* 온보딩 전용 배경 */
+#familyConfigModal {
+  background-color: #ffffff;
+  display: fixed;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 2000;
+}
+
+/* 컨테이너 레이아웃 */
+.onboarding-container {
+  width: 100%;
+  height: 100%;
+  padding: 60px 38px 40px;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 상단 섹션 (제목 및 설명) */
+.onboarding-top {
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.onboarding-header h1 {
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  color: #000000;
+  margin-bottom: 5px;
+  margin-left: 10px;
+}
+
+/* 설명줄: 이모지와 텍스트 나란히 */
+.description-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0px;
+  margin-right: 20px;
+}
+
+.inline-emoji {
+  font-size: 28px;
+  margin-left: 10px;
+}
+
+.description-text {
+  font-size: 16px;
+  color: #000000;
+  font-weight: 400;
+}
+
+.limit-notice {
+  font-size: 15px;
+  line-height: 1.4;
+  color:  #98989E;
+  padding-right: 15px;
+  padding-left: 50px; /* 이모지 너비만큼 들여쓰기 */
+  margin-bottom: 0;
+  word-break: keep-all;
+}
+
+.onboarding-bottom {
+  margin-top: auto; 
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.input-sub-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #98989E;
+  padding-left: 14px;  /* 입력창 글자와 수직 정렬을 맞추기 위한 미세 조정 */
+  text-transform: uppercase; /* 영문일 경우 세련되게 대문자로 표시 */
+  word-break: keep-all;
+}
+
+/* 입력창 */
+#familyInput {
+  width: 100%;
+  height: 44px;
+  border: none;
+  background-color: #ebebeb;
+  color: #000000;
+  border-radius: 50px;
+  padding: 16px;
+  font-size: 15px;
+  text-align: center;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s;
+}
+
+.input-sub-label { margin-bottom: 8px; }
+
+/* 버튼: 하단 고정 및 iOS 블루 */
+.onboarding-footer {
+  margin-top: auto; /* 버튼을 화면 맨 아래로 */
+}
+
+.primary-btn {
+  width: 100%;
+  height: 44px;
+  background: #007AFF;
+  color: white;
+  border: none;
+  border-radius: 30px;
+  box-shadow: none;
+  font-size: 17px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+}
+/*--------------------------------------온보딩 끝--------------------------------------*/
+/*-----------------------------------------모달 시작-----------------------------------*/
+.modal-header, .yearly-modal .modal-header {
+  position: absolute !important; 
+  top: 0 !important;
+  left: 0 !important;
+  width: 100%;
+  height: 63px !important;
+  z-index: 3001 !important;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  
+  background-color: transparent !important; 
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 12px !important;
+  box-sizing: border-box !important;
+}
+
+#modalBody, #monthlyCostContent, #takenCheckBody, .yearly-grid, #calcTabContent {
+  margin-top: 0 !important;
+  padding-top: 60px !important; 
+  flex: 1 !important;
+  background-color: transparent !important; 
+  
+  width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+body.dark-mode #modalBody, 
+body.dark-mode #monthlyCostContent, 
+body.dark-mode #takenCheckBody,
+body.dark-mode .yearly-grid,
+body.dark-mode .backup-menu-modal,
+body.dark-mode #calcTabContent {
+    background-color: #1c1c1d !important;
+}
+
+#statsModal .stats-modal, .backup-menu-modal {
+ background-color: #f8f8f8 !important;
+    border-radius: 30px 30px 0 0 !important;
+}
+
+body.dark-mode #statsModal .stats-modal {
+ background-color: #1c1c1d !important;
+    border-radius: 30px 30px 0 0 !important;
+}
+
+.stats-modal .modal-header .tab-container,
+.cost-header .tab-container {
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    top: 10px;
+    display: flex;
+    width: 95px;
+    height: 35px;
+    background-color: #c5c5c526;
+    border-radius: 50px;
+    padding: 2px;
+    z-index: 2000;
+    overflow: visible !important;
+}
+/*---------------------------------------통계 모달 시작-----------------------------------*/
+.stats-modal {
+    display: flex;
+    flex-direction: column;
+    height: 90svh;
+    overflow: hidden;
+}
+
+/* 헤더와 필터 영역 고정 */
+.stats-modal .modal-header,
+#statsFilters,
+.family-buttons {
+    flex-shrink: 0; /* 내용이 많아도 줄어들지 않음 */
+}
+
+body.dark-mode .tab-container,
+body.dark-mode .stats-modal .modal-header .tab-container {
+    background-color: #19191B !important;
+}
+
+.tab-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  padding: 1px;
+  background: conic-gradient(
+    from 180deg,
+    rgba(180, 180, 180, 0.2) 0deg,
+    rgba(180, 180, 180, 0.2) 60deg,
+    rgba(180, 180, 180, 0) 75deg,
+    rgba(180, 180, 180, 0.2) 90deg,
+    rgba(180, 180, 180, 0.2) 235deg,
+    rgba(180, 180, 180, 0) 255deg,
+    rgba(180, 180, 180, 0.2) 270deg,
+    rgba(180, 180, 180, 0.2) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
+}
+
+body.dark-mode .tab-container::before {
+  background: conic-gradient(
+    from 180deg,
+    rgba(255, 255, 255, 0.1) 0deg,
+    rgba(255, 255, 255, 0.1) 60deg,
+    rgba(255, 255, 255, 0) 75deg,
+    rgba(255, 255, 255, 0.1) 90deg,
+    rgba(255, 255, 255, 0.1) 235deg,
+    rgba(255, 255, 255, 0) 255deg,
+    rgba(255, 255, 255, 0.1) 270deg,
+    rgba(255, 255, 255, 0.1) 360deg
+  );
+}
+
+.tab-slider {
+  position: absolute;
+  top: 3px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 6px);
+  background-color: #cccccc;
+  border-radius: 50px;
+  z-index: 1;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(0);
+}
+
+body.dark-mode .tab-slider {
+  background-color: #3B3B3D;
+}
+
+.tab-btn {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent !important;
+  font-size: 14px;
+  font-weight: normal;
+  color: var(--text-color);
+  z-index: 2;
+  cursor: pointer;
+}
+/*---------------------------------------통계 탭 시작-----------------------------------*/
+/* 기간 설정 레이아웃 */
+.period-select-container {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: -5px;
+}
+
+.period-input-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ececec;
+  padding: 10px 15px;
+  border-radius: 20px;
+}
+
+body.dark-mode .period-input-group {
+  background: #2c2c2e;
+}
+
+.period-input-group input {
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: normal;
+  color: var(--text-color);
+  outline: none;
+  text-align: right;
+}
+
+.period-input-group input::-webkit-calendar-picker-indicator { margin-left: 5px; }
+
+.period-input-group label {
+  font-size: 15px;
+  font-weight: normal;
+}
+
+.period-input-group input {
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: normal;
+  color: var(--text-color);
+  outline: none;
+}
+
+/* 통계 탭일 때만 적용할 클래스 */
+#statsContent.grid-mode {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-content: start; /* 위에서부터 정렬 */
+  gap: 10px;
+  padding: 15px;
+}
+
+/* 통계 컨텐츠 전체 컨테이너 */
+#statsContent {
+display: block; 
+  padding: 15px;
+  overflow-y: auto;
+}
+
+#statsContent p {
+    grid-column: 1 / span 2; /* 1번 칸부터 2칸을 차지함 (전체 너비) */
+    width: 100%;
+    text-align: center;
+    margin-top: 150px; /* 기존 위치 유지 */
+}
+
+/* 개별 아이템 상자 */
+.stats-item {
+  background: #c0c0c015;
+  border-radius: 22px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column; /* 위아래 배치 */
+  align-items: center;
+  text-align: center;
+  text-align: center;
+  gap: 8px;
+}
+
+body.dark-mode .stats-item {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pie-chart {
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;    /* 수직 중앙 */
+  justify-content: center; /* 수평 중앙 */
+  position: relative;
+  margin-bottom: 1px;
+}
+
+.pie-inner {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pie-percent {
+  font-size: 10px;
+  font-weight: normal;
+}
+
+/* 정보 텍스트 영역 */
+.stats-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.stats-product-name {
+  font-size: 13px !important;
+  font-weight: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 이름 길면 말줄임 */
+}
+
+.stats-count-text {
+  font-size: 11px !important;
+  opacity: 0.6;
+}
+
+#statsFilters {
+  padding-top: 50px !important;
+  background-color: transparent;
+}
+
+/* 슬라이더 배경 (큰 알약) */
+.family-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  position: relative;
+  background: #c0c0c033;
+  border-radius: 50px;
+  padding: 0 2px;
+  margin: 10px 12px;
+  box-sizing: border-box;
+  z-index: 0;
+}
+
+body.dark-mode .family-buttons {
+  background: #2c2c2e;
+}
+
+/* 움직이는 배경 상자 */
+.family-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  height: calc(100% - 4px);
+  background: #ffffff;
+  border-radius: 50px;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: -1;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-sizing: border-box;
+}
+
+body.dark-mode .family-slider {
+  background: #6a6a6e;
+}
+
+.family-btn {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-color);
+  background: transparent !important;
+  border: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  z-index: 1;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.family-btn.selected {
+  font-weight: bold;
+}
+
+body.dark-mode .family-btn.selected {
+  color: #fff !important;
+}
+/*---------------------------------------분석 탭 시작-----------------------------------*/
+/* 분석 탭 전용 스타일 */
+.analysis-container {
+    display: flex;
+    flex-direction: column;
+    gap: 3px; /* 섹션 간 간격 조절 */
+    padding-bottom: 100px;
+}
+
+.analysis-cost-box {
+    padding: 15px;
+}
+
+.cost-comparison {
+    font-size: 14px;
+    font-weight: normal;
+    margin-bottom: 8px;
+    opacity: 0.7;
+}
+
+.cost-result {
+    font-size: 15px;
+    font-weight: normal;
+    line-height: 1.4;
+}
+
+.cost-highlight {
+    color: #0b89fe;
+    font-weight: normal;
+}
+
+.routine-time-label {
+    display: flex;
+    align-items: center; /* 글자를 세로 중앙에 배치 */
+    height: 45px;
+    padding: 0 18px;
+    font-size: 15px;
+    font-weight: normal;
+    opacity: 0.7;
+    background-color: #e2e2e2;
+}
+
+body.dark-mode .routine-time-label { background-color: #303030; }
+
+.supplement-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+}
+
+.supplement-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 19px;
+    height: 53px;
+    box-sizing: border-box;
+}
+
+.sup-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* 텍스트 상하 중앙 정렬 */
+    overflow: hidden;
+    height: 100%;
+}
+
+.sup-name {
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: normal;
+}
+
+.sup-dose {
+    font-size: 12px;
+    opacity: 0.7;
+}
+/*-----------------------------입력창 지우기 버튼-------------------------*/
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1; /* 부모 안에서 꽉 차게 */
+    height: 100%;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding-right: 28px !important; /* X 버튼이 들어갈 공간만 확보 */
+    box-sizing: border-box;
+}
+
+.clear-btn {
+    position: absolute;
+    right: 10px; /* 입력창 안쪽 오른쪽에 고정 */
+    width: 14px;
+    height: 14px;
+    background-color: rgba(0, 0, 0, 0.158);
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+body.dark-mode .clear-btn {
+    background-color: rgba(255, 255, 255, 0.171);
+}
+
+
+.clear-btn span,
+.clear-btn::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 1.6px;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.clear-btn::after { transform: translate(-50%, -50%) rotate(45deg); }
+.clear-btn span { transform: translate(-50%, -50%) rotate(-45deg); }
+
+body.dark-mode .clear-btn span,
+body.dark-mode .clear-btn::after {
+  background-color: #2c2c2e;
+}
+
+.input-wrapper.show-clear .clear-btn {
+    display: flex; /* 활성화 시 보임 */
+}
+
+#inputProduct, #inputPrice, #inputTotal, #inputDose {
+    padding-right: 28px !important; /* 버튼 공간만큼 비워두기 */
+    text-align: right;
+    box-sizing: border-box;
+}

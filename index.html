@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>영양제</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="영양제">
+  <link rel="apple-touch-icon" href="icons/192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+</head>
+<body>
+
+<div class="calendar-wrapper">
+
+<header class="calendar-header no-double-tap-zoom">
+  <span id="monthDisplay" class="month-display"></span>
+  <div class="header-right-group no-double-tap-zoom" tabindex="0">
+    <button id="monthlyCostBtn" class="monthly-cost-btn icon-btn">
+  <span class="won-icon"></span>
+</button>
+<button id="statsBtn" class="stats-btn icon-btn">
+  <span class="bar-1"></span>
+  <span class="bar-2"></span>
+  <span class="bar-3"></span>
+</button>
+    <button id="themeToggle" class="theme-btn icon-btn">
+  <span class="theme-icon"></span>
+</button>
+  </div>
+</header>
+
+<div class="day-labels">
+  <div class="day sun">일</div>
+  <div class="day">월</div>
+  <div class="day">화</div>
+  <div class="day">수</div>
+  <div class="day">목</div>
+  <div class="day">금</div>
+  <div class="day sat">토</div>
+</div>
+
+<div id="dates-wrapper">
+  <div id="dates" class="dates-container"></div>
+</div>
+
+<div id="familyConfigModal" class="modal-overlay hidden">
+  <div class="onboarding-container">
+    
+    <div class="onboarding-top">
+      <div class="onboarding-header">
+        <h1>'영양제'의 새로운 시작</h1>
+      </div>
+
+      <div class="description-row">
+        <span class="inline-emoji">💊</span>
+        <p class="description-text">이제 영양제를 효율적으로 관리할 수 있습니다.</p>
+      </div>
+
+      <p class="limit-notice">
+        섭취 여부 체크와 비용 및 통계 정보를 통해 편리하고 체계적인 건강 관리를 하는 데 도움을 받을 수 있습니다.
+        가족 혹은 개인이 영양제를 챙겨 먹을 때 '영양제' 앱이 제품의 재고 관리에 도움을 줍니다.
+      </p>
+    </div>
+
+    <div class="onboarding-bottom">
+      <p class="input-sub-label">
+        이름은 언제든 변경하거나 삭제할 수 있습니다. 최소 1명에서 최대 4명까지 입력해주세요.
+      </p>
+      
+      <div class="input-wrapper">
+        <input type="text" id="familyInput" placeholder="쉼표로 이름 구분 (예: 철수, 엄마)" autocomplete="off">
+        <span class="clear-btn"><span></span></span>
+      </div>
+
+      <div class="onboarding-footer">
+        <button id="saveFamilyConfig" class="primary-btn">시작하기</button>
+      </div>
+    </div> </div> </div>
+
+<div id="backupMenuModal" class="modal-overlay hidden">
+  <div class="modal backup-menu-modal">
+    <div class="modal-header">
+      <h3>설정</h3>
+      <button id="closeBackupMenu" class="close-btn right"><span></span></button>
+    </div>
+    <button id="exportBtn" class="menu-btn">백업</button>
+    <button id="triggerImportBtn" class="menu-btn">복원</button>
+    <input type="file" id="importFileInput" accept=".json" style="display:none;" />
+  </div>
+</div>
+
+<div id="modalOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <button id="saveInfo" class="check-btn left"></button>
+      <h3>영양제</h3>
+      <button id="closeModal" class="close-btn right"><span></span></button>
+    </div>
+    
+    <div id="modalBody">
+      <div class="memo-paper-group info-group">
+        <div class="info-row split">
+          <div class="info-col">
+            <input type="date" id="inputDate" class="memo-line-style">
+          </div>
+          <div class="info-divider-vertical"></div>
+          <div class="info-col">
+            <div id="colorBar" class="custom-color-bar">
+              <div class="color-info">
+                <div id="colorDot" class="color-dot"></div>
+                <span id="colorHexText">자동 색상</span>
+              </div>
+              <input type="color" id="inputColor">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <label class="input-label">기본 정보</label>
+      <div class="memo-paper-group info-group">
+        <div class="info-row">
+          <span class="row-label">제품명</span>
+          <div class="input-wrapper" style="flex: 1;">
+          <input type="text" id="inputProduct" class="memo-line-style" placeholder="">
+          <span class="clear-btn"><span></span></span></div>
+          <span class="unit-placeholder"></span></div>
+        <div class="memo-divider"></div>
+
+        <div class="info-row">
+          <span class="row-label">가격</span>
+          <div class="input-wrapper" style="flex: 1;">
+          <input type="text" id="inputPrice" class="memo-line-style" placeholder="" inputmode="numeric">
+          <span class="clear-btn"><span></span></span></div>
+          <span class="unit-text">원</span></div>
+        <div class="memo-divider"></div>
+
+        <div class="info-row">
+          <span class="row-label">제공량</span>
+          <div class="input-wrapper" style="flex: 1;">
+          <input type="text" id="inputTotal" class="memo-line-style" placeholder="" inputmode="numeric">
+          <span class="clear-btn"><span></span></span></div>
+          <select id="inputUnit" class="unit-select-inside">
+            <option value="캡슐">캡슐</option>
+            <option value="정">정</option>
+            <option value="g">g</option>
+          </select>
+        </div>
+        <div class="memo-divider"></div>
+
+        <div class="info-row">
+          <span class="row-label">섭취량</span>
+          <div class="input-wrapper" style="flex: 1;">
+          <input type="text" id="inputDose" class="memo-line-style" placeholder="" inputmode="numeric">
+          <span class="clear-btn"><span></span></span></div>
+          <span id="unitDisplay" class="unit-text">캡슐</span></div>
+      </div>
+
+<div class="memo-paper-group checkbox-group">
+  <div class="accordion-section" id="familyAccordion">
+    <div class="info-row accordion-header" onclick="toggleAccordion('familyAccordion')">
+      <span class="row-label">대상</span>
+      <div class="header-right-wrapper">
+        <span id="selectedFamilyText" class="selected-text"></span>
+        <span class="unit-text dropdown-icon"></span>
+      </div>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-inner" id="familyListContainer">
+        <div class="checkbox-wrapper-line">
+          <label class="checkbox-item">
+            <input type="checkbox" class="inputFamily" value="도림">
+            <span class="checkbox-label-text">도림</span>
+          </label>
+        </div>
+        <div class="checkbox-wrapper-line">
+          <label class="checkbox-item">
+            <input type="checkbox" class="inputFamily" value="뚜임">
+            <span class="checkbox-label-text">뚜임</span>
+          </label>
+        </div>
+        <div class="checkbox-wrapper-line">
+          <label class="checkbox-item">
+            <input type="checkbox" class="inputFamily" value="진이">
+            <span class="checkbox-label-text">진이</span>           
+          </label>
+        </div>
+        <div class="checkbox-wrapper-line">
+          <label class="checkbox-item">
+            <input type="checkbox" class="inputFamily" value="쿤이">
+            <span class="checkbox-label-text">쿤이</span>            
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="memo-divider"></div>
+
+  <div class="accordion-section" id="timeAccordion">
+    <div class="info-row accordion-header" onclick="toggleAccordion('timeAccordion')">
+      <span class="row-label">시간</span>
+      <div class="header-right-wrapper">
+        <span id="selectedTimeText" class="selected-text"></span>
+        <span class="unit-text dropdown-icon"></span>
+      </div>
+    </div>
+    <div class="accordion-content">
+      <div class="accordion-inner">
+        <div class="checkbox-wrapper-line">
+          <label class="checkbox-item">
+            <input type="checkbox" class="inputTime" value="아침">
+            <span class="checkbox-label-text">아침</span>            
+          </label>
+        </div>
+        <div class="checkbox-wrapper-line">
+          <label class="checkbox-item">
+            <input type="checkbox" class="inputTime" value="점심">
+            <span class="checkbox-label-text">점심</span>            
+          </label>
+        </div>
+        <div class="checkbox-wrapper-line">
+          <label class="checkbox-item">
+            <input type="checkbox" class="inputTime" value="저녁">
+            <span class="checkbox-label-text">저녁</span>            
+          </label>
+        </div>
+        <div class="checkbox-wrapper-line">
+          <label class="checkbox-item">
+            <input type="checkbox" class="inputTime" value="공복">
+             <span class="checkbox-label-text">공복</span>           
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      <div class="memo-container">
+        <label class="input-label">메모</label>
+        <div class="memo-paper-group">
+          <div class="input-wrapper">
+          <input type="text" id="memoLine1" class="memo-line" placeholder="" autocomplete="off">
+          <span class="clear-btn"><span></span></span></div>
+          <div class="memo-divider"></div>
+          <div class="input-wrapper">
+          <input type="text" id="memoLine2" class="memo-line" placeholder="" autocomplete="off">
+          <span class="clear-btn"><span></span></span></div>
+          <div class="memo-divider"></div>
+          <div class="input-wrapper">
+          <input type="text" id="memoLine3" class="memo-line" placeholder="" autocomplete="off">
+          <span class="clear-btn"><span></span></span></div>
+        </div>
+      </div>
+
+      <div class="delete-btn-container">
+        <button id="deleteInfoBtn" class="delete-glass-btn">영양제 삭제</button>
+      </div>
+    </div> </div> </div>
+
+<div id="takenCheckModal" class="modal-overlay hidden">
+  <div class="modal taken-modal">
+    <div class="modal-header">
+      <h3 id="takenCheckTitle"></h3>
+      <div style="width:35px;"></div>
+      <button id="closeTakenCheckBtn" class="close-btn right"><span></span></button>
+    </div>
+    <div id="takenCheckBody"></div>
+  </div>
+</div>
+
+<div id="monthlyCostModal" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header cost-header">
+      <div class="tab-container" id="costTabContainer">
+        <div class="tab-slider"></div>
+        <button class="tab-btn active" onclick="switchCostTab('cost')">비용</button>
+        <button class="tab-btn" onclick="switchCostTab('calc')">계산</button>
+      </div>
+      <button id="closeMonthlyCostModal" class="close-btn right"><span></span></button>
+    </div>
+
+    <div class="period-select-container" id="costPeriodWrapper" style="padding: 10px 20px;">
+      <div class="period-input-group" style="padding: 0 15px;">
+        <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; height: 44px;">
+          <label for="costMonthPicker">기간</label>
+          <input type="month" id="costMonthPicker">
+        </div>
+      </div>
+    </div>
+
+    <div id="monthlyCostContent"></div>
+    <div id="calcTabContent" style="display:none;"></div>
+  </div>
+</div>
+
+<div id="statsModal" class="modal-overlay hidden">
+  <div class="modal stats-modal">
+    <div class="modal-header">
+      <div class="tab-container" id="statsTabContainer">
+        <div class="tab-slider"></div>
+        <button class="tab-btn active" onclick="switchStatsTab('stats')">통계</button>
+        <button class="tab-btn" onclick="switchStatsTab('analysis')">분석</button>
+      </div>
+      <button id="closeStatsModal" class="close-btn right"><span></span></button>
+    </div>
+
+    <div id="statsFilters">
+      <div id="familyBtnsWrapper" class="family-buttons"></div>
+
+      <div class="period-select-container" id="periodWrapper">
+        <div class="period-input-group" style="flex-direction: column; gap: 0; padding: 1px 15px;">
+          <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; height: 45px;">
+            <label for="periodStart">시작</label>
+            <input type="month" id="periodStart">
+          </div>
+          <div style="width: 100%; height: 1px; background: rgba(128, 128, 128, 0.15);"></div>
+          <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; height: 45px;">
+            <label for="periodEnd">종료</label>
+            <input type="month" id="periodEnd">
+          </div>
+        </div>
+      </div>
+    </div> <div id="statsContent"></div>
+  </div>
+</div>
+
+<div id="yearlyModal" class="modal-overlay hidden yearly-mode">
+  <div class="modal yearly-modal">
+    <div class="modal-header">
+      <h3 id="yearlyTitle">2026년</h3>
+      <button id="closeYearlyModal" class="close-btn right"><span></span></button>
+    </div>
+    <div id="yearlyContent" class="yearly-grid">
+      </div>
+  </div>
+</div>
+
+<div class="action-sheet-overlay" id="actionSheetOverlay">
+  <div class="action-sheet-container">
+    <div class="action-sheet-group">
+      <div class="action-sheet-header">이 영양제를 삭제하겠습니까?</div>
+    </div>
+    <div class="action-sheet-group">
+      <button class="action-sheet-btn delete-text" id="confirmDeleteBtn">영양제 삭제</button>
+    </div>
+  </div>
+</div>
+
+<button id="fabTodayBtn" class="fab-today-btn">오늘</button>
+<div class="fab-combined-container">
+  <button id="fabSettingsBtn" class="combined-btn-left">
+    <span class="settings-icon"></span>
+  </button>
+  <button id="fabAddBtn" class="combined-btn-right">
+    <span class="plus-icon-inner"></span>
+  </button>
+</div>
+
+<script src="script.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(reg => {
+          console.log('서비스 워커 등록 성공!');
+         
+          reg.update(); 
+        })
+        .catch(err => console.log('서비스 워커 등록 실패:', err));
+    });
+
+    window.addEventListener('focus', async () => {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.update();
+    });
+  }
+</script>
+
+</body>
+</html>
