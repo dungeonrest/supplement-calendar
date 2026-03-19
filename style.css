@@ -1974,7 +1974,7 @@ body.dark-mode .extend-btn {
 .taken-table tr:last-child td {
   border-bottom: none;
 }
-
+/*----------------------------섭취 체크 모달 끝------------------------------*/
 /* 플로팅 버튼 디자인 */
 .fab-today-btn, .fab-add-btn {
   position: fixed;
@@ -2236,21 +2236,18 @@ body.dark-mode .menu-btn {
 /* 입력창 */
 #familyInput {
   width: 100%;
-  height: 50px;
+  height: 44px;
   border: none;
-  background-color: #F2F2F7;
+  background-color: #ebebeb;
   color: #000000;
   border-radius: 50px;
   padding: 16px;
-  margin-bottom: 10px;
   font-size: 15px;
   text-align: center;
   outline: none;
   box-sizing: border-box;
   transition: all 0.2s;
 }
-
-#familyInput::placeholder {color: #8E8E93; }
 
 .input-sub-label { margin-bottom: 8px; }
 
@@ -2261,7 +2258,7 @@ body.dark-mode .menu-btn {
 
 .primary-btn {
   width: 100%;
-  height: 50px;
+  height: 44px;
   background: #007AFF;
   color: white;
   border: none;
@@ -2270,6 +2267,7 @@ body.dark-mode .menu-btn {
   font-size: 17px;
   font-weight: 600;
   cursor: pointer;
+  margin-top: 10px;
 }
 /*--------------------------------------온보딩 끝--------------------------------------*/
 #footerBackupLink, #footerVersion {
@@ -2734,7 +2732,7 @@ body.dark-mode .routine-time-label { background-color: #303030; }
 
 .clear-btn {
     position: absolute;
-    right: 5px; /* 입력창 안쪽 오른쪽에 고정 */
+    right: 10px; /* 입력창 안쪽 오른쪽에 고정 */
     width: 14px;
     height: 14px;
     background-color: rgba(0, 0, 0, 0.158);
@@ -2760,7 +2758,7 @@ body.dark-mode .clear-btn {
     left: 50%;
     width: 8px;
     height: 1.6px;
-    background-color: #f5f5f5 !important;
+    background-color: #f5f5f5;
     border-radius: 10px;
     z-index: 2;
     pointer-events: none;
@@ -2769,8 +2767,9 @@ body.dark-mode .clear-btn {
 .clear-btn::after { transform: translate(-50%, -50%) rotate(45deg); }
 .clear-btn span { transform: translate(-50%, -50%) rotate(-45deg); }
 
-body.dark-mode .clear-btn span, .clear-btn::after {
-  background-color: #2c2c2e !important;
+body.dark-mode .clear-btn span,
+body.dark-mode .clear-btn::after {
+  background-color: #2c2c2e;
 }
 
 .input-wrapper.show-clear .clear-btn {

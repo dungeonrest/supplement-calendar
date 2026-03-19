@@ -1,4 +1,4 @@
-const APP_VERSION = "3.18";
+const APP_VERSION = "3.18a";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -543,16 +543,28 @@ function renderCalendar() {
 
         const dayStatus = sup.takenStatus?.[fullDate] || {};
         let takenSlots = 0;
-        for (let t of sup.times) {
+        sup.times.forEach((t, idx) => {
           for (let m of sup.family) {
-            if (dayStatus[`${t}_${m}`]) takenSlots++;
+            if (dayStatus[`${idx}_${m}`]) {
+              takenSlots++;
+            }
           }
-        }
+        });
 
-        const totalSlots = sup.family.length * sup.times.length;
-        const fillPercent = totalSlots > 0
-          ? Math.floor((takenSlots / totalSlots) * 100)
-          : 0;
+const totalCaps = Number(sup.totalCapsules) || 0;
+const dose = Number(sup.dose) || 1;
+const dateIndex = sup.schedule.indexOf(fullDate);
+const slotsPerDay = sup.times.length * sup.family.length;
+const pastSlots = dateIndex * slotsPerDay;
+const capsAvailableToday = Math.max(0, totalCaps - (pastSlots * dose));
+const actualTotalSlotsToday = Math.min(slotsPerDay, Math.floor(capsAvailableToday / dose));
+
+let fillPercent = 0;
+if (actualTotalSlotsToday > 0) {
+    fillPercent = Math.min(100, Math.floor((takenSlots / actualTotalSlotsToday) * 100));
+} else if (totalCaps > 0 && capsAvailableToday <= 0) {
+    fillPercent = takenSlots > 0 ? 100 : 0;
+}
 
         fill.style.width = `${fillPercent}%`;
 
@@ -719,10 +731,59 @@ async function saveAllSupplements(targetSup) {
 
 async function loadSupplements() {
   supplements = await getAllSupplements();
+  await migrateTakenStatusToIndex();
   checkInitialSetup();
   selectedDateForList = getTodayKST();
   renderCalendar();
   renderFamilyUI();
+}
+
+// 기존 "시간이름_가족이름"을 "인덱스_가족이름"으로 변환
+async function migrateTakenStatusToIndex() {
+  let isChanged = false;
+  
+  supplements.forEach(sup => {
+    if (!sup.takenStatus) return;
+
+    const newTakenStatus = {};
+    Object.keys(sup.takenStatus).forEach(date => {
+      newTakenStatus[date] = {};
+      const dayStatus = sup.takenStatus[date];
+
+      Object.keys(dayStatus).forEach(oldKey => {
+        // 이름표가 숫자로 시작하지 않으면(예: 아침_철수) 변환 대상
+        if (isNaN(parseInt(oldKey.split('_')[0]))) {
+          const isExtended = oldKey.endsWith("_extended");
+          const pureKey = oldKey.replace("_extended", "");
+          const [oldTime, member] = pureKey.split('_');
+          
+          // 현재 설정된 시간대 배열에서 이 시간이 몇 번째인지 찾음
+          const tIndex = (sup.times || []).indexOf(oldTime);
+          
+          if (tIndex !== -1) {
+            const newKey = isExtended ? `${tIndex}_${member}_extended` : `${tIndex}_${member}`;
+            newTakenStatus[date][newKey] = dayStatus[oldKey];
+            isChanged = true;
+          } else {
+            // 시간 설정에서 사라진 과거 기록이라도 일단 유지 (데이터 보존)
+            newTakenStatus[date][oldKey] = dayStatus[oldKey];
+          }
+        } else {
+          // 이미 숫자 기반(0_철수)이면 그대로 복사
+          newTakenStatus[date][oldKey] = dayStatus[oldKey];
+        }
+      });
+    });
+    sup.takenStatus = newTakenStatus;
+  });
+
+  if (isChanged) {
+    // 모든 영양제 데이터를 순회하며 DB에 갱신 저장
+    for (const sup of supplements) {
+      await saveSupplementToDB(sup);
+    }
+    console.log("✅ 모든 섭취 데이터가 인덱스 기반으로 변환되었습니다.");
+  }
 }
 
 // 이름 변경 처리 함수
@@ -796,7 +857,7 @@ function checkInitialSetup() {
     if (mainContainer) mainContainer.style.display = "block";
   }
 }
-
+/*-------------------------------------섭취체크모달 시작-------------------------------------*/
 function openTakenCheckUI(date) {
   const modal = document.getElementById("takenCheckModal");
   const title = document.getElementById("takenCheckTitle");
@@ -813,8 +874,22 @@ function openTakenCheckUI(date) {
   const matchedSupps = supplements.filter(s => s.schedule.includes(date));
 
   if (matchedSupps.length === 0) {
-    body.innerHTML = "<p>해당 날짜의 영양제가 없습니다.</p>";
+    body.innerHTML = "<p style='padding:20px; text-align:center;'>해당 날짜의 영양제가 없습니다.</p>";
   } else {
+    // 1. 전체 체크된 개수를 구하는 헬퍼 함수
+    const getTotalCheckedCount = (s) => {
+      let count = 0;
+      if (!s.takenStatus) return 0;
+      Object.values(s.takenStatus).forEach(dayStatus => {
+        Object.entries(dayStatus).forEach(([key, value]) => {
+          if (!key.endsWith("_extended") && value === true) {
+            count++;
+          }
+        });
+      });
+      return count;
+    };
+
     matchedSupps.forEach(sup => {
       const wrapper = document.createElement("div");
       wrapper.classList.add("taken-sup-wrapper");
@@ -825,20 +900,22 @@ function openTakenCheckUI(date) {
       const titleContainer = document.createElement("div");
       titleContainer.classList.add("taken-sup-title");
 
+      // 도트 색상
       const dot = document.createElement("span");
       dot.classList.add("sup-dot");
       dot.style.backgroundColor = sup.circleColor;
       titleContainer.appendChild(dot);
 
+      // 이름
       const nameText = document.createElement("span");
       nameText.classList.add("sup-name-text");
       nameText.innerText = sup.productName;
       titleContainer.appendChild(nameText);
 
+      // 연장 버튼
       const extendBtn = document.createElement("button");
       extendBtn.classList.add("extend-btn");
       extendBtn.innerText = "연장";
-      
       extendBtn.addEventListener("click", async () => {
         const baseDate = date;
         const leftUnTakenSlots = calculateLeftUnTakenSlotsBefore(sup, baseDate);
@@ -881,18 +958,19 @@ function openTakenCheckUI(date) {
           document.body.classList.remove("modal-open");
         }
       });
-      
+
       titleContainer.appendChild(extendBtn);
       wrapper.appendChild(titleContainer);
 
+      // 테이블 생성
       const table = document.createElement("table");
       table.classList.add("taken-table");
 
+      // 헤더 (시간, 가족이름들)
       const headerRow = document.createElement("tr");
       const thTime = document.createElement("th");
       thTime.innerText = "시간";
       headerRow.appendChild(thTime);
-
       sup.family.forEach(member => {
         const th = document.createElement("th");
         th.innerText = member;
@@ -900,42 +978,75 @@ function openTakenCheckUI(date) {
       });
       table.appendChild(headerRow);
 
-      const times = sup.times || [];
-      if (!sup.takenStatus) sup.takenStatus = {};
-      if (!sup.takenStatus[date]) sup.takenStatus[date] = {};
+      const currentSupTimes = sup.times || [];
+      const totalCaps = Number(sup.totalCapsules) || 0;
+      const dose = Number(sup.dose) || 1;
 
-      times.forEach(time => {
+      // [핵심] 실시간 비활성화 함수
+      const refreshCheckboxes = () => {
+        const currentTotalChecked = getTotalCheckedCount(sup);
+        const remaining = totalCaps - (currentTotalChecked * dose);
+        const allCheckboxes = table.querySelectorAll('input[type="checkbox"]');
+
+        allCheckboxes.forEach(chk => {
+          if (!chk.checked) {
+            if (totalCaps > 0 && remaining < dose) {
+              chk.disabled = true;
+              chk.parentElement.style.opacity = "0.2";
+              chk.parentElement.style.pointerEvents = "none";
+            } else {
+              chk.disabled = false;
+              chk.parentElement.style.opacity = "1";
+              chk.parentElement.style.pointerEvents = "auto";
+            }
+          } else {
+            // 체크된 상태는 항상 활성화 유지
+            chk.disabled = false;
+            chk.parentElement.style.opacity = "1";
+            chk.parentElement.style.pointerEvents = "auto";
+          }
+        });
+      };
+
+      // 행(Row) 생성
+      currentSupTimes.forEach(time => {
         const row = document.createElement("tr");
         const tdTime = document.createElement("td");
         tdTime.innerText = time;
         row.appendChild(tdTime);
 
-        sup.family.forEach(member => {
+        sup.family.forEach((member) => {
           const td = document.createElement("td");
           const chk = document.createElement("input");
           chk.type = "checkbox";
-          chk.checked = sup.takenStatus[date][`${time}_${member}`] || false;
-          chk.style.margin = "2px";
+          const timeIndex = currentSupTimes.indexOf(time);
+          const statusKey = `${timeIndex}_${member}`;
+
+          chk.checked = (sup.takenStatus[date] && sup.takenStatus[date][statusKey]) || false;
 
           chk.addEventListener("change", async () => {
-            sup.takenStatus[date][`${time}_${member}`] = chk.checked;
+            if (!sup.takenStatus[date]) sup.takenStatus[date] = {};
+            sup.takenStatus[date][statusKey] = chk.checked;
+
             if (!chk.checked) {
-             delete sup.takenStatus[date][`${time}_${member}_extended`];
+              delete sup.takenStatus[date][statusKey + "_extended"];
             }
+
             await saveSupplementToDB(sup);
             renderCalendar();
+            refreshCheckboxes();
+
             td.style.backgroundColor = chk.checked ? "rgba(78, 205, 196, 0.2)" : "rgba(128, 128, 128, 0.05)";
           });
 
           td.style.backgroundColor = chk.checked ? "rgba(78, 205, 196, 0.2)" : "rgba(128, 128, 128, 0.05)";
-          td.style.transition = "background-color 0.3s";
-          td.style.padding = "2px";
-
           td.appendChild(chk);
           row.appendChild(td);
         });
         table.appendChild(row);
       });
+
+      refreshCheckboxes();
 
       section.appendChild(table);
       wrapper.appendChild(section);
@@ -947,12 +1058,11 @@ function openTakenCheckUI(date) {
   document.body.classList.add("modal-open");
 }
 
-// 섭취체크모달 닫기 버튼 (X) — 누르면 저장 후 모달 닫기
 document.getElementById("closeTakenCheckBtn").addEventListener("click", async () => {
   renderCalendar();
   closeBottomSheet("takenCheckModal");
 });
-
+/*-------------------------------------섭취체크모달 끝-------------------------------------*/
 const statsBtn = document.getElementById("statsBtn");
 const statsModal = document.getElementById("statsModal");
 const closeStatsModal = document.getElementById("closeStatsModal");
@@ -1024,29 +1134,50 @@ function showStatsForFamily(name) {
   if (!sup.family || !sup.family.includes(name)) return;
 
   const totalCaps = parseFloat(sup.totalCapsules) || 0;
-  const perPersonCaps = totalCaps / (sup.family.length || 1);
-  const dailyDose = parseFloat(sup.dose) || 0;
-  const timeCount = (sup.times && sup.times.length > 0) ? sup.times.length : 1;
-  const capsPerCheck = dailyDose / timeCount;
-  const targetTotalCount = Math.round(perPersonCaps / capsPerCheck);
+  const dailyDose = parseFloat(sup.dose) || 1;
+  const maxTotalTakes = Math.floor(totalCaps / dailyDose);
 
   let actualTakenCount = 0;
+  let targetTotalCount = 0;
+  let globalTotalTaken = 0;
   if (sup.takenStatus) {
-    Object.keys(sup.takenStatus).forEach(dateStr => {
-      if (dateStr >= startStr && dateStr <= endStr) {
-        const dayStatus = sup.takenStatus[dateStr];
-        for (const key in dayStatus) {
-          if (key.includes(`_${name}`) && dayStatus[key] === true && !key.includes("_extended")) {
-            actualTakenCount++;
-          }
-        }
-      }
+    Object.values(sup.takenStatus).forEach(day => {
+      Object.entries(day).forEach(([k, v]) => {
+        if (!k.endsWith("_extended") && v === true) globalTotalTaken++;
+      });
     });
   }
 
+  const currentStock = Math.max(0, maxTotalTakes - globalTotalTaken);
+
+  sup.schedule.forEach((date) => {
+    for (let tIdx = 0; tIdx < (sup.times?.length || 1); tIdx++) {
+      const dayStatus = sup.takenStatus?.[date] || {};
+      const myKey = `${tIdx}_${name}`;
+      
+      if (dayStatus[myKey] === true) {
+        actualTakenCount++;
+        targetTotalCount++;
+      } else {
+        const isPast = date < getTodayKST();
+        
+        if (isPast) {
+          targetTotalCount++;
+        } else {
+          if (currentStock > 0) {
+            targetTotalCount++;
+          }
+        }
+      }
+    }
+  });
+
+  const realisticMaxTarget = actualTakenCount + currentStock;
+  targetTotalCount = Math.min(targetTotalCount, realisticMaxTarget);
+
   stats[sup.productName] = {
     taken: actualTakenCount, 
-    target: targetTotalCount,
+    target: targetTotalCount, 
     color: sup.circleColor
   };
 });
