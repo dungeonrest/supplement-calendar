@@ -75,7 +75,7 @@
         이름은 언제든 변경하거나 삭제할 수 있습니다. 최소 1명에서 최대 4명까지 입력해주세요.
       </p>
       
-      <div class="input-wrapper">
+      <div class="input-wrapper" style="flex: 1;">
         <input type="text" id="familyInput" placeholder="쉼표로 이름 구분 (예: 철수, 엄마)" autocomplete="off">
         <span class="clear-btn"><span></span></span>
       </div>
@@ -128,7 +128,7 @@
       <div class="memo-paper-group info-group">
         <div class="info-row">
           <span class="row-label">제품명</span>
-          <div class="input-wrapper" style="flex: 1;">
+          <div class="input-wrapper no-clear" style="flex: 1;">
           <input type="text" id="inputProduct" class="memo-line-style" placeholder="">
           <span class="clear-btn"><span></span></span></div>
           <span class="unit-placeholder"></span></div>
@@ -136,7 +136,7 @@
 
         <div class="info-row">
           <span class="row-label">가격</span>
-          <div class="input-wrapper" style="flex: 1;">
+          <div class="input-wrapper no-clear" style="flex: 1;">
           <input type="text" id="inputPrice" class="memo-line-style" placeholder="" inputmode="numeric">
           <span class="clear-btn"><span></span></span></div>
           <span class="unit-text">원</span></div>
@@ -144,7 +144,7 @@
 
         <div class="info-row">
           <span class="row-label">제공량</span>
-          <div class="input-wrapper" style="flex: 1;">
+          <div class="input-wrapper no-clear" style="flex: 1;">
           <input type="text" id="inputTotal" class="memo-line-style" placeholder="" inputmode="numeric">
           <span class="clear-btn"><span></span></span></div>
           <select id="inputUnit" class="unit-select-inside">
@@ -157,7 +157,7 @@
 
         <div class="info-row">
           <span class="row-label">섭취량</span>
-          <div class="input-wrapper" style="flex: 1;">
+          <div class="input-wrapper no-clear" style="flex: 1;">
           <input type="text" id="inputDose" class="memo-line-style" placeholder="" inputmode="numeric">
           <span class="clear-btn"><span></span></span></div>
           <span id="unitDisplay" class="unit-text">캡슐</span></div>

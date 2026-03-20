@@ -91,7 +91,6 @@ button,
 
 button:not(.tab-btn).ios-active,
 .fab-today-btn.ios-active,
-.menu-btn.ios-active, 
 .close-btn.ios-active,
 .check-btn.ios-active,
 .extend-btn.ios-active,
@@ -114,7 +113,6 @@ button:not(.tab-btn).ios-active,
 
 button:not(.tab-btn).ios-release,
 .fab-today-btn.ios-release,
-.menu-btn.ios-release,
 .close-btn.ios-release,
 .check-btn.ios-release,
 .extend-btn.ios-release,
@@ -125,11 +123,17 @@ button:not(.tab-btn).ios-release,
   animation: ios-jelly-bounce 0.55s cubic-bezier(0.9, 1.8, 0.2, 1) forwards !important;
 }
 
-.header-right-group .icon-btn,
+.header-right-group button,
 .fab-combined-container button {
   transform: none !important;
   transition: none !important;
   background: transparent !important;
+}
+
+.menu-btn:active {
+  transition: transform 0.1s ease-out;
+  transform: scale(1.15);
+  filter: contrast(1.25) saturate(1.25);
 }
 
 .supplement-bar:active {
@@ -169,7 +173,7 @@ button:not(.tab-btn).ios-release,
   gap: 8px;
   padding: 2px 2px;
   border-radius: 30px;
-  background-color: rgba(216, 213, 213, 0.171);
+  background-color: #f3f3f3c9;
   overflow: hidden;
 }
 
@@ -952,8 +956,8 @@ body.dark-mode .info-row.split::before { background: #6a6a6e; }
   font-weight: normal;
   color: #76767a;
   background: transparent;
-  margin-right: 0 !important; 
-  padding: 0 28px 0 0 !important; /* 지우기 버튼을 위한 우측 공간 28px 고정 */
+  margin-right: -20px !important; 
+  padding: 0 !important; /* 지우기 버튼을 위한 우측 공간 28px 고정 */
   box-sizing: border-box;
 }
 
@@ -1001,7 +1005,7 @@ select.unit-select-inside {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238E8E93' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='7 15 12 20 17 15'%3E%3C/polyline%3E%3Cpolyline points='7 9 12 4 17 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right center;
-  background-size: 15px; /*단위 화살표 크기*/
+  background-size: 12px; /*단위 화살표 크기*/
   cursor: pointer;
 }
 
@@ -1061,6 +1065,7 @@ body.dark-mode .selected-text { color: #9E9EA4; }
   justify-content: center;
   width: 35px;
   height: 100%;
+  margin-right: 8px;
 }
 
 .dropdown-icon::after {
@@ -1177,7 +1182,7 @@ input[type="checkbox"]:checked::before {
 .memo-paper-group {
   width: 92%;
   margin: 0 auto;
-  padding: 0 12px;
+  padding: 0 5px 0 15px;
   background: rgba(192, 192, 192, 0.2) !important;
   border-radius: 22px;
   overflow: hidden;
@@ -1196,7 +1201,7 @@ body.dark-mode .memo-paper-group {
   align-items: center;
   color: #454549;
   width: 92% !important;
-  margin: 20px auto 8px !important;
+  margin: 20px auto 5px !important;
   padding: 0 13px !important;
   box-sizing: border-box;
 }
@@ -1214,7 +1219,7 @@ body.dark-mode .input-label {
   font-size: 15px;
   font-weight: normal;
   text-align: left;
-  margin-left: -4px;
+  margin-left: -8px;
   color: var(--text-color);
 }
 
@@ -2123,7 +2128,7 @@ body.dark-mode .extend-btn {
 }
 
 .dark-mode .fab-combined-container {
-  background-color: #1c1c1ecc;
+  background-color: #19191aab;
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
 }
@@ -2804,6 +2809,16 @@ body.dark-mode .routine-time-label { background-color: #303030; }
     width: 100%;
     padding-right: 28px !important; /* X 버튼이 들어갈 공간만 확보 */
     box-sizing: border-box;
+}
+
+/* no-clear 클래스가 붙은 wrapper 안의 지우기 버튼은 공간을 차지하지 않음 */
+.input-wrapper.no-clear .clear-btn {
+  display: none !important;
+}
+
+/* 지우기 버튼이 사라진 만큼 입력창이 오른쪽 끝까지 늘어나도록 설정 */
+.input-wrapper.no-clear input {
+  padding-right: 0 !important; /* 지우기 버튼용 여백 제거 */
 }
 
 .clear-btn {

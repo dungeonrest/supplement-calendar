@@ -1,4 +1,4 @@
-const APP_VERSION = "3.19q";
+const APP_VERSION = "3.19w";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -417,12 +417,6 @@ addBtn.addEventListener("click", () => {
   });
   setTimeout(() => initClearButtons(), 100);
   setTimeout(() => setupInputAlignment(), 50);
-});
-
-const fabAddBtn = document.getElementById("fabAddBtn");
-
-fabAddBtn.addEventListener("click", () => {
-  addBtn.click();
 });
 
 closeModalBtn.addEventListener("click", () => {
@@ -2310,7 +2304,6 @@ async function processDiscount() {
 function applyIOSButtonEffect() {
     const selectors = [
         '.fab-today-btn', 
-        '.menu-btn',
         '.close-btn',
         '.check-btn',
         '.extend-btn',
@@ -2325,7 +2318,6 @@ function applyIOSButtonEffect() {
         attachIOSStyle(el);
     });
 }
-
 
 function attachIOSStyle(el) {
     if (!el) return;
@@ -2567,7 +2559,9 @@ function initClearButtons(container = document) {
     const wrappers = container.querySelectorAll('.input-wrapper');
     
     wrappers.forEach(wrapper => {
-        if (wrapper.dataset.clearApplied === "true") return;
+        if (wrapper.dataset.clearApplied === "true" || wrapper.classList.contains('no-clear')) {
+            return;
+        }
         wrapper.dataset.clearApplied = "true";
 
         const input = wrapper.querySelector('input');
@@ -2601,10 +2595,12 @@ function initClearButtons(container = document) {
     });
 }
 
-window.addEventListener('DOMContentLoaded', initClearButtons);
+window.addEventListener('DOMContentLoaded', () => {
+    initClearButtons(document);
+});
 
 function setupInputAlignment() {
-    const targetInputs = document.querySelectorAll('#inputProduct, #inputPrice, #inputTotal, #inputDose');
+    const allInputs = document.querySelectorAll('#inputProduct, #inputPrice, #inputTotal, #inputDose');
 
     const updateAlignment = (input) => {
         if (document.activeElement === input) {
