@@ -10,6 +10,7 @@ html, body {
   --calendar-line: #dad9d96c;
   --sun-color: #df2222;
   --sat-color: #2956df;
+  --bar-opacity: 0.3;
 }
 
 body.dark-mode {
@@ -18,6 +19,7 @@ body.dark-mode {
   --calendar-line: #404043;
   --sun-color: #df2222;
   --sat-color: #3767f7;
+  --bar-opacity: 0.45;
 }
 
 body {
@@ -52,33 +54,34 @@ input, textarea {
 button,
 .date,
 .supplement-bar, 
+.fab-today-btn,
 .family-btn, 
-.fab-today-btn, 
-.fab-add-btn, 
 .check-btn, 
 .close-btn,
-.icon-btn,
+.extend-btn,
 .menu-btn,
 .primary-btn,
 .checkbox-item,
 .delete-glass-btn,
 .month-display,
-.header-right-group {
+.header-right-group,
+.fab-combined-container {
   -webkit-touch-callout: none !important;
   -webkit-user-select: none !important;
   user-select: none !important;
 }
 
 /* 버벅임 방지 및 즉각적인 터치 반응 */
-button,
-.fab-today-btn, 
-.fab-add-btn,
+.fab-today-btn,
 .menu-btn,
 .close-btn, 
-.check-btn,
+.check-btn, 
 .extend-btn,
 .delete-glass-btn,
-.month-display {
+.month-display,
+.header-right-group,
+.fab-combined-container,
+.primary-btn {
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
               filter 0.4s ease-out;
   touch-action: none; /* 더블탭 확대 대기를 없애서 클릭 반응 속도 향상 */
@@ -87,14 +90,15 @@ button,
 }
 
 button:not(.tab-btn).ios-active,
-.fab-today-btn.ios-active, 
-.fab-add-btn.ios-active, 
+.fab-today-btn.ios-active,
 .menu-btn.ios-active, 
 .close-btn.ios-active,
 .check-btn.ios-active,
 .extend-btn.ios-active,
 .delete-glass-btn.ios-active,
-.month-display.ios-active {
+.month-display.ios-active,
+.header-right-group.ios-active,
+.fab-combined-container.ios-active {
   transition: transform 0.2s;
   transform: scale(1.15) !important;
   filter: contrast(1.25) saturate(1.25);
@@ -110,18 +114,26 @@ button:not(.tab-btn).ios-active,
 
 button:not(.tab-btn).ios-release,
 .fab-today-btn.ios-release,
-.fab-add-btn.ios-release,
 .menu-btn.ios-release,
 .close-btn.ios-release,
 .check-btn.ios-release,
 .extend-btn.ios-release,
 .delete-glass-btn.ios-release,
-.month-display.ios-release {
+.month-display.ios-release,
+.header-right-group.ios-release,
+.fab-combined-container.ios-release {
   animation: ios-jelly-bounce 0.55s cubic-bezier(0.9, 1.8, 0.2, 1) forwards !important;
 }
 
+.header-right-group .icon-btn,
+.fab-combined-container button {
+  transform: none !important;
+  transition: none !important;
+  background: transparent !important;
+}
+
 .supplement-bar:active {
-  transform: scale(1.2);
+  transform: scale(1.15);
   filter: brightness(1.1);
   z-index: 100;
   transition: all 0.3s ease;
@@ -2017,7 +2029,7 @@ body.dark-mode .extend-btn {
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   font-size: 15px;
-  font-weight: bold !important;
+  font-weight: normal !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2307,7 +2319,7 @@ body.dark-mode .menu-btn {
 /* 입력창 */
 #familyInput {
   width: 100%;
-  height: 44px;
+  height: 50px;
   border: none;
   background-color: #ebebeb;
   color: #000000;
@@ -2329,7 +2341,7 @@ body.dark-mode .menu-btn {
 
 .primary-btn {
   width: 100%;
-  height: 44px;
+  height: 50px;
   background: #007AFF;
   color: white;
   border: none;
@@ -2796,7 +2808,7 @@ body.dark-mode .routine-time-label { background-color: #303030; }
 
 .clear-btn {
     position: absolute;
-    right: 10px; /* 입력창 안쪽 오른쪽에 고정 */
+    right: 15px; /* 입력창 안쪽 오른쪽에 고정 */
     width: 14px;
     height: 14px;
     background-color: rgba(0, 0, 0, 0.158);
@@ -2807,10 +2819,12 @@ body.dark-mode .routine-time-label { background-color: #303030; }
     cursor: pointer;
     z-index: 10;
     flex-shrink: 0;
+    border: none;
 }
 
 body.dark-mode .clear-btn {
     background-color: rgba(255, 255, 255, 0.171);
+    border: none;
 }
 
 
@@ -2837,7 +2851,7 @@ body.dark-mode .clear-btn::after {
 }
 
 .input-wrapper.show-clear .clear-btn {
-    display: flex; /* 활성화 시 보임 */
+    display: flex !important; /* 활성화 시 보임 */
 }
 
 #inputProduct, #inputPrice, #inputTotal, #inputDose {

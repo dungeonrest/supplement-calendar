@@ -1,4 +1,4 @@
-const APP_VERSION = "3.19";
+const APP_VERSION = "3.19q";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -328,7 +328,7 @@ function renderMonthlyCostData() {
                 <div class="cost-item">
                     <div class="cost-item-header">
                         <span>${item.name}</span>
-                        <span>${item.cost.toLocaleString()} 원</span>
+                        <span>${item.cost.toLocaleString()}원</span>
                     </div>
                     <div class="cost-bar-bg">
                         <div class="cost-bar-fill" style="width: ${ratio}%;"></div>
@@ -342,8 +342,8 @@ function renderMonthlyCostData() {
             <div class="summary-box-items">${itemsHtml}</div>
             <div class="summary-box-divider"></div>
             <div class="total-cost-row">
-                <span class="total-cost-label">총 합계</span>
-                <span class="total-cost-amount">${Math.round(totalCost).toLocaleString()} 원</span>
+                <span class="total-cost-label">합계</span>
+                <span class="total-cost-amount">${Math.round(totalCost).toLocaleString()}원</span>
             </div>
         </div>
         <p class="cost-notice-text">구매한 영양제의 한 달 치 비용입니다. 각 구성원에 할당된 비용은 아래에 표시됩니다.</p>
@@ -540,8 +540,8 @@ function renderCalendar() {
           bar.classList.add("last-week-bar");
         }
 
-        const isDark = document.body.classList.contains("dark-mode");
-        bar.style.backgroundColor = `rgba(${hexToRgb(sup.circleColor)}, ${isDark ? 0.45 : 0.3})`;
+        const rgb = hexToRgb(sup.circleColor);
+        bar.style.backgroundColor = `rgba(${rgb}, var(--bar-opacity))`;
 
         const fill = document.createElement("div");
         fill.classList.add("bar-fill");
@@ -788,11 +788,6 @@ if (todayBtn) {
   });
 }
 
-  todayBtn.addEventListener("touchend", (e) => {
-    if (e.cancelable) e.preventDefault(); 
-    todayBtn.click();
-  }, { passive: false });
-
 loadSupplements();
 
 function checkInitialSetup() {
@@ -873,6 +868,7 @@ function openTakenCheckUI(date) {
       const extendBtn = document.createElement("button");
       extendBtn.classList.add("extend-btn");
       extendBtn.innerText = "연장";
+      attachIOSStyle(extendBtn);
       extendBtn.addEventListener("click", async () => {
         const baseDate = date;
         const leftUnTakenSlots = calculateLeftUnTakenSlotsBefore(sup, baseDate);
@@ -1398,7 +1394,7 @@ function renderAnalysisTab() {
     costAnalysisText = `지난 달 지출 기록이 없습니다.`;
   } else if (diff !== 0) {
     const status = diff > 0 ? "더" : "덜";
-    costAnalysisText = `지난 달보다 <b class="cost-highlight">${Math.abs(diff).toLocaleString()}원 ${status}</b> 지출했습니다.`;
+    costAnalysisText = `지난 달보다 <b class="cost-highlight">${Math.abs(diff).toLocaleString()}원</b> ${status} 지출했습니다.`;
   } else {
     costAnalysisText = `지난 달과 동일하게 지출했습니다.`;
   }
@@ -2228,7 +2224,6 @@ function renderCalcTab() {
     thisMonthSups.forEach(sup => {
         const price = (sup.price || 0);
         totalOriginal += price;
-        // onclick="toggleCalcRow(this)" 추가로 행 전체 클릭 지원
         listHtml += `
             <div class="calc-row" onclick="toggleCalcRow(this)">
                 <input type="checkbox" class="calc-check" 
@@ -2246,24 +2241,27 @@ function renderCalcTab() {
     // 상자 내부 마지막에 합계 표시
     listHtml += `
         <div id="selectedSumDisplay" class="selected-sum-display">
-            <span>총 합계</span>
+            <span>합계</span>
             <span class="selected-sum-amount">${totalOriginal.toLocaleString()}원</span>
         </div>
-    </div>`; // 큰 상자 끝
+    </div>`;
 
     // 상자 아래 안내 텍스트
     listHtml += `<p class="calc-notice-text">영양제를 구매할 때 할인을 받았다면 각 제품의 가격을 할인된 가격으로 계산하여 반영합니다.</p>`;
 
-    // calcDiv.innerHTML 부분 (여백은 CSS에서 처리하므로 깔끔하게 유지)
     calcDiv.innerHTML = `
         <div class="calc-inner-wrapper">
             ${listHtml}
             
             <div class="calc-input-box">
-                <div style="display:flex; align-items:center; gap:5px;">
+                <div style="display:flex; align-items:center; gap:5px; width: 100%;">
                     <span style="font-size:15px; color:defualt;">₩</span>
+
+                    <div class="input-wrapper" style="flex: 1; position: relative;">
                     <input type="number" id="actualPaidInput" class="actual-paid-input" 
                            placeholder="할인 적용된 결제 금액 입력" inputmode="numeric">
+                    <button type="button" class="clear-btn" id="clearActualPaid"><span></span></button>
+                  </div>
                 </div>
             </div>
 
@@ -2276,6 +2274,7 @@ function renderCalcTab() {
             <div id="calcStatusMsg" class="calc-status-msg"></div>
         </div>
     `;
+    initClearButtons(calcDiv);
     applyIOSButtonEffect();
 }
 
@@ -2310,26 +2309,35 @@ async function processDiscount() {
 /*-----------------------------------비용 모달 계산 탭 끝--------------------------------*/
 function applyIOSButtonEffect() {
     const selectors = [
-        'button',
-        '.tab-btn',
         '.fab-today-btn', 
-        '.fab-add-btn', 
-        '.menu-btn', 
-        '.close-btn', 
-        '.check-btn', 
+        '.menu-btn',
+        '.close-btn',
+        '.check-btn',
         '.extend-btn',
         '.delete-glass-btn',
+        '.primary-btn',
+        '.header-right-group',
+        '.fab-combined-container',
         '.month-display'
     ];
 
-    const targetElements = document.querySelectorAll(selectors.join(', '));
-
-    targetElements.forEach(el => {
-        setupIOSButtonAutomated(el);
+    document.querySelectorAll(selectors.join(', ')).forEach(el => {
+        attachIOSStyle(el);
     });
 }
 
-function setupIOSButtonAutomated(element) {
+
+function attachIOSStyle(el) {
+    if (!el) return;
+    if (el.dataset.iosApplied === "true") return;
+
+    const isInsideGroup = el.closest('.header-right-group') || el.closest('.fab-combined-container');
+    if (isInsideGroup && el.tagName === 'BUTTON') return;
+
+    setupIOSContainerEffect(el);
+}
+
+function setupIOSContainerEffect(element) {
     if (!element || element.dataset.iosApplied === "true") return;
     element.dataset.iosApplied = "true";
 
@@ -2337,23 +2345,19 @@ function setupIOSButtonAutomated(element) {
 
     element.addEventListener('pointerdown', (e) => {
         isPressed = true;
+        element.setPointerCapture(e.pointerId);
         element.classList.remove('ios-release');
         element.classList.add('ios-active');
-        element.setPointerCapture(e.pointerId);
     });
 
     element.addEventListener('pointerup', (e) => {
         if (!isPressed) return;
         isPressed = false;
+        element.releasePointerCapture(e.pointerId);
 
         element.classList.remove('ios-active');
-        element.classList.add('ios-release'); 
-
-        setTimeout(() => {
-            element.classList.remove('ios-release');
-        }, 550);
-        
-        element.releasePointerCapture(e.pointerId);
+        element.classList.add('ios-release');
+        setTimeout(() => element.classList.remove('ios-release'), 550);
 
         const rect = element.getBoundingClientRect();
         const isInside = (
@@ -2362,27 +2366,36 @@ function setupIOSButtonAutomated(element) {
         );
 
         if (isInside) {
-            element.dispatchEvent(new CustomEvent('ios-click', {
-                bubbles: true,
-                cancelable: true
-            }));
+            e.preventDefault(); 
+            const targetBtn = document.elementFromPoint(e.clientX, e.clientY)?.closest('button');
             
-            element.click();
+            if (targetBtn) {
+                targetBtn.click();
+            } else {
+                element.click();
+            }
         }
     });
 
-    element.addEventListener('pointercancel', () => {
+    element.addEventListener('pointercancel', (e) => {
         isPressed = false;
+        if (element.hasPointerCapture(e.pointerId)) {
+            element.releasePointerCapture(e.pointerId);
+        }
         element.classList.remove('ios-active');
-        element.classList.remove('ios-release');
     });
 
     element.addEventListener('click', (e) => {
-        if (e.isTrusted) {
+        if (e.isTrusted && isInsideAnyManagedContainer(e.target)) {
             e.preventDefault();
             e.stopPropagation();
         }
     }, true);
+}
+
+function isInsideAnyManagedContainer(target) {
+    const managedSelectors = ['.header-right-group', '.fab-combined-container', '.close-btn', '.check-btn'];
+    return managedSelectors.some(sel => target.closest(sel));
 }
 
 window.addEventListener('DOMContentLoaded', applyIOSButtonEffect);
@@ -2550,17 +2563,19 @@ document.addEventListener("change", (e) => {
   }
 });
 
-function initClearButtons() {
-    const wrappers = document.querySelectorAll('.input-wrapper');
+function initClearButtons(container = document) {
+    const wrappers = container.querySelectorAll('.input-wrapper');
     
     wrappers.forEach(wrapper => {
+        if (wrapper.dataset.clearApplied === "true") return;
+        wrapper.dataset.clearApplied = "true";
+
         const input = wrapper.querySelector('input');
         const btn = wrapper.querySelector('.clear-btn');
         if (!input || !btn) return;
 
         const toggleBtn = () => {
-
-            if (input.value.length > 0 && document.activeElement === input) {
+            if (input.value.length > 0) {
                 wrapper.classList.add('show-clear');
             } else {
                 wrapper.classList.remove('show-clear');
@@ -2581,6 +2596,7 @@ function initClearButtons() {
             if (typeof validateInputs === 'function') validateInputs();
             input.focus();
             toggleBtn();
+            if (typeof updateCalcSum === 'function') updateCalcSum();
         });
     });
 }
