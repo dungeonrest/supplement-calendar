@@ -1,4 +1,4 @@
-const APP_VERSION = "3.19w";
+const APP_VERSION = "3.20";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -61,7 +61,6 @@ const datesContainer = document.getElementById("dates");
 const monthDisplay = document.getElementById("monthDisplay");
 const todayBtn = document.getElementById("fabTodayBtn");
 const addBtn = document.getElementById("fabAddBtn");
-const themeToggleBtn = document.getElementById("themeToggle");
 const modalOverlay = document.getElementById("modalOverlay");
 const closeModalBtn = document.getElementById("closeModal");
 const inputDate = document.getElementById("inputDate");
@@ -246,9 +245,25 @@ function deleteSupplementFromDB(id) {
 }
 
 // 테마
+const themeToggleBtn = document.getElementById("themeToggle");
+const metaThemeColor = document.getElementById("themeColorMeta");
+
 themeToggleBtn.addEventListener("click", () => {
   const isDark = document.body.classList.toggle("dark-mode");
   localStorage.setItem("darkMode", isDark);
+
+  const color = isDark ? "#000000" : "#ffffff";
+  metaThemeColor.setAttribute("content", color);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const isDark = localStorage.getItem("darkMode") === "true";
+  if (isDark) {
+    document.body.classList.add("dark-mode");
+    metaThemeColor.setAttribute("content", "#000000");
+  } else {
+    metaThemeColor.setAttribute("content", "#ffffff");
+  }
 });
 
 /*--------------------------------------월별 비용 시작-----------------------------------*/
@@ -1438,7 +1453,7 @@ function renderAnalysisTab() {
   let html = `<div class="analysis-container">`;
 
   // [섹션 1] 스마트 알림
-  html += `<div><label class="input-label">스마트 알림</label><div class="memo-paper-group">`;
+  html += `<div><div class="memo-paper-group" style="margin-top:10px;">`;
   if (refillList.length > 0) {
     refillList.sort((a, b) => a.days - b.days).forEach((item, idx) => {
       const color = item.days <= 7 ? "#ff4d4d" : "#ffcc00";
@@ -1450,7 +1465,7 @@ function renderAnalysisTab() {
       if (idx < refillList.length - 1) html += `<div class="memo-divider"></div>`;
     });
   } else {
-    html += `<div style="padding: 10px; text-align: left; font-size: 15px; opacity: 0.7;">모든 영양제가 넉넉합니다.</div>`;
+    html += `<div style="padding: 10px; text-align: left; font-size: 15px; font-weight: normal; opacity: 1;">모든 영양제가 넉넉합니다.</div>`;
   }
   html += `</div></div>`;
 
@@ -1465,7 +1480,7 @@ function renderAnalysisTab() {
     </div>`;
 
   // [섹션 3] 영양제 리스트 부분 (수정본)
-html += `<div><label class="input-label">현재 섭취 중인 영양제 리스트</label><div class="memo-paper-group" style="padding: 0px 0;">`; // 상하 패딩만 살짝 줌
+html += `<div><label class="input-label">섭취 중인 영양제</label><div class="memo-paper-group supplement-list-wrapper">`;
 
 const activeTimes = Object.keys(routine).filter(t => routine[t].length > 0);
 activeTimes.forEach((time, timeIdx) => {
@@ -1503,8 +1518,8 @@ activeTimes.forEach((time, timeIdx) => {
       html += `<div></div>`; 
     }
     
-    html += `</div>`; // 한 줄 닫기
-
+    html += `</div>`;
+    
     if (i + 2 < items.length) {
       html += `<div style="padding: 0 15px;"><div class="memo-divider"></div></div>`;
     }
