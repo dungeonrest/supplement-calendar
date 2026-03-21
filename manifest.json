@@ -1,24 +1,31 @@
 {
   "name": "영양제",
   "short_name": "영양제",
+  "description": "영양제 관리 및 재고 관리",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
-"icons": [
-  {
-    "src": "icons/192.png",
-    "type": "image/png",
-    "sizes": "192x192",
-    "purpose": "any maskable"
-  },
-  {
-    "src": "icons/512.png",
-    "type": "image/png",
-    "sizes": "512x512",
-    "purpose": "any maskable"
-  }
-]
-
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icons/192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any" 
+    },
+    {
+      "src": "icons/192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    }
+  ]
 }

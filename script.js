@@ -1,4 +1,4 @@
-const APP_VERSION = "3.20w";
+const APP_VERSION = "26.3.21";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -141,7 +141,7 @@ function openSupplementModal(sup) {
 // 상태
 let dt = new Date();
 let supplements = [];
-let familyMembers = JSON.parse(localStorage.getItem("familyMembers")) || ["도림", "뚜임", "진이", "쿤이"];
+let familyMembers = JSON.parse(localStorage.getItem("familyMembers")) || [];
 let selectedDateForList = "";
 let currentEditId = null;
 
@@ -162,6 +162,14 @@ const colorList = [
   "#D700BB",
   "#3498DB",
   ];
+
+  // 랜덤 HEX 색상을 생성하는 함수
+  const getRandomColor = () => {
+  const r = Math.floor(Math.random() * 181).toString(16).padStart(2, '0');
+  const g = Math.floor(Math.random() * 181).toString(16).padStart(2, '0');
+  const b = Math.floor(Math.random() * 181).toString(16).padStart(2, '0');
+  return `#${r}${g}${b}`.toUpperCase();
+};
 
 // 한국 시간 기준 오늘 날짜 문자열 (YYYY-MM-DD)
 function getTodayKST() {
@@ -693,13 +701,23 @@ saveInfoBtn.addEventListener("click", async (e) => {
     const selectedColor = document.getElementById('inputColor').value?.toLowerCase().trim();
     
     if (selectedColor && selectedColor !== "#000000" && !usedColors.includes(selectedColor)) {
-      assignedColor = selectedColor;
-    } else {
-      assignedColor = colorList.find(c => !usedColors.includes(c.toLowerCase().trim()));
-      if (!assignedColor) {
-        assignedColor = colorList[supplements.length % colorList.length];
-      }
+  assignedColor = selectedColor;
+} else {
+  assignedColor = colorList.find(c => !usedColors.includes(c.toLowerCase().trim()));
+  
+  if (!assignedColor) {
+    let newRandomColor;
+    let isDuplicate = true;
+    let attempts = 0;
+
+    while (isDuplicate && attempts < 10) {
+      newRandomColor = getRandomDarkColor();
+      isDuplicate = usedColors.includes(newRandomColor.toLowerCase());
+      attempts++;
     }
+    assignedColor = newRandomColor;
+  }
+}
 
     const newSup = {
       id: Date.now(),
@@ -1368,17 +1386,16 @@ function switchStatsTab(tab) {
 
 function renderAnalysisTab() {
     const statsContent = document.getElementById('statsContent');
+    if (!statsContent) return; // 요소가 없으면 중단
     statsContent.scrollTop = 0;
 
     const baseDate = selectedDateForList ? new Date(selectedDateForList) : new Date();
     const targetMonth = baseDate.getMonth();
     const targetYear = baseDate.getFullYear();
-    const monthTitle = `${targetMonth + 1}월`; // 1. 위치를 위로 올림
+    const monthTitle = `${targetMonth + 1}월`;
 
-    // 1. 최근 5개월 데이터 계산 (그래프용)
+    // 1. 최근 5개월 데이터 계산
     const monthlyData = [];
-    let grandTotal = 0;
-
     for (let i = 4; i >= 0; i--) {
         const d = new Date(targetYear, targetMonth - i, 1);
         const m = d.getMonth();
@@ -1394,7 +1411,6 @@ function renderAnalysisTab() {
             }
         });
         monthlyData.push({ month: (m + 1) + '월', cost: total });
-        grandTotal += total;
     }
 
     const prevMonthCost = monthlyData[monthlyData.length - 2].cost;
@@ -1402,12 +1418,9 @@ function renderAnalysisTab() {
     const maxCost = Math.max(...monthlyData.map(d => d.cost), 1);
     const diff = targetMonthCost - prevMonthCost;
 
-    let showComparison = (grandTotal > 0);
     let costAnalysisText = "";
-
-    // [기존 로직 복구] 텍스트 결정
-    if (!showComparison) {
-        costAnalysisText = `${monthTitle} 전후에 지출 기록이 없습니다.`;
+    if (targetMonthCost === 0 && prevMonthCost === 0) {
+        costAnalysisText = `${monthTitle} 이전 지출 기록이 없습니다.`;
     } else if (prevMonthCost === 0 && targetMonthCost > 0) {
         costAnalysisText = `지난 달 지출 기록이 없습니다.`;
     } else if (diff !== 0) {
@@ -1417,168 +1430,163 @@ function renderAnalysisTab() {
         costAnalysisText = `지난 달과 동일하게 지출했습니다.`;
     }
 
-  const routine = { "아침": [], "점심": [], "저녁": [], "공복": [] };
-  let refillList = [];
-  const todayStr = new Date().toISOString().slice(0, 10);
+    const routine = { "아침": [], "점심": [], "저녁": [], "공복": [] };
+    let refillList = [];
+    const todayStr = new Date().toISOString().slice(0, 10);
 
-  supplements.forEach(sup => {
-    let supTaken = 0;
-    if (sup.takenStatus) {
-      Object.values(sup.takenStatus).forEach(dayData => {
-        Object.keys(dayData).forEach(key => {
-          if (dayData[key] === true && !key.includes("_extended")) supTaken++;
-        });
-      });
-    }
+    supplements.forEach(sup => {
+        let supTaken = 0;
+        if (sup.takenStatus) {
+            Object.values(sup.takenStatus).forEach(dayData => {
+                Object.keys(dayData).forEach(key => {
+                    if (dayData[key] === true && !key.includes("_extended")) supTaken++;
+                });
+            });
+        }
+        const totalCaps = parseFloat(sup.totalCapsules) || 0;
+        const remains = totalCaps - supTaken;
+        const dailyDose = parseFloat(sup.dose) || 0;
+        const daysLeft = dailyDose > 0 ? Math.floor(remains / dailyDose) : 0;
+        const lastScheduleDate = sup.schedule && sup.schedule.length > 0 ? sup.schedule[sup.schedule.length - 1] : null;
+        
+        if (totalCaps > 0 && lastScheduleDate >= todayStr) {
+            if (daysLeft >= 0 && daysLeft <= 14) {
+                refillList.push({ name: sup.productName, days: daysLeft });
+            }
+        }
 
-    const totalCaps = parseFloat(sup.totalCapsules) || 0;
-    const remains = totalCaps - supTaken;
-    const dailyDose = parseFloat(sup.dose) || 0;
-    const daysLeft = dailyDose > 0 ? Math.floor(remains / dailyDose) : 0;
-    const lastScheduleDate = sup.schedule && sup.schedule.length > 0 ? sup.schedule[sup.schedule.length - 1] : null;
-    
-    if (totalCaps > 0 && lastScheduleDate >= todayStr) {
-      if (daysLeft >= 0 && daysLeft <= 14) {
-        refillList.push({ name: sup.productName, days: daysLeft });
-      }
-    }
-
-    if (remains > 0 && sup.times && Array.isArray(sup.times)) {
-  const timeCount = sup.times.length;
-  const dosePerTime = timeCount > 0 ? (dailyDose / timeCount) : dailyDose;
-
-  sup.times.forEach(time => {
-    if (routine[time]) {
-      routine[time].push({ 
-        ...sup, 
-        displayDose: dosePerTime,
-        color: sup.circleColor || "#4e73df" 
-      });
-    }
-  });
-}
-  });
-
-  let html = `<div class="analysis-container">`;
-
-  // [섹션 1] 스마트 알림
-  html += `<div><div class="memo-paper-group" style="margin-top:10px;">`;
-  if (refillList.length > 0) {
-    refillList.sort((a, b) => a.days - b.days).forEach((item, idx) => {
-      const color = item.days <= 7 ? "#ff4d4d" : "#ffcc00";
-      const dayText = item.days === 0 ? "오늘 완료" : `약 ${item.days}일분`;
-      html += `<div class="info-row" style="justify-content: space-between; padding: 0 5px;">
-                <span style="font-size: 15px;">${item.days <= 7 ? '🚨' : '⚠️'} ${item.name}</span>
-                <span style="font-size: 14px; color: ${color}; font-weight: bold;">${dayText}</span>
-              </div>`;
-      if (idx < refillList.length - 1) html += `<div class="memo-divider"></div>`;
+        if (remains > 0 && sup.times && Array.isArray(sup.times)) {
+            const timeCount = sup.times.length;
+            const dosePerTime = timeCount > 0 ? (dailyDose / timeCount) : dailyDose;
+            sup.times.forEach(time => {
+                if (routine[time]) {
+                    routine[time].push({ 
+                        ...sup, 
+                        displayDose: dosePerTime,
+                        color: sup.circleColor || "#4e73df" 
+                    });
+                }
+            });
+        }
     });
-  } else {
-    html += `<div style="padding: 10px; text-align: left; font-size: 15px; font-weight: normal; opacity: 1;">모든 영양제가 넉넉합니다.</div>`;
-  }
-  html += `</div></div>`;
 
-  // [섹션 2] 소비 분석
-  html += `
+    let html = `<div class="analysis-container">`;
+
+    // [섹션 1] 스마트 알림
+    let statusText = "양호";
+    let statusClass = "status-normal";
+    if (supplements.length === 0) {
+        statusText = "없음";
+        statusClass = "status-none";
+    } else if (refillList.length > 0) {
+        statusText = "부족";
+        statusClass = "status-low";
+    }
+
+    html += `
+    <div class="analysis-accordion-section">
+        <div class="memo-paper-group" style="margin-top: 0px;">
+            <div class="status-row" onclick="${statusText === '부족' ? "this.closest('.analysis-accordion-section').classList.toggle('active')" : ""}">
+                <span class="row-label">영양제 재고 상황</span>
+                <span class="status-badge ${statusClass}">${statusText}</span>
+            </div>
+            <div class="analysis-accordion-content">
+                <div class="accordion-inner"><div style="padding: 0 12px 0 0;">
+                    <div class="analysis-divider"></div>
+                    <div class="refill-item-container">
+                        ${refillList.sort((a, b) => a.days - b.days).map((item) => `
+                            <div class="refill-item">
+                                <span class="refill-name">${item.name}</span>
+                                <span class="refill-days">${item.days === 0 ? '오늘 완료' : item.days + '일분'}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+
+    // [섹션 2] 소비 분석 (말줄임표 제거 및 로직 복구)
+    html += `
     <div>
       <label class="input-label">${monthTitle} 소비 분석</label>
-      <div class="memo-paper-group analysis-cost-box">
-        <div class="cost-result">${costAnalysisText}</div>
-        <div class="analysis-divider"></div>
-        ${showComparison ? `
-            <div class="comparison-stats">
-                <div class="stat-item">
-                    <span class="stat-label">${monthlyData[monthlyData.length - 2].month}</span>
-                    <span class="stat-value prev">${prevMonthCost.toLocaleString()}원</span>
+      <div class="memo-paper-group" style="padding: 20px 0;">
+        <div class="cost-result" style="padding: 0 16px 8px 16px;">${costAnalysisText}</div>
+        <div style="padding: 0 16px;"><div class="analysis-divider"></div></div>
+        <div class="analysis-cost-box" style="padding: 15px 16px 0 16px;">
+            ${(targetMonthCost > 0 || prevMonthCost > 0) ? `
+                <div class="comparison-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">${monthlyData[monthlyData.length - 2].month}</span>
+                        <span class="stat-value prev">${prevMonthCost.toLocaleString()}원</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label current">${monthlyData[monthlyData.length - 1].month}</span>
+                        <span class="stat-value current">${targetMonthCost.toLocaleString()}원</span>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label current">${monthlyData[monthlyData.length - 1].month}</span>
-                    <span class="stat-value current">${targetMonthCost.toLocaleString()}원</span>
+                <div class="bar-chart-container">
+                    ${monthlyData.map((data, idx) => {
+                        const isCurrent = (idx === monthlyData.length - 1);
+                        const isPrev = (idx === monthlyData.length - 2);
+                        const barHeight = data.cost > 0 ? (data.cost / maxCost * 100) : 0;
+                        return `
+                            <div class="bar-group">
+                                <div class="bar-wrapper">
+                                    <div class="bar-fill ${isCurrent ? 'current-month' : (isPrev ? 'prev-month' : '')}" style="height: ${barHeight}%;"></div>
+                                </div>
+                                <span class="bar-label ${isCurrent ? 'current-month-text' : ''}">${data.month}</span>
+                            </div>`;
+                    }).join('')}
                 </div>
-            </div>
-            <div class="bar-chart-container">
-                ${monthlyData.map((data, idx) => {
-                    const isCurrent = (idx === monthlyData.length - 1);
-                    const isPrev = (idx === monthlyData.length - 2);
-                    let barClass = "bar-fill";
-                    let labelClass = "bar-label";
-                    if (isPrev) barClass += " prev-month";
-                    if (isCurrent) {
-                        barClass += " current-month";
-                        labelClass += " current-month-text";
-                    }
-                    const barHeight = data.cost > 0 ? (data.cost / maxCost * 100) : 0;
-                    return `
-                        <div class="bar-group">
-                            <div class="bar-wrapper">
-                                <div class="${barClass}" style="height: ${barHeight}%;"></div>
-                            </div>
-                            <span class="${labelClass}">${data.month}</span>
-                        </div>`;
-                }).join('')}
-            </div>
-        ` : `
-            <div style="padding: 30px 0; text-align: center; opacity: 0.5; font-size: 14px;">
-                데이터가 부족하여 그래프를 표시할 수 없습니다.
-            </div>
-        `}
+            ` : ` <div style="text-align: center; opacity: 0.5; font-size: 14px; padding: 20px 0;">데이터 부족</div> `}
+        </div>
       </div>
     </div>`;
 
-  // [섹션 3] 영양제 리스트 부분 (수정본)
-html += `<div><label class="input-label">섭취 중인 영양제</label><div class="memo-paper-group supplement-list-wrapper">`;
+    // [섹션 3] 영양제 리스트
+    html += `<div><label class="input-label">섭취 중인 영양제</label><div class="memo-paper-group supplement-list-wrapper">`;
+    const activeTimes = Object.keys(routine).filter(t => routine[t].length > 0);
+    activeTimes.forEach((time, timeIdx) => {
+        html += `<div class="routine-time-label"><span>${time}</span></div>`;
+        const items = routine[time];
+        for (let i = 0; i < items.length; i += 2) {
+            const item1 = items[i];
+            const item2 = items[i + 1];
+            html += `<div class="supplement-grid">
+                <div class="supplement-item">
+                    <div class="color-dot" style="background: ${item1.color}; width:15px; height:15px; border-radius:50%;"></div>
+                    <div class="sup-info">
+                        <span class="sup-name">${item1.productName}</span>
+                        <span class="sup-dose">${item1.displayDose}${item1.unit || '캡슐'}</span>
+                    </div>
+                </div>`;
+            if (item2) {
+                html += `
+                <div class="supplement-item">
+                    <div class="color-dot" style="background: ${item2.color}; width:15px; height:15px; border-radius:50%;"></div>
+                    <div class="sup-info">
+                        <span class="sup-name">${item2.productName}</span>
+                        <span class="sup-dose">${item2.displayDose}${item2.unit || '캡슐'}</span>
+                    </div>
+                </div>`;
+            } else { html += `<div></div>`; }
+            html += `</div>`;
+            if (i + 2 < items.length) {
+                html += `<div style="padding: 0 16px;"><div class="analysis-divider"></div></div>`;
+            }
+        }
+        if (timeIdx !== activeTimes.length - 1) {
+            html += `<div style="margin-bottom: 8px;"></div>`;
+        }
+    });
 
-const activeTimes = Object.keys(routine).filter(t => routine[t].length > 0);
-activeTimes.forEach((time, timeIdx) => {
-
-  html += `<div class="routine-time-label"><span>${time}</span></div>`;
-
-  const items = routine[time];
-  for (let i = 0; i < items.length; i += 2) {
-    const item1 = items[i];
-    const item2 = items[i + 1];
-
-    html += `<div class="supplement-grid">`;
-    
-    // 왼쪽 아이템
-    html += `
-      <div class="supplement-item">
-        <div class="color-dot" style="background: linear-gradient(180deg, ${item1.color}, ${item1.color}bb);"></div>
-        <div class="sup-info">
-          <span class="sup-name">${item1.productName}</span>
-          <span class="sup-dose">${item1.displayDose}${item1.unit || '캡슐'}</span>
-        </div>
-      </div>`;
-
-    // 오른쪽 아이템
-    if (item2) {
-      html += `
-        <div class="supplement-item">
-          <div class="color-dot" style="background: linear-gradient(180deg, ${item2.color}, ${item2.color}bb);"></div>
-          <div class="sup-info">
-            <span class="sup-name">${item2.productName}</span>
-            <span class="sup-dose">${item2.displayDose}${item2.unit || '캡슐'}</span>
-          </div>
-        </div>`;
-    } else {
-      html += `<div></div>`; 
+    if (activeTimes.length === 0) {
+        html += `<div style="padding: 30px; text-align: center; opacity: 0.5; font-size: 14px;">기록된 루틴이 없습니다.</div>`;
     }
-    
-    html += `</div>`;
-    
-    if (i + 2 < items.length) {
-      html += `<div style="padding: 0 15px;"><div class="memo-divider"></div></div>`;
-    }
-  }
 
-  if (timeIdx !== activeTimes.length - 1) {
-    html += `<div style="margin-bottom: 8px;"></div>`;
-  }
-});
-
-if (activeTimes.length === 0) html += `<div style="padding: 40px; text-align: center; opacity: 0.6;">기록된 루틴이 없습니다.</div>`;
-html += `</div></div></div>`;
-  statsContent.innerHTML = html;
+    html += `</div></div></div>`;
+    statsContent.innerHTML = html;
 }
 
 const originalCloseStatsModal = document.getElementById("closeStatsModal").onclick;
@@ -1705,6 +1713,15 @@ const closeBackupMenu = document.getElementById("closeBackupMenu");
 const importFileInput = document.getElementById("importFileInput");
 const fabSettingsBtn = document.getElementById("fabSettingsBtn"); 
 
+document.getElementById("displayAppVersion").innerText = APP_VERSION;
+
+function updateLastBackupDate() {
+    const now = new Date();
+    const dateString = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 ${now.getHours()}시 ${now.getMinutes()}분`;
+    document.getElementById("lastBackupDate").innerText = dateString;
+    localStorage.setItem("lastBackupDate", dateString);
+}
+
 if (fabSettingsBtn) {
   fabSettingsBtn.addEventListener("click", async () => {
     try {
@@ -1756,6 +1773,8 @@ exportBtn.addEventListener("click", (e) => {
 
   closeBottomSheet("backupMenuModal");
   }, 100);
+
+  updateLastBackupDate();
 });
 
 // 복원 트리거
