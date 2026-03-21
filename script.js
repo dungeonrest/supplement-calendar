@@ -1,4 +1,4 @@
-const APP_VERSION = "3.20";
+const APP_VERSION = "3.20w";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -147,19 +147,20 @@ let currentEditId = null;
 
 const colorList = [
   "#E84855",
-  "#1976D2",
+  "#16A085",
+  "#F57C00",
   "#ffD516",
   "#388E3C",
-  "#8E44AD",
-  "#F57C00",
-  "#118AB2",
-  "#D32F2F",
-  "#97aa44",
-  "#D700BB",
-  "#FF9F1C",
-  "#16A085",
-  "#3498DB",
+  "#1976D2",
   "#c96a3f",
+  "#118AB2",
+  "#8E44AD",
+  "#D32F2F",
+  "#FF9F1C",
+  "#97aa44",
+  "#00cddd",
+  "#D700BB",
+  "#3498DB",
   ];
 
 // 한국 시간 기준 오늘 날짜 문자열 (YYYY-MM-DD)
@@ -1366,47 +1367,55 @@ function switchStatsTab(tab) {
 });
 
 function renderAnalysisTab() {
-  const statsContent = document.getElementById('statsContent');
-  statsContent.scrollTop = 0;
-  statsContent.style.padding = "0px 0";
+    const statsContent = document.getElementById('statsContent');
+    statsContent.scrollTop = 0;
 
-  const baseDate = selectedDateForList ? new Date(selectedDateForList) : new Date();
-  const targetMonth = baseDate.getMonth();
-  const targetYear = baseDate.getFullYear();
-  const prevMonthDate = new Date(targetYear, targetMonth - 1, 1);
-  const prevMonth = prevMonthDate.getMonth();
-  const prevMonthYear = prevMonthDate.getFullYear();
+    const baseDate = selectedDateForList ? new Date(selectedDateForList) : new Date();
+    const targetMonth = baseDate.getMonth();
+    const targetYear = baseDate.getFullYear();
+    const monthTitle = `${targetMonth + 1}월`; // 1. 위치를 위로 올림
 
-  let targetMonthCost = 0;
-  let prevMonthCost = 0;
+    // 1. 최근 5개월 데이터 계산 (그래프용)
+    const monthlyData = [];
+    let grandTotal = 0;
 
-  supplements.forEach(sup => {
-    if (sup.schedule && sup.schedule.length > 0) {
-      const purchaseDate = new Date(sup.schedule[0]);
-      const pPrice = parseInt(sup.price) || 0;
-      if (purchaseDate.getFullYear() === targetYear && purchaseDate.getMonth() === targetMonth) {
-        targetMonthCost += pPrice;
-      } else if (purchaseDate.getFullYear() === prevMonthYear && purchaseDate.getMonth() === prevMonth) {
-        prevMonthCost += pPrice;
-      }
+    for (let i = 4; i >= 0; i--) {
+        const d = new Date(targetYear, targetMonth - i, 1);
+        const m = d.getMonth();
+        const y = d.getFullYear();
+        
+        let total = 0;
+        supplements.forEach(sup => {
+            if (sup.schedule && sup.schedule.length > 0) {
+                const purchaseDate = new Date(sup.schedule[0]);
+                if (purchaseDate.getFullYear() === y && purchaseDate.getMonth() === m) {
+                    total += (parseInt(sup.price) || 0);
+                }
+            }
+        });
+        monthlyData.push({ month: (m + 1) + '월', cost: total });
+        grandTotal += total;
     }
-  });
 
-  const diff = targetMonthCost - prevMonthCost;
-  const monthTitle = `${targetMonth + 1}월`;
-  let costAnalysisText = "";
-  let showComparison = (targetMonthCost !== 0 || prevMonthCost !== 0);
+    const prevMonthCost = monthlyData[monthlyData.length - 2].cost;
+    const targetMonthCost = monthlyData[monthlyData.length - 1].cost;
+    const maxCost = Math.max(...monthlyData.map(d => d.cost), 1);
+    const diff = targetMonthCost - prevMonthCost;
 
-  if (!showComparison) {
-    costAnalysisText = `${monthTitle} 전후에 지출 기록이 없습니다.`;
-  } else if (prevMonthCost === 0 && targetMonthCost > 0) {
-    costAnalysisText = `지난 달 지출 기록이 없습니다.`;
-  } else if (diff !== 0) {
-    const status = diff > 0 ? "더" : "덜";
-    costAnalysisText = `지난 달보다 <b class="cost-highlight">${Math.abs(diff).toLocaleString()}원</b> ${status} 지출했습니다.`;
-  } else {
-    costAnalysisText = `지난 달과 동일하게 지출했습니다.`;
-  }
+    let showComparison = (grandTotal > 0);
+    let costAnalysisText = "";
+
+    // [기존 로직 복구] 텍스트 결정
+    if (!showComparison) {
+        costAnalysisText = `${monthTitle} 전후에 지출 기록이 없습니다.`;
+    } else if (prevMonthCost === 0 && targetMonthCost > 0) {
+        costAnalysisText = `지난 달 지출 기록이 없습니다.`;
+    } else if (diff !== 0) {
+        const status = diff > 0 ? "더" : "덜";
+        costAnalysisText = `지난 달보다 ${Math.abs(diff).toLocaleString()}원 ${status} 지출했습니다.`;
+    } else {
+        costAnalysisText = `지난 달과 동일하게 지출했습니다.`;
+    }
 
   const routine = { "아침": [], "점심": [], "저녁": [], "공복": [] };
   let refillList = [];
@@ -1474,8 +1483,45 @@ function renderAnalysisTab() {
     <div>
       <label class="input-label">${monthTitle} 소비 분석</label>
       <div class="memo-paper-group analysis-cost-box">
-        ${showComparison ? `<div class="cost-comparison">${prevMonthCost.toLocaleString()}원 → ${targetMonthCost.toLocaleString()}원</div>` : ''}
         <div class="cost-result">${costAnalysisText}</div>
+        <div class="analysis-divider"></div>
+        ${showComparison ? `
+            <div class="comparison-stats">
+                <div class="stat-item">
+                    <span class="stat-label">${monthlyData[monthlyData.length - 2].month}</span>
+                    <span class="stat-value prev">${prevMonthCost.toLocaleString()}원</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label current">${monthlyData[monthlyData.length - 1].month}</span>
+                    <span class="stat-value current">${targetMonthCost.toLocaleString()}원</span>
+                </div>
+            </div>
+            <div class="bar-chart-container">
+                ${monthlyData.map((data, idx) => {
+                    const isCurrent = (idx === monthlyData.length - 1);
+                    const isPrev = (idx === monthlyData.length - 2);
+                    let barClass = "bar-fill";
+                    let labelClass = "bar-label";
+                    if (isPrev) barClass += " prev-month";
+                    if (isCurrent) {
+                        barClass += " current-month";
+                        labelClass += " current-month-text";
+                    }
+                    const barHeight = data.cost > 0 ? (data.cost / maxCost * 100) : 0;
+                    return `
+                        <div class="bar-group">
+                            <div class="bar-wrapper">
+                                <div class="${barClass}" style="height: ${barHeight}%;"></div>
+                            </div>
+                            <span class="${labelClass}">${data.month}</span>
+                        </div>`;
+                }).join('')}
+            </div>
+        ` : `
+            <div style="padding: 30px 0; text-align: center; opacity: 0.5; font-size: 14px;">
+                데이터가 부족하여 그래프를 표시할 수 없습니다.
+            </div>
+        `}
       </div>
     </div>`;
 

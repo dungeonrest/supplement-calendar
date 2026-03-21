@@ -2742,9 +2742,115 @@ body.dark-mode .family-btn.selected {
     overflow: hidden;
 }
 
+/* 소비 분석 박스 전체 레이아웃 */
 .analysis-cost-box {
-    padding: 15px;
+    padding: 20px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
+
+/* 상단 요약 텍스트 */
+.cost-result {
+    font-size: 14px !important;
+    line-height: 1.6;
+    color: var(--text-color);
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+}
+
+/* 가로 구분선 */
+.analysis-divider {
+    height: 1px;
+    background-color: rgba(128, 128, 128, 0.15);
+    margin: 5px 0;
+}
+
+/* % 표시 영역 (평균 vs 오늘 위치) */
+.comparison-stats {
+    display: flex;
+    gap: 25px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-label {
+    font-size: 14px;
+    opacity: 0.4;
+}
+
+.stat-value {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* 막대 그래프 컨테이너 */
+.bar-chart-container {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: 90px; /* 그래프 높이 */
+    padding-top: 8px;
+}
+
+.bar-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.bar-wrapper {
+    width: 30%; /* 막대 두께 */
+    height: 70px; /* 최대 높이 */
+    background-color: rgba(128, 128, 128, 0.1);
+    border-radius: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.bar-fill {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    border-radius: 5px;
+    transition: height 0.5s ease;
+}
+
+.bar-fill.prev-month {
+    background-color: #aeb5bc;
+}
+
+.bar-fill.current-month {
+    background-color: #0b89fe !important;
+}
+
+.bar-label {
+    font-size: 11px;
+    opacity: 0.6;
+}
+
+/* 지출 수치 색상 구분 */
+.stat-value.prev { color: #8e8e93; }
+.stat-label.current, .stat-value.current,.bar-label.current-month-text
+ { color: #007aff; opacity: 1; }
+
+/* 막대 그래프 색상 구분 */
+.bar-fill.prev-month { background-color: #c7c7cc; }
+.bar-fill.current-month { background-color: #007aff; }
+
+/* 다크모드 대응 */
+body.dark-mode .bar-fill.prev-month { background-color: #727274; }
+body.dark-mode .bar-fill.current-month { background-color: #0a84ff; }
+body.dark-mode .stat-label.current,
+body.dark-mode .stat-value.current,
+.bar-label.current-month-text { color: #0a84ff; opacity: 1; }
 
 .cost-comparison {
     font-size: 14px;
