@@ -1755,7 +1755,7 @@ body.dark-mode .family-cost-amount { color: #9E9EA4; }
 #calcTabContent {
     display: none;
     flex-direction: column;
-    padding: 0 20px 40px 20px !important;
+    padding: 0 20px 0px 20px !important;
     box-sizing: border-box;
     width: 100%;
 }
@@ -1874,7 +1874,7 @@ body.dark-mode .selected-sum-amount { color: #b0b0b4; }
     margin-top: 10px;
     font-size: 12px;
     text-align: center;
-    color: #05d339;
+    color: #0084ff;
     font-weight: 600;
 }
 
@@ -1920,6 +1920,25 @@ body.dark-mode input[type="checkbox"].calc-check::before {
   padding: 10px 0 100px 0 !important;
   overflow-y: visible;
   box-sizing: border-box;
+}
+
+/* 제목을 세로로 나열하기 위한 스타일 */
+.two-line-title {
+  display: flex;
+  flex-direction: column; /* 세로 정렬 */
+  align-items: center;    /* 중앙 정렬 (왼쪽 정렬 원하면 flex-start) */
+  gap: 4px;               /* 줄 간격 */
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0;
+}
+
+/* 아래쪽 날짜 스타일 */
+.two-line-title .sub-date {
+  font-size: 10px;        /* 날짜는 조금 작게 */
+  font-weight: normal;    /* 날짜는 얇게 */
+  color: var(--text-color);            /* 날짜 색상 연하게 */
 }
 
 .taken-sup-section {
@@ -2224,7 +2243,7 @@ body.dark-mode .extend-btn {
 
 .app-icon-box {
   width: 100%;
-  height: 44px;
+  height: 50px;
   background: #c0c0c033;
   border-radius: 22px;
   display: flex;
@@ -2613,7 +2632,7 @@ body.dark-mode .tab-slider {
   padding: 10px;
   display: flex;
   flex-direction: column;
-  margin-bottom: -10px;
+  margin-bottom: 0px;
 }
 
 .period-input-group {
@@ -2890,7 +2909,7 @@ body.dark-mode .family-btn.selected {
     display: flex;
     flex-direction: column;
     gap: 8px; /* 섹션 간 간격 조절 */
-    padding-bottom: 150px;
+    padding-bottom: 50px;
     margin-top: 50px;
 }
 

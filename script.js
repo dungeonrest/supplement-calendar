@@ -854,7 +854,11 @@ function openTakenCheckUI(date) {
     body.scrollTop = 0;
   }
 
-  title.innerText = date.replaceAll('-', '.');
+  const formattedDate = date.replaceAll('-', '.');
+  title.innerHTML = `
+    <span>섭취 체크</span>
+    <span class="sub-date">${formattedDate}</span>
+  `;
   body.innerHTML = "";
 
   const matchedSupps = supplements.filter(s => s.schedule.includes(date));
@@ -2303,7 +2307,7 @@ function renderCalcTab() {
 
     if (thisMonthSups.length === 0) {
         calcDiv.innerHTML = `
-            <div style="flex:1; display:flex; align-items:center; justify-content:center; padding-top:50px;">
+            <div style="flex:1; display:flex; align-items:center; justify-content:center; padding-top:215px;">
                 <p style="opacity:0.6;">이번 달 등록된 제품이 없습니다.</p>
             </div>`;
         return;
@@ -2347,6 +2351,7 @@ function renderCalcTab() {
         <div class="calc-inner-wrapper">
             ${listHtml}
             
+            <div class="calc-bottom-group">
             <div class="calc-input-box">
                 <div style="display:flex; align-items:center; gap:5px; width: 100%;">
                     <span style="font-size:15px; color:defualt;">₩</span>
@@ -2359,7 +2364,7 @@ function renderCalcTab() {
                 </div>
             </div>
 
-            <div class="delete-btn-container" style="margin-top: 20px;">
+            <div class="delete-btn-container">
                 <button onclick="processDiscount()" class="delete-glass-btn">
                     할인율 적용
                 </button>
