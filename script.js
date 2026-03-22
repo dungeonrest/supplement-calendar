@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.21";
+const APP_VERSION = "26.3.22";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -370,7 +370,7 @@ function renderMonthlyCostData() {
                 <span class="total-cost-amount">${Math.round(totalCost).toLocaleString()}원</span>
             </div>
         </div>
-        <p class="cost-notice-text">구매한 영양제의 한 달 치 비용입니다. 각 구성원에 할당된 비용은 아래에 표시됩니다.</p>
+        <p class="cost-notice-text">구매한 영양제의 한 달 치 비용입니다. 각 구성원에 할당된 비용은 아래와 같습니다.</p>
     ` : `<p style='text-align:center; font-size:20px; font-weight:bold; margin-top:230px; padding-bottom:80px;'>비용 없음</p>`;
 
     let familySummaryHtml = "";
@@ -576,12 +576,18 @@ function renderCalendar() {
         });
 
 const totalCaps = Number(sup.totalCapsules) || 0;
-const dose = Number(sup.dose) || 1;
+const dailyDosePerPerson = Number(sup.dose) || 1;
 const dateIndex = sup.schedule.indexOf(fullDate);
-const slotsPerDay = sup.times.length * sup.family.length;
-const pastSlots = dateIndex * slotsPerDay;
-const capsAvailableToday = Math.max(0, totalCaps - (pastSlots * dose));
-const actualTotalSlotsToday = Math.min(slotsPerDay, Math.floor(capsAvailableToday / dose));
+const slotsPerDay = (sup.times?.length || 0) * (sup.family?.length || 0); 
+const dosePerSlot = dailyDosePerPerson / (sup.times?.length || 1);
+const totalDosePerDay = slotsPerDay * dosePerSlot;
+const capsAvailableToday = Math.max(0, totalCaps - (dateIndex * totalDosePerDay));
+
+
+let actualTotalSlotsToday = slotsPerDay;
+if (dosePerSlot > 0) {
+    actualTotalSlotsToday = Math.min(slotsPerDay, Math.floor(capsAvailableToday / dosePerSlot));
+}
 
 let fillPercent = 0;
 if (actualTotalSlotsToday > 0) {
@@ -1111,57 +1117,64 @@ function showStatsForFamily(name) {
 
   const stats = {};
 
+  // 영양제 루프 시작
   supplements.forEach(sup => {
-  if (!sup.family || !sup.family.includes(name)) return;
+    if (!sup.family || !sup.family.includes(name)) return;
 
-  const totalCaps = parseFloat(sup.totalCapsules) || 0;
-  const dailyDose = parseFloat(sup.dose) || 1;
-  const maxTotalTakes = Math.floor(totalCaps / dailyDose);
+    const totalCaps = parseFloat(sup.totalCapsules) || 0;
+    const dailyDoseInput = parseFloat(sup.dose) || 1;
+    const timesPerDay = sup.times?.length || 1;
+    const dosePerSlot = dailyDoseInput / timesPerDay;
+    const capsPerPerson = totalCaps / (sup.family.length || 1);
+    const maxTotalTakesPerPerson = Math.floor(capsPerPerson / dosePerSlot);
 
-  let actualTakenCount = 0;
-  let targetTotalCount = 0;
-  let globalTotalTaken = 0;
-  if (sup.takenStatus) {
-    Object.values(sup.takenStatus).forEach(day => {
-      Object.entries(day).forEach(([k, v]) => {
-        if (!k.endsWith("_extended") && v === true) globalTotalTaken++;
+    let actualTakenCount = 0;
+    let targetTotalCount = 0;
+    let globalTotalTaken = 0;
+    
+    if (sup.takenStatus) {
+      Object.values(sup.takenStatus).forEach(day => {
+        Object.entries(day).forEach(([k, v]) => {
+          if (!k.endsWith("_extended") && v === true) {
+            globalTotalTaken += dosePerSlot; 
+          }
+        });
       });
-    });
-  }
+    }
 
-  const currentStock = Math.max(0, maxTotalTakes - globalTotalTaken);
+    const myTotalTakenOverall = globalTotalTaken / (sup.family.length || 1);
+    const myCurrentStockInTakes = Math.max(0, maxTotalTakesPerPerson - Math.floor(myTotalTakenOverall / dosePerSlot));
 
-  sup.schedule.forEach((date) => {
-    for (let tIdx = 0; tIdx < (sup.times?.length || 1); tIdx++) {
-      const dayStatus = sup.takenStatus?.[date] || {};
-      const myKey = `${tIdx}_${name}`;
-      
-      if (dayStatus[myKey] === true) {
-        actualTakenCount++;
-        targetTotalCount++;
-      } else {
-        const isPast = date < getTodayKST();
-        
-        if (isPast) {
-          targetTotalCount++;
-        } else {
-          if (currentStock > 0) {
+    sup.schedule.forEach((date) => {
+      if (date >= startStr && date <= endStr) { 
+        for (let tIdx = 0; tIdx < timesPerDay; tIdx++) {
+          const dayStatus = sup.takenStatus?.[date] || {};
+          const myKey = `${tIdx}_${name}`;
+          
+          if (dayStatus[myKey] === true) {
+            actualTakenCount++;
             targetTotalCount++;
+          } else {
+            const isPast = date < getTodayKST();
+            if (isPast || myCurrentStockInTakes > 0) {
+              targetTotalCount++;
+            }
           }
         }
       }
+    });
+
+    const realisticMaxTarget = actualTakenCount + myCurrentStockInTakes;
+    targetTotalCount = Math.min(targetTotalCount, realisticMaxTarget);
+
+    if (targetTotalCount > 0) {
+      stats[sup.productName] = {
+        taken: actualTakenCount,
+        target: targetTotalCount,
+        color: sup.circleColor
+      };
     }
   });
-
-  const realisticMaxTarget = actualTakenCount + currentStock;
-  targetTotalCount = Math.min(targetTotalCount, realisticMaxTarget);
-
-  stats[sup.productName] = {
-    taken: actualTakenCount, 
-    target: targetTotalCount, 
-    color: sup.circleColor
-  };
-});
 
   const content = document.getElementById("statsContent");
   const keys = Object.keys(stats);
@@ -1656,14 +1669,15 @@ async function deleteFamilyMemberFromDB(targetName) {
 function calculateLeftUnTakenSlotsBefore(sup, baseDate) {
   const takenStatus = sup.takenStatus || {};
   let totalLeftSlots = 0;
+  const today = getTodayKST();
 
   sup.schedule.forEach(dateStr => {
-    if (dateStr < baseDate) {
+    if (dateStr < baseDate && dateStr < today) { 
       const dayStatus = takenStatus[dateStr] || {};
       
-      sup.times.forEach(time => {
+      sup.times.forEach((time, tIdx) => {
         sup.family.forEach(member => {
-          const key = `${time}_${member}`;
+          const key = `${tIdx}_${member}`;
           const isTaken = dayStatus[key] === true;
           const isAlreadyExtended = dayStatus[key + "_extended"] === true;
 
@@ -1715,9 +1729,15 @@ const fabSettingsBtn = document.getElementById("fabSettingsBtn");
 
 document.getElementById("displayAppVersion").innerText = APP_VERSION;
 
+const savedBackupDate = localStorage.getItem("lastBackupDate");
+if (savedBackupDate) {
+  document.getElementById("lastBackupDate").innerText = savedBackupDate;
+}
+
 function updateLastBackupDate() {
     const now = new Date();
-    const dateString = `${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 ${now.getHours()}시 ${now.getMinutes()}분`;
+    const dateString = `최근 저장일: ${now.getFullYear()}년 ${now.getMonth() + 1}월 ${now.getDate()}일 ${now.getHours()}시 ${now.getMinutes()}분`;
+    
     document.getElementById("lastBackupDate").innerText = dateString;
     localStorage.setItem("lastBackupDate", dateString);
 }
@@ -2321,7 +2341,7 @@ function renderCalcTab() {
     </div>`;
 
     // 상자 아래 안내 텍스트
-    listHtml += `<p class="calc-notice-text">영양제를 구매할 때 할인을 받았다면 각 제품의 가격을 할인된 가격으로 계산하여 반영합니다.</p>`;
+    listHtml += `<p class="calc-notice-text">영양제를 구매할 때 할인을 받았다면 각 제품의 가격을 할인된 가격으로 계산하여 반영할 수 있습니다.</p>`;
 
     calcDiv.innerHTML = `
         <div class="calc-inner-wrapper">

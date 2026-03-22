@@ -93,8 +93,10 @@
     <div class="ios-container">
       <!-- 상단 앱 버전 섹션 -->
       <div class="ios-header-section">
-        <div class="app-icon-box">앱 버전</div>
-        <div class="app-version-text" id="displayAppVersion"></div>
+        <div class="app-icon-box">
+          <span>앱 버전</span>
+        <span class="app-version-text" id="displayAppVersion"></span>
+      </div>
       </div>
 
       <!-- 백업 및 복원 섹션 -->
@@ -113,7 +115,7 @@
 
       <!-- 하단 설명 텍스트 -->
       <p class="ios-footer-text">
-        앱을 오랜 기간 열지 않으면 데이터가 손실될 수도 있습니다. 안전한 데이터 저장을 권장합니다.
+        앱을 장기간 열지 않으면 데이터 손실 우려가 있습니다. 주기적으로 저장하는 것을 권장합니다.
         백업 파일은 기기 내부 저장소에 저장됩니다.
       </p>
     </div>
@@ -312,17 +314,20 @@
       <button id="closeMonthlyCostModal" class="close-btn right"><span></span></button>
     </div>
 
-    <div class="period-select-container" id="costPeriodWrapper" style="padding: 10px 20px;">
-      <div class="period-input-group" style="padding: 0 15px;">
-        <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; height: 44px;">
-          <label for="costMonthPicker">기간</label>
-          <input type="month" id="costMonthPicker">
+    <div class="modal-body-scroll" style="overflow-y: auto; height: 100%;">
+      
+      <div class="period-select-container" id="costPeriodWrapper">
+        <div class="period-input-group" style="padding: 0 15px;">
+          <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; height: 44px;">
+            <label for="costMonthPicker">기간</label>
+            <input type="month" id="costMonthPicker">
+          </div>
         </div>
       </div>
-    </div>
 
-    <div id="monthlyCostContent"></div>
-    <div id="calcTabContent" style="display:none;"></div>
+      <div id="monthlyCostContent"></div>
+      <div id="calcTabContent" style="display:none;"></div>
+    </div>
   </div>
 </div>
 
@@ -341,13 +346,13 @@
       <div id="familyBtnsWrapper" class="family-buttons"></div>
 
       <div class="period-select-container" id="periodWrapper">
-        <div class="period-input-group" style="flex-direction: column; gap: 0; padding: 1px 15px;">
-          <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; height: 45px;">
+        <div class="period-input-group" style="flex-direction: column; gap: 0; padding: 0 15px;">
+          <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; height: 44px;">
             <label for="periodStart">시작</label>
             <input type="month" id="periodStart">
           </div>
           <div style="width: 100%; height: 1px; background: rgba(128, 128, 128, 0.15);"></div>
-          <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; height: 45px;">
+          <div style="display: flex; width: 100%; justify-content: space-between; align-items: center; height: 44px;">
             <label for="periodEnd">종료</label>
             <input type="month" id="periodEnd">
           </div>

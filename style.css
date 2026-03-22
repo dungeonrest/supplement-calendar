@@ -1585,7 +1585,7 @@ body.dark-mode .close-btn::before {
 #monthlyCostContent {
   display: flex;
   flex-direction: column;
-  padding: 0px 20px 40px 20px !important;
+  padding: 10px 20px 40px 20px !important;
 }
 
 #monthlyCostContent::before,
@@ -1598,12 +1598,12 @@ body.dark-mode .close-btn::before {
 }
 
 #costPeriodWrapper {
-    position: sticky;
-    background-color: #f8f8f8;
-    margin-top: 50px; /* 헤더와의 간격 */
-    margin-bottom: -60px; /* 아래 컨텐츠와의 간격 */
+    position: relative;
+    background-color: transparent;
+    margin-top: 0px; /* 헤더와의 간격 */
+    margin-bottom: -55px; /* 아래 컨텐츠와의 간격 */
     z-index: 10; /* 헤더보다 뒤에 있다면 앞으로 끌어올림 */
-    padding: 10px 20px;
+    padding: 60px 20px 10px 20px;
     box-sizing: border-box;
 }
 
@@ -1701,11 +1701,11 @@ body.dark-mode .total-cost-amount { color: #b0b0b4; }
 
 /* 요약 상자 아래 안내 텍스트 */
 .cost-notice-text {
-    font-size: 12px;
-    color: #8E8E93;
-    line-height: 1.3;          /* 줄 간격 */
-    margin: -8px 15px 20px;    /* 상자 바로 아래 붙도록 상단 마진은 음수 혹은 작게 조절 */
+    font-size: 11px;
     font-weight: normal;
+    color: #8E8E93;
+    line-height: 1.5;
+    margin: -5px 15px 20px;    /* 상자 바로 아래 붙도록 상단 마진은 음수 혹은 작게 조절 */
     word-break: keep-all;      /* 한글 단어 단위 끊김 방지 */
 }
 
@@ -1852,10 +1852,11 @@ body.dark-mode .selected-sum-amount { color: #b0b0b4; }
 
 /* 상자 아래 안내 텍스트 */
 .calc-notice-text {
-    font-size: 12px;
+    font-size: 11px;
+    font-weight: normal;
     color: #8e8e93;
-    margin: 8px 15px 20px;
-    line-height: 1.3;
+    margin: 10px 15px 20px;
+    line-height: 1.5;
     word-break: keep-all;
 }
 
@@ -2019,8 +2020,8 @@ body.dark-mode .extend-btn {
 .taken-table tr:last-child td {
   border-bottom: none;
 }
-/*----------------------------섭취 체크 모달 끝------------------------------*/
-/* 플로팅 버튼 디자인 */
+/*--------------------------------섭취 체크 모달 끝-----------------------------------*/
+/*-------------------------------플로팅 버튼 시작------------------------------------- */
 .fab-today-btn {
   position: fixed;
   bottom: 21px;
@@ -2198,7 +2199,8 @@ body.dark-mode .extend-btn {
     rgba(255, 255, 255, 0.1) 360deg
   );
 }
-
+/*-------------------------------플로팅 버튼 끝------------------------------------- */
+/*------------------------------------백업 및 복원 모달 시작----------------------------*/
 .backup-menu-modal {
   display: flex;
   flex-direction: column;
@@ -2221,27 +2223,27 @@ body.dark-mode .extend-btn {
 }
 
 .app-icon-box {
-  width: 100px;
-  height: 60px;
+  width: 100%;
+  height: 44px;
   background: #c0c0c033;
-  border-radius: 5px;
+  border-radius: 22px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 600;
-  color: black;
+  justify-content: space-between;
+  font-size: 15px;
+  font-weight: normal;
+  color: var(--text-color);
   margin-bottom: 15px;
-  text-align: center;
-  padding: 5px;
+  box-sizing: border-box;
+  padding: 0 15px;
 }
 
-body.dark-mode .app-icon-box { background-color: white; }
+body.dark-mode .app-icon-box { background-color: #2c2c2e; }
 
 .app-version-text {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text-color);
+  font-size: 15px;
+  font-weight: normal;
+  color: #8e8e93;
 }
 
 /* 섹션 타이틀 */
@@ -2305,7 +2307,7 @@ body.dark-mode .ios-item:active { background-color: #ffffff28; }
   padding: 0 16px;
   margin-top: 10px;
 }
-
+/*------------------------------------백업 및 복원 모달 끝-----------------------------*/
 /* 전체 스크롤바 숨기기 */
 *::-webkit-scrollbar {
   width: 0 !important;
@@ -2508,18 +2510,18 @@ body.dark-mode #statsModal .stats-modal {
     display: flex;
     width: 95px;
     height: 35px;
-    background-color: #c5c5c526;
+    background-color: #f0f0f0;
     border-radius: 50px;
     padding: 2px;
     z-index: 2000;
     overflow: visible !important;
 }
+/*-----------------------------------------모달 끝-----------------------------------*/
 /*---------------------------------------통계 모달 시작-----------------------------------*/
 .stats-modal {
     display: flex;
     flex-direction: column;
     height: 90svh;
-    overflow: hidden;
 }
 
 /* 헤더와 필터 영역 고정 */
@@ -2611,7 +2613,7 @@ body.dark-mode .tab-slider {
   padding: 10px;
   display: flex;
   flex-direction: column;
-  margin-bottom: -5px;
+  margin-bottom: -10px;
 }
 
 .period-input-group {
@@ -2664,7 +2666,7 @@ body.dark-mode .period-input-group {
 
 /* 통계 컨텐츠 전체 컨테이너 */
 #statsContent {
-display: block; 
+  display: block; 
   padding: 15px;
   overflow-y: auto;
 }
@@ -2740,8 +2742,8 @@ body.dark-mode .stats-item {
 }
 
 #statsFilters {
-  padding-top: 50px !important;
-  background-color: transparent;
+  padding-top: 0px !important;
+  background-color: transparent !important;
 }
 
 /* 슬라이더 배경 (큰 알약) */
@@ -2754,7 +2756,7 @@ body.dark-mode .stats-item {
   background: #c0c0c033;
   border-radius: 50px;
   padding: 0 2px;
-  margin: 10px 12px;
+  margin: 63px 12px 12px 12px;
   box-sizing: border-box;
   z-index: 0;
 }
@@ -2889,6 +2891,7 @@ body.dark-mode .family-btn.selected {
     flex-direction: column;
     gap: 8px; /* 섹션 간 간격 조절 */
     padding-bottom: 150px;
+    margin-top: 50px;
 }
 
 .supplement-list-wrapper {
@@ -2949,7 +2952,8 @@ body.dark-mode .family-btn.selected {
 .bar-chart-container {
     display: flex;
     align-items: flex-end;
-    justify-content: space-around;
+    justify-content: flex-start;
+    gap: 10px;
     height: 90px; /* 그래프 높이 */
     padding-top: 8px;
 }
@@ -2957,13 +2961,14 @@ body.dark-mode .family-btn.selected {
 .bar-group {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
-    flex: 1;
+    flex: none;
+    width: 40px;
 }
 
 .bar-wrapper {
-    width: 30%; /* 막대 두께 */
+    width: 20px; /* 막대 두께 */
     height: 70px; /* 최대 높이 */
     background-color: rgba(128, 128, 128, 0.1);
     border-radius: 5px;
