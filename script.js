@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.24";
+const APP_VERSION = "26.3.10";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -973,33 +973,33 @@ function openTakenCheckUI(date) {
 
       const currentSupTimes = sup.times || [];
       const totalCaps = Number(sup.totalCapsules) || 0;
-      const dose = Number(sup.dose) || 1;
+      const dose = Number(sup.dose) || 0;
+      const timesCount = currentSupTimes.length || 1;
+      const dosagePerTime = dose / timesCount; // 한 칸당 소모량 (예: 2알 / 2회 = 1알)
 
-      // [핵심] 실시간 비활성화 함수
-      const refreshCheckboxes = () => {
-        const currentTotalChecked = getTotalCheckedCount(sup);
-        const remaining = totalCaps - (currentTotalChecked * dose);
-        const allCheckboxes = table.querySelectorAll('input[type="checkbox"]');
+  // [핵심] 실시간 비활성화 함수
+  const refreshCheckboxes = () => {
+  const currentTotalChecked = getTotalCheckedCount(sup);
+  const totalConsumed = currentTotalChecked * dosagePerTime;
+  const remaining = totalCaps - totalConsumed;
+  
+  const allCheckboxes = table.querySelectorAll('input[type="checkbox"]');
 
-        allCheckboxes.forEach(chk => {
-          if (!chk.checked) {
-            if (totalCaps > 0 && remaining < dose) {
-              chk.disabled = true;
-              chk.parentElement.style.opacity = "0.2";
-              chk.parentElement.style.pointerEvents = "none";
-            } else {
-              chk.disabled = false;
-              chk.parentElement.style.opacity = "1";
-              chk.parentElement.style.pointerEvents = "auto";
-            }
-          } else {
-            // 체크된 상태는 항상 활성화 유지
-            chk.disabled = false;
-            chk.parentElement.style.opacity = "1";
-            chk.parentElement.style.pointerEvents = "auto";
-          }
-        });
-      };
+  allCheckboxes.forEach(chk => {
+    if (!chk.checked) {
+      // 남은 양이 '한 번 먹을 분량'보다 적으면 비활성화
+      if (totalCaps > 0 && remaining < dosagePerTime) {
+        chk.disabled = true;
+        chk.parentElement.style.opacity = "0.2";
+        chk.parentElement.style.pointerEvents = "none";
+      } else {
+        chk.disabled = false;
+        chk.parentElement.style.opacity = "1";
+        chk.parentElement.style.pointerEvents = "auto";
+      }
+    }
+  });
+};
 
       // 행(Row) 생성
       currentSupTimes.forEach(time => {
