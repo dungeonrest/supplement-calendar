@@ -174,12 +174,18 @@ button:not(.tab-btn).ios-release,
   width: 130px;
   padding: 2px 2px;
   border-radius: 30px;
-  background-color: #f3f3f39c;
+  background-color: #f0f0f09c;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   -webkit-tap-highlight-color: transparent;
+  box-shadow: 0 0 60px 0px rgba(0, 0, 0, 0.01);
+  filter: brightness(1.05);
 }
 
   body.dark-mode .header-right-group {
   background-color: #19191a9c;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .header-right-group::before {
@@ -190,14 +196,14 @@ button:not(.tab-btn).ios-release,
   padding: 1px;
   background: conic-gradient(
     from 0deg,
-    rgba(128, 128, 128, 0.1) 0deg,
-    rgba(128, 128, 128, 0.1) 70deg,   
+    rgb(255, 255, 255) 0deg,
+    rgba(255, 255, 255) 70deg,   
     rgba(128, 128, 128, 0) 80deg,
-    rgba(128, 128, 128, 0.1) 90deg,  
-    rgba(128, 128, 128, 0.1) 250deg, 
+    rgba(255, 255, 255) 90deg,  
+    rgba(255, 255, 255) 250deg, 
     rgba(128, 128, 128, 0) 260deg,
-    rgba(128, 128, 128, 0.1) 270deg, 
-    rgba(128, 128, 128, 0.1) 360deg
+    rgba(255, 255, 255) 270deg, 
+    rgba(255, 255, 255) 360deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -414,10 +420,10 @@ body.dark-mode .theme-icon::after {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  width: 21px;
-  height: 21px;
-  min-width: 21px;
-  min-height: 21px;
+  width: 25px;
+  height: 25px;
+  min-width: 25px;
+  min-height: 25px;
   
   border: 1.5px solid transparent;
   border-radius: 50%;
@@ -602,7 +608,7 @@ body.modal-open {
   max-height: calc(100svh - env(safe-area-inset-top)) !important;
   margin-top: env(safe-area-inset-top) !important;
   
-  background-color: #f8f8f8 !important;
+  background-color: #F2F2F6 !important;
   border-radius: 30px 30px 0 0;
   display: flex;
   flex-direction: column;
@@ -846,7 +852,7 @@ body.dark-mode #statsContent {
   margin-right: -12px !important;
 }
 
-/* 움직이는 흰색 배경 상자 */
+/* 움직이는 상자 */
 .info-row.split::before {
   content: "";
   position: absolute;
@@ -854,7 +860,7 @@ body.dark-mode #statsContent {
   left: 0px;
   width: calc(50% - 4px);
   height: calc(100% - 4px);
-  background: #ffffff;
+  background: #F2F2F6;
   border-radius: 50px;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: -1;
@@ -1112,16 +1118,21 @@ body.dark-mode .selected-text { color: #9E9EA4; }
 }
 
 .checkbox-wrapper-line:not(:first-child) .checkbox-label-text {
-  border-top: 0.8px solid var(--calendar-line);
   height: 100%;
   display: flex;
   align-items: center;
   flex: 1;
 }
 
-.checkbox-wrapper-line:first-child .checkbox-label-text {
-  border-top: none;
+.checkbox-wrapper-line:not(:first-child) {
+  border-top: 0.8px solid var(--calendar-line);
 }
+
+.inputTime:disabled,
+.inputTime:disabled + .checkbox-label-text {
+  opacity: 0.3;
+}
+
 
 /* 체크박스와 글자 사이 간격 */
 .checkbox-item input[type="checkbox"] {
@@ -1148,7 +1159,7 @@ body.dark-mode input[type="checkbox"] {
 }
 
 input[type="checkbox"]:checked {
-  background-color: #05d339;
+  background-color: #0b89fe;
   border: none;
 }
 body.dark-mode input[type="checkbox"]:checked {
@@ -1161,10 +1172,14 @@ input[type="checkbox"]::before {
   width: 12px;
   height: 12px;
   transform: scale(0);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 5 10 19 5 13'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 6 10 20 5 13'%3E%3C/polyline%3E%3C/svg%3E");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
+}
+
+body.dark-mode input[type="checkbox"]:before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 6 10 20 5 13'%3E%3C/polyline%3E%3C/svg%3E");
 }
 
 input[type="checkbox"]:checked::before {
@@ -1184,7 +1199,7 @@ input[type="checkbox"]:checked::before {
   width: 92%;
   margin: 0 auto;
   padding: 0 5px 0 15px;
-  background: #c0c0c033 !important;
+  background: #ffffff !important;
   border-radius: 22px;
   overflow: hidden;
   box-sizing: border-box;
@@ -1243,12 +1258,12 @@ body.dark-mode .input-label {
   padding: 12px 14px;
   border: none;
   border-radius: 30px;
-  background-color: #c0c0c033;
+  background-color: #F7F7F9;
   color: #ff4646;
   font-size: 15px;
   font-weight: normal;
   cursor: pointer;
-  filter: brightness(1.15)
+  filter: brightness(1.05)
 }
 
 body.dark-mode .delete-glass-btn {
@@ -1265,14 +1280,14 @@ body.dark-mode .delete-glass-btn {
   padding: 1px;
   background: conic-gradient(
     from 0deg,
-    rgba(128, 128, 128, 0.2) 0deg,
-    rgba(128, 128, 128, 0.2) 50deg,
+    rgb(255, 255, 255) 0deg,
+    rgba(255, 255, 255) 50deg,
     rgba(128, 128, 128, 0) 75deg,
-    rgba(128, 128, 128, 0.2) 90deg,
-    rgba(128, 128, 128, 0.2) 230deg,
+    rgba(255, 255, 255) 90deg,
+    rgba(255, 255, 255) 230deg,
     rgba(128, 128, 128, 0) 245deg,
-    rgba(128, 128, 128, 0.2) 260deg,
-    rgba(128, 128, 128, 0.2) 360deg
+    rgba(255, 255, 255) 260deg,
+    rgba(255, 255, 255) 360deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -1316,13 +1331,15 @@ body.dark-mode .delete-glass-btn::before {
 .action-sheet-container {
     position: absolute;
     width: 170px;
-    background: #f3f3f3;
+    background: #F2F2F6;
     border-radius: 30px;
     padding: 12px 13px;
     transform: translate(-50%, 10px); 
     transition: transform 0.2s ease, opacity 0.2s ease;
     opacity: 0;
     margin-bottom: 0;
+    box-shadow: 0 0 60px 0px rgba(0, 0, 0, 0.2);
+    filter: brightness(1.05);
 }
 
 .action-sheet-overlay.active .action-sheet-container {
@@ -1342,14 +1359,14 @@ body.dark-mode .action-sheet-container {
   padding: 1px;
   background: conic-gradient(
     from 0deg,
-    rgba(128, 128, 128, 0.2) 0deg,
-    rgba(128, 128, 128, 0.2) 40deg,
+    rgb(255, 255, 255) 0deg,
+    rgba(255, 255, 255) 40deg,
     rgba(128, 128, 128, 0) 60deg,
-    rgba(128, 128, 128, 0.2) 80deg,
-    rgba(128, 128, 128, 0.2) 220deg,
+    rgba(255, 255, 255) 80deg,
+    rgba(255, 255, 255) 220deg,
     rgba(128, 128, 128, 0) 240deg,
-    rgba(128, 128, 128, 0.2) 260deg,
-    rgba(128, 128, 128, 0.2) 360deg
+    rgba(255, 255, 255) 260deg,
+    rgba(255, 255, 255) 360deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -1413,7 +1430,7 @@ body.dark-mode .action-sheet-btn.delete-text {
   width: 38px;
   height: 38px;
   border-radius: 50%;
-  background-color: #cacaca;
+  background-color: #CBCBCD;
   border: none;
   cursor: pointer;
   position: relative;
@@ -1423,11 +1440,13 @@ body.dark-mode .action-sheet-btn.delete-text {
   padding: 0;
   flex-shrink: 0;
   z-index: 0;
+  box-shadow: 0 0 30px 0px rgba(0, 0, 0, 0.05);
+
 }
 
 body.dark-mode .check-btn { background-color: #4a4a4d; }
-.check-btn.ready { background-color: #ec4540; }
-body.dark-mode .check-btn.ready { background-color: #ec4540; }
+.check-btn.ready { background-color: #f34943; filter: brightness(1.1); }
+body.dark-mode .check-btn.ready { background-color: #f34943; }
 
 /* 둥근 모서리 체크(V) 아이콘 */
 .check-btn::before {
@@ -1435,22 +1454,22 @@ body.dark-mode .check-btn.ready { background-color: #ec4540; }
   position: absolute;
   width: 22px; 
   height: 22px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f1f1f1' stroke-width='4.0' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 5 10 19 4 13'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='4.0' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 5 10 19 4 13'%3E%3C/polyline%3E%3C/svg%3E");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 2;
+  z-index: 1;
 }
 
 .check-btn.ready::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffc4c2' stroke-width='4.0' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 5 10 19 4 13'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffa5a2' stroke-width='4.0' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 5 10 19 4 13'%3E%3C/polyline%3E%3C/svg%3E");
   filter: brightness(1.2);
 }
 body.dark-mode .check-btn.ready::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffb1ae' stroke-width='4.0' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 5 10 19 4 13'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffa5a2' stroke-width='4.0' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='19 5 10 19 4 13'%3E%3C/polyline%3E%3C/svg%3E");
   filter: brightness(1.2);
 }
 
@@ -1462,21 +1481,20 @@ body.dark-mode .check-btn.ready::before {
   padding: 1px;
   background: conic-gradient(
     from 0deg,
-    rgba(128, 128, 128, 0.3) 0deg,
-    rgba(128, 128, 128, 0.3) 30deg,
+    rgb(255, 255, 255) 0deg,
     rgba(128, 128, 128, 0) 50deg,
-    rgba(128, 128, 128, 0.3) 120deg,
-    rgba(128, 128, 128, 0.3) 200deg,
+    rgba(255, 255, 255) 120deg,
+    rgba(255, 255, 255) 190deg,
     rgba(128, 128, 128, 0) 230deg,
-    rgba(128, 128, 128, 0.3) 300deg,
-    rgba(128, 128, 128, 0.3) 360deg
+    rgba(255, 255, 255) 300deg,
+    rgba(255, 255, 255) 360deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
 
 body.dark-mode .check-btn::after {
@@ -1511,9 +1529,11 @@ body.dark-mode .check-btn::after {
   align-items: center;
   justify-content: center;
   padding: 0;
-  background-color: #e6e5e5;
+  background-color: #F7F7F9;
   transition: background-color 0.3s, transform 0.2s;
   overflow: visible;
+  box-shadow: 0 0 30px 0px rgba(0, 0, 0, 0.05);
+  filter: brightness(1.05);
 }
 
 body.dark-mode .close-btn {
@@ -1528,14 +1548,14 @@ body.dark-mode .close-btn {
   padding: 1px;
   background: conic-gradient(
     from 180deg,
-    rgba(128, 128, 128, 0.3) 0deg,
-    rgba(128, 128, 128, 0.3) 30deg,
+    rgb(255, 255, 255) 0deg,
+    rgba(255, 255, 255) 30deg,
     rgba(128, 128, 128, 0) 50deg,
-    rgba(128, 128, 128, 0.3) 120deg,
-    rgba(128, 128, 128, 0.3) 200deg,
+    rgba(255, 255, 255) 120deg,
+    rgba(255, 255, 255) 200deg,
     rgba(128, 128, 128, 0) 230deg,
-    rgba(128, 128, 128, 0.3) 300deg,
-    rgba(128, 128, 128, 0.3) 360deg
+    rgba(255, 255, 255) 300deg,
+    rgba(255, 255, 255) 360deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -1628,7 +1648,7 @@ body.dark-mode #costPeriodWrapper {
   color: var(--text-color);
 }
 
-.cost-item-header span:last-child { color: #9d9d9e; font-weight: normal; }
+.cost-item-header span:last-child { color: #c9c9c9; font-weight: normal; }
 
 body.dark-mode .cost-item-header span:last-child { color: #656566;}
 
@@ -1636,7 +1656,7 @@ body.dark-mode .cost-item-header span:last-child { color: #656566;}
 .cost-bar-bg {
   width: 100%;
   height: 15px;
-  background: #d8d8da;
+  background: #F2F2F6;
   border-radius: 6px;
   overflow: hidden;
 }
@@ -1654,7 +1674,7 @@ body.dark-mode .cost-bar-bg {
 
 /* 요약 상자 컨테이너 */
 .cost-summary-box {
-    background-color: #c0c0c033;
+    background-color: white;
     border-radius: 22px;
     padding: 10px 13px;
     margin-bottom: 15px;
@@ -1694,7 +1714,7 @@ body.dark-mode .summary-box-divider {
 .total-cost-amount {
   font-size: 15px;
   font-weight: normal;
-  color: #757575;
+  color: #8f8f8f;
 }
 
 body.dark-mode .total-cost-amount { color: #b0b0b4; }
@@ -1719,7 +1739,7 @@ body.dark-mode .total-cost-amount { color: #b0b0b4; }
 }
 
 .family-cost-card {
-    background-color: #c0c0c033;
+    background-color: white;
     border-radius: 22px;
     padding: 15px 18px;
     flex: 1 1 calc(50% - 5px); 
@@ -1746,7 +1766,7 @@ body.dark-mode .family-cost-card {
 .family-cost-amount {
     font-size: 14px;
     font-weight: normal;
-    color: #757575;
+    color: #8f8f8f;
     font-variant-numeric: tabular-nums;
 }
 
@@ -1769,7 +1789,7 @@ body.dark-mode .family-cost-amount { color: #9E9EA4; }
 
 /* 제품 목록을 감싸는 전체 큰 상자 */
 .calc-list-container {
-    background-color: #c0c0c033;
+    background-color: white;
     border-radius: 22px;
     padding: 0px;
     margin-top: 10px;
@@ -1806,10 +1826,10 @@ body.dark-mode .calc-row:active { background-color: rgba(255, 255, 255, 0.158); 
 
 /* 입력 박스 (실제 결제 금액 입력 구간) */
 .calc-input-box {
-    margin-top: 0px;
+    margin-top: 15px;
     padding: 12px;
     border-radius: 50px;
-    background: #c0c0c033;
+    background: white;
 }
 
 body.dark-mode .calc-input-box {
@@ -1826,7 +1846,7 @@ body.dark-mode .calc-input-box {
 .calc-product-price {
     font-size: 15px;
     font-weight: normal;
-    color: #9d9d9e;
+    color: #c9c9c9;
     font-variant-numeric: tabular-nums;
 }
 
@@ -1843,7 +1863,7 @@ body.dark-mode .calc-product-price { color: #656566; }
 }
 
 .selected-sum-amount {
-    color: #757575;
+    color: #8f8f8f;
     margin-right: -35px;
     font-variant-numeric: tabular-nums;
 }
@@ -1947,7 +1967,7 @@ body.dark-mode input[type="checkbox"].calc-check::before {
   margin-right: auto;
   padding: 5px 20px 5px 20px;
   margin-bottom: 20px;
-  background: rgba(192, 192, 192, 0.2);
+  background: white;
   border-radius: 22px;
 }
 
@@ -1963,7 +1983,7 @@ body.dark-mode .taken-sup-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #454549 !important;
+  color: black;
   width: 80%;
   margin-left: auto;
   margin-right: auto;
@@ -1994,7 +2014,8 @@ body.dark-mode .taken-sup-title .sup-name-text {
   align-items: center;
   justify-content: center;
   color: var(--text-color);
-  background: rgba(173, 170, 170, 0.1);
+  background: white;
+  box-shadow: 0 0 40px 0px rgba(0, 0, 0, 0.1);
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -2050,7 +2071,7 @@ body.dark-mode .extend-btn {
   padding: 11px 14px;
   border-radius: 30px;
   border: none;
-  background-color: #f3f3f39c;
+  background-color: #f0f0f09c;
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   font-size: 15px;
@@ -2062,6 +2083,9 @@ body.dark-mode .extend-btn {
   z-index: 1000;
   color: var(--text-color);
   -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+  box-shadow: 0 0 40px 0px rgba(0, 0, 0, 0.1);
+  filter: brightness(1.05);
 }
 
 .dark-mode .fab-today-btn {
@@ -2078,14 +2102,14 @@ body.dark-mode .extend-btn {
   padding: 1px;
   background: conic-gradient(
     from 0deg,
-    rgba(128, 128, 128, 0.1) 0deg,
-    rgba(128, 128, 128, 0.1) 10deg,   
+    rgb(255, 255, 255) 0deg,
+    rgba(255, 255, 255) 10deg,   
     rgba(128, 128, 128, 0) 50deg,
-    rgba(128, 128, 128, 0.1) 90deg,  
-    rgba(128, 128, 128, 0.1) 200deg, 
+    rgba(255, 255, 255) 90deg,  
+    rgba(255, 255, 255) 200deg, 
     rgba(128, 128, 128, 0) 240deg,
-    rgba(128, 128, 128, 0.1) 280deg, 
-    rgba(128, 128, 128, 0.1) 360deg
+    rgba(255, 255, 255) 280deg, 
+    rgba(255, 255, 255) 360deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -2139,7 +2163,7 @@ body.dark-mode .extend-btn {
   align-items: center;
   width: 110px;
   justify-content: space-between;
-  background-color: #f3f3f39c;
+  background-color: #f0f0f09c;
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   border-radius: 30px;
@@ -2147,6 +2171,8 @@ body.dark-mode .extend-btn {
   height: 41px;
   padding: 0 6px; /* 양 끝 여백 */
   box-sizing: border-box;
+  box-shadow: 0 0 40px 0px rgba(0, 0, 0, 0.1);
+  filter: brightness(1.05);
 }
 
 .dark-mode .fab-combined-container {
@@ -2189,14 +2215,14 @@ body.dark-mode .extend-btn {
   padding: 1px;
   background: conic-gradient(
     from 0deg,
-    rgba(128, 128, 128, 0.1) 0deg,
-    rgba(128, 128, 128, 0.1) 55deg,   
+    rgb(255, 255, 255) 0deg,
+    rgba(255, 255, 255) 55deg,   
     rgba(128, 128, 128, 0) 70deg,    
-    rgba(128, 128, 128, 0.1) 85deg,  
-    rgba(128, 128, 128, 0.1) 235deg, 
+    rgba(255, 255, 255) 85deg,  
+    rgba(255, 255, 255) 235deg, 
     rgba(128, 128, 128, 0) 250deg,   
-    rgba(128, 128, 128, 0.1) 265deg, 
-    rgba(128, 128, 128, 0.1) 360deg
+    rgba(255, 255, 255) 265deg, 
+    rgba(255, 255, 255) 360deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -2244,7 +2270,7 @@ body.dark-mode .extend-btn {
 .app-icon-box {
   width: 100%;
   height: 50px;
-  background: #c0c0c033;
+  background: white;
   border-radius: 22px;
   display: flex;
   align-items: center;
@@ -2271,7 +2297,7 @@ body.dark-mode .app-icon-box { background-color: #2c2c2e; }
   font-weight: normal;
   color: #6e6e73;
   text-transform: uppercase;
-  margin-left: 14px;
+  margin-left: 12px;
   margin-bottom: 8px;
 }
 
@@ -2290,7 +2316,7 @@ body.dark-mode .app-icon-box { background-color: #2c2c2e; }
   align-items: flex-start;
   padding: 16px 16px;
   border: none;
-  background: #c0c0c033;
+  background: white;
   cursor: pointer;
   text-align: left;
   transition: background 0.1s;
@@ -2403,8 +2429,8 @@ body.dark-mode .ios-item:active { background-color: #ffffff28; }
 
 .limit-notice {
   font-size: 15px;
-  line-height: 1.4;
-  color:  #98989E;
+  line-height: 1.5;
+  color:  #76767a;
   padding-right: 15px;
   padding-left: 50px; /* 이모지 너비만큼 들여쓰기 */
   margin-bottom: 0;
@@ -2424,6 +2450,7 @@ body.dark-mode .ios-item:active { background-color: #ffffff28; }
 .input-sub-label {
   font-size: 11px;
   font-weight: 500;
+  line-height: 1.5;
   color: #98989E;
   padding-left: 14px;  /* 입력창 글자와 수직 정렬을 맞추기 위한 미세 조정 */
   text-transform: uppercase; /* 영문일 경우 세련되게 대문자로 표시 */
@@ -2435,7 +2462,7 @@ body.dark-mode .ios-item:active { background-color: #ffffff28; }
   width: 100%;
   height: 50px;
   border: none;
-  background-color: #ebebeb;
+  background-color: #F7F7F9;
   color: #000000;
   border-radius: 50px;
   padding: 16px;
@@ -2444,6 +2471,7 @@ body.dark-mode .ios-item:active { background-color: #ffffff28; }
   outline: none;
   box-sizing: border-box;
   transition: all 0.2s;
+  box-shadow: 0 0 40px 0px rgba(0, 0, 0, 0.0.5);
 }
 
 .input-sub-label { margin-bottom: 8px; }
@@ -2510,11 +2538,6 @@ body.dark-mode #calcTabContent {
     background-color: #1c1c1d !important;
 }
 
-#statsModal .stats-modal, .backup-menu-modal {
- background-color: #f8f8f8 !important;
-    border-radius: 30px 30px 0 0 !important;
-}
-
 body.dark-mode #statsModal .stats-modal {
  background-color: #1c1c1d !important;
     border-radius: 30px 30px 0 0 !important;
@@ -2529,11 +2552,13 @@ body.dark-mode #statsModal .stats-modal {
     display: flex;
     width: 95px;
     height: 35px;
-    background-color: #f0f0f0;
+    background-color: #F7F7F9;
     border-radius: 50px;
     padding: 2px;
     z-index: 2000;
     overflow: visible !important;
+    filter: brightness(1.05);
+    box-shadow: 0 0 40px 0px rgba(0, 0, 0, 0.05);
 }
 /*-----------------------------------------모달 끝-----------------------------------*/
 /*---------------------------------------통계 모달 시작-----------------------------------*/
@@ -2563,14 +2588,14 @@ body.dark-mode .stats-modal .modal-header .tab-container {
   padding: 1px;
   background: conic-gradient(
     from 180deg,
-    rgba(180, 180, 180, 0.2) 0deg,
-    rgba(180, 180, 180, 0.2) 60deg,
+    rgb(255, 255, 255) 0deg,
+    rgba(255, 255, 255) 60deg,
     rgba(180, 180, 180, 0) 75deg,
-    rgba(180, 180, 180, 0.2) 90deg,
-    rgba(180, 180, 180, 0.2) 235deg,
+    rgba(255, 255, 255) 90deg,
+    rgba(255, 255, 255) 235deg,
     rgba(180, 180, 180, 0) 255deg,
-    rgba(180, 180, 180, 0.2) 270deg,
-    rgba(180, 180, 180, 0.2) 360deg
+    rgba(255, 255, 255) 270deg,
+    rgba(255, 255, 255) 360deg
   );
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -2600,7 +2625,7 @@ body.dark-mode .tab-container::before {
   left: 4px;
   width: calc(50% - 4px);
   height: calc(100% - 6px);
-  background-color: #cccccc;
+  background-color: #E4E4E7;
   border-radius: 50px;
   z-index: 1;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2639,7 +2664,7 @@ body.dark-mode .tab-slider {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #ececec;
+  background: white;
   padding: 10px 15px;
   border-radius: 20px;
 }
@@ -2699,7 +2724,7 @@ body.dark-mode .period-input-group {
 
 /* 개별 아이템 상자 */
 .stats-item {
-  background: #c0c0c015;
+  background: white;
   border-radius: 22px;
   padding: 12px;
   display: flex;
@@ -2772,12 +2797,13 @@ body.dark-mode .stats-item {
   justify-content: center;
   height: 28px;
   position: relative;
-  background: #c0c0c033;
+  background: white;
   border-radius: 50px;
-  padding: 0 2px;
+  padding: 2px;
   margin: 63px 12px 12px 12px;
   box-sizing: border-box;
   z-index: 0;
+  overflow: hidden;
 }
 
 body.dark-mode .family-buttons {
@@ -2790,11 +2816,10 @@ body.dark-mode .family-buttons {
   top: 2px;
   left: 2px;
   height: calc(100% - 4px);
-  background: #ffffff;
+  background: #eeeef3;
   border-radius: 50px;
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: -1;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  z-index: 1;
   box-sizing: border-box;
 }
 
@@ -2814,17 +2839,12 @@ body.dark-mode .family-slider {
   border: none;
   cursor: pointer;
   box-sizing: border-box;
-  z-index: 1;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.family-btn.selected {
-  font-weight: bold;
-}
-
-body.dark-mode .family-btn.selected {
-  color: #fff !important;
+  z-index: 2;
+  padding: 0;
+  margin: 0;
+  line-height: 1; 
+  -webkit-font-smoothing: antialiased;
+  transform: translateZ(0);
 }
 /*---------------------------------------분석 탭 시작-----------------------------------*/
 /* 스마트 알림 아이폰 스타일 */
@@ -3053,7 +3073,7 @@ body.dark-mode .stat-value.current,
     font-size: 15px;
     font-weight: normal;
     opacity: 0.7;
-    background-color: #e2e2e2;
+    background-color: #f8f8f8;
 }
 
 body.dark-mode .routine-time-label { background-color: #3b3b3d; }

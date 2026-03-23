@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.23";
+const APP_VERSION = "26.3.24";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -458,12 +458,11 @@ function renderCalendar() {
 
   monthDisplay.innerText = `${year}. ${String(month+1).padStart(2,"0")}`;
 
+  const todayStr = getTodayKST();
   const firstDay = new Date(year, month, 1).getDay();
   const lastDate = new Date(year, month+1,0).getDate();
 
   datesContainer.innerHTML = "";
-
-  const todayStr = getTodayKST();
 
   const prevLastDate = new Date(year, month, 0).getDate();
   for (let x = firstDay; x > 0; x--) {
@@ -499,7 +498,10 @@ function renderCalendar() {
     if (dayOfWeek === 6) div.classList.add("sat");
 
     const fullDate = `${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
-    const todayStr = getTodayKST();
+    
+    if (koreaHolidays2026.includes(fullDate)) {
+      div.classList.add("holiday");
+    }
 
     if (fullDate === todayStr) {
         div.classList.add("today-date");
@@ -910,7 +912,7 @@ function openTakenCheckUI(date) {
       extendBtn.addEventListener("click", async () => {
         const baseDate = date;
         const leftUnTakenSlots = calculateLeftUnTakenSlotsBefore(sup, baseDate);
-        const additionalDays = calculateAdditionalDays(sup, baseDate, leftUnTakenSlots);
+        const additionalDays = calculateAdditionalDays(sup, leftUnTakenSlots);
         const formattedDate = baseDate.replaceAll('-', '.');
 
         if (additionalDays === 0) {
@@ -930,9 +932,9 @@ function openTakenCheckUI(date) {
         if (dateStr < baseDate) {
         if (!takenStatus[dateStr]) takenStatus[dateStr] = {};
         
-          sup.times.forEach(time => {
+          sup.times.forEach((_, tIdx) => {
           sup.family.forEach(member => {
-            const key = `${time}_${member}`;
+            const key = `${tIdx}_${member}`;
           
             if (!takenStatus[dateStr][key]) {
               takenStatus[dateStr][key + "_extended"] = true;
@@ -1052,6 +1054,7 @@ function openTakenCheckUI(date) {
 document.getElementById("closeTakenCheckBtn").addEventListener("click", async () => {
   renderCalendar();
   closeBottomSheet("takenCheckModal");
+  document.body.classList.remove("modal-open");
 });
 /*-------------------------------------섭취체크모달 끝-------------------------------------*/
 const statsBtn = document.getElementById("statsBtn");
@@ -1403,7 +1406,7 @@ function switchStatsTab(tab) {
 
 function renderAnalysisTab() {
     const statsContent = document.getElementById('statsContent');
-    if (!statsContent) return; // 요소가 없으면 중단
+    if (!statsContent) return;
     statsContent.scrollTop = 0;
 
     const baseDate = selectedDateForList ? new Date(selectedDateForList) : new Date();
@@ -1523,7 +1526,7 @@ function renderAnalysisTab() {
         </div>
     </div>`;
 
-    // [섹션 2] 소비 분석 (말줄임표 제거 및 로직 복구)
+    // [섹션 2] 소비 분석
     html += `
     <div>
       <label class="input-label">${monthTitle} 소비 분석</label>
@@ -1679,7 +1682,7 @@ function calculateLeftUnTakenSlotsBefore(sup, baseDate) {
     if (dateStr < baseDate && dateStr < today) { 
       const dayStatus = takenStatus[dateStr] || {};
       
-      sup.times.forEach((time, tIdx) => {
+      sup.times.forEach((_, tIdx) => {
         sup.family.forEach(member => {
           const key = `${tIdx}_${member}`;
           const isTaken = dayStatus[key] === true;
@@ -1696,7 +1699,7 @@ function calculateLeftUnTakenSlotsBefore(sup, baseDate) {
   return totalLeftSlots;
 }
 
-function calculateAdditionalDays(sup, baseDate, leftSlots) {
+function calculateAdditionalDays(sup, leftSlots) {
   const perDaySlots = sup.family.length * sup.times.length;
 
   if (leftSlots <= 0) return 0;
@@ -1788,7 +1791,7 @@ exportBtn.addEventListener("click", (e) => {
   a.style.display = "none";
   document.body.appendChild(a);
   a.href = url;
-  a.download = `supplements-auto-backup.json`;
+  a.download = `supplements-backup.json`;
   a.click();
 
   setTimeout(() => {
@@ -2357,8 +2360,8 @@ function renderCalcTab() {
                     <span style="font-size:15px; color:defualt;">₩</span>
 
                     <div class="input-wrapper" style="flex: 1; position: relative;">
-                    <input type="number" id="actualPaidInput" class="actual-paid-input" 
-                           placeholder="할인 적용된 결제 금액 입력" inputmode="numeric">
+                    <input type="text" id="actualPaidInput" class="actual-paid-input" 
+                           placeholder="할인 적용된 결제 금액 입력" inputmode="numeric" oninput="formatCurrencyInput(this)">
                     <button type="button" class="clear-btn" id="clearActualPaid"><span></span></button>
                   </div>
                 </div>
@@ -2375,6 +2378,26 @@ function renderCalcTab() {
     `;
     initClearButtons(calcDiv);
     applyIOSButtonEffect();
+}
+
+// 입력 시 실시간으로 쉼표를 넣어주는 함수
+function formatCurrencyInput(input) {
+    // 1. 숫자만 남기기
+    let value = input.value.replace(/[^0-9]/g, '');
+    
+    // 2. 숫자가 있으면 천 단위 쉼표 추가
+    if (value) {
+        input.value = Number(value).toLocaleString();
+    } else {
+        input.value = '';
+    }
+}
+
+// 나중에 계산(processDiscount)할 때 쉼표를 제거하고 숫자로 가져오는 법
+function getActualPaidValue() {
+    const input = document.getElementById('actualPaidInput');
+    // 쉼표를 제거하고 숫자로 변환
+    return parseInt(input.value.replace(/,/g, '')) || 0;
 }
 
 // 행 전체 클릭 시 체크박스 토글 함수
