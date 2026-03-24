@@ -13,10 +13,10 @@
       "src": "icons/192.png",
       "type": "image/png",
       "sizes": "192x192",
-      "purpose": "any" 
+      "purpose": "any"
     },
     {
-      "src": "icons/192.png",
+      "src": "icons/apple-touch-icon.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "maskable"

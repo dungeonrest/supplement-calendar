@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.10";
+const APP_VERSION = "26.3.24";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -275,126 +275,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-/*--------------------------------------월별 비용 시작-----------------------------------*/
-monthlyCostBtn.addEventListener("click", () => {
-    initCostModalTabs();
 
-    const picker = document.getElementById('costMonthPicker');
-    if (picker) {
-        const year = dt.getFullYear();
-        const month = String(dt.getMonth() + 1).padStart(2, '0');
-        picker.value = `${year}-${month}`;
-    }
-
-    renderMonthlyCostData();
-
-    monthlyCostModal.classList.add("active");
-    document.body.classList.add("modal-open");
-});
-
-document.getElementById('costMonthPicker')?.addEventListener('change', (e) => {
-    if (!e.target.value) return;
-    
-    const [y, m] = e.target.value.split("-").map(Number);
-    dt.setFullYear(y);
-    dt.setMonth(m - 1);
-    
-    const activeTabBtn = document.querySelector('#costTabContainer .tab-btn.active');
-    const activeTabText = activeTabBtn ? activeTabBtn.innerText : '비용';
-    
-    if (activeTabText === '비용') {
-        renderMonthlyCostData();
-    } else {
-        renderCalcTab();
-    }
-});
-
-function renderMonthlyCostData() {
-    const year = dt.getFullYear();
-    const month = dt.getMonth() + 1;
-    
-    let totalCost = 0;
-    const monthlyItems = [];
-    const familyCosts = {};
-
-    supplements.forEach(sup => {
-        const supInputDate = sup.schedule?.[0] ?? "";
-        const [y, m] = supInputDate.split("-").map(x => parseInt(x));
-
-        if (y === year && m === month) {
-            const totalDays = sup.schedule.length;
-            const monthsCount = Math.ceil(totalDays / 30);
-            const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
-            
-            totalCost += monthlyPart;
-            monthlyItems.push({
-                name: sup.productName,
-                cost: monthlyPart,
-                color: sup.circleColor
-            });
-
-            if (sup.family && Array.isArray(sup.family) && sup.family.length > 0) {
-                const perPersonCost = Math.round(monthlyPart / sup.family.length);
-                sup.family.forEach(member => {
-                    if (!familyCosts[member]) familyCosts[member] = 0;
-                    familyCosts[member] += perPersonCost;
-                });
-            }
-        }
-    });
-
-    // --- HTML 생성 부분 ---
-    let itemsHtml = "";
-    if (monthlyItems.length > 0) {
-        monthlyItems.forEach(item => {
-            const ratio = totalCost > 0 ? Math.round((item.cost / totalCost) * 100) : 0;
-            itemsHtml += `
-                <div class="cost-item">
-                    <div class="cost-item-header">
-                        <span>${item.name}</span>
-                        <span>${item.cost.toLocaleString()}원</span>
-                    </div>
-                    <div class="cost-bar-bg">
-                        <div class="cost-bar-fill" style="width: ${ratio}%;"></div>
-                    </div>
-                </div>`;
-        });
-    }
-    
-    let costContentHtml = totalCost > 0 ? `
-        <div class="cost-summary-box">
-            <div class="summary-box-items">${itemsHtml}</div>
-            <div class="summary-box-divider"></div>
-            <div class="total-cost-row">
-                <span class="total-cost-label">합계</span>
-                <span class="total-cost-amount">${Math.round(totalCost).toLocaleString()}원</span>
-            </div>
-        </div>
-        <p class="cost-notice-text">구매한 영양제의 한 달 치 비용입니다. 각 구성원에 할당된 비용은 아래와 같습니다.</p>
-    ` : `<p style='text-align:center; font-size:20px; font-weight:bold; margin-top:230px; padding-bottom:80px;'>비용 없음</p>`;
-
-    let familySummaryHtml = "";
-    const names = Object.keys(familyCosts);
-    if (names.length > 0) {
-        familySummaryHtml += `<div class="family-cost-container">`;
-        names.forEach(name => {
-            familySummaryHtml += `
-                <div class="family-cost-card">
-                    <span class="family-cost-name">${name}</span>
-                    <span class="family-cost-amount">${familyCosts[name].toLocaleString()}원</span>
-                </div>`;
-        });
-        familySummaryHtml += `</div>`;
-    }
-
-    document.getElementById("monthlyCostContent").innerHTML = costContentHtml + familySummaryHtml;
-}
-
-document.getElementById("closeMonthlyCostModal").addEventListener("click", () => {
-    closeBottomSheet("monthlyCostModal");
-    switchCostTab('cost');
-});
-/*--------------------------------------월별 비용 끝-----------------------------------*/
 // + 버튼 클릭 //
 addBtn.addEventListener("click", () => {
   currentEditId = null;
@@ -2123,7 +2004,7 @@ document.querySelectorAll(".close-btn").forEach(btn => {
     }, 400);
   });
 });
-
+/*--------------------------------------연간 달력 모달 시작-----------------------------------*/
 const yearlyModal = document.getElementById("yearlyModal");
 const closeYearlyModal = document.getElementById("closeYearlyModal");
 
@@ -2243,7 +2124,127 @@ function renderYearlyCalendar(year) {
   `;
   container.appendChild(summaryDiv);
 }
+/*--------------------------------------연간 달력 모달 끝-----------------------------------*/
+/*--------------------------------------월별 비용 시작-----------------------------------*/
+monthlyCostBtn.addEventListener("click", () => {
+    initCostModalTabs();
 
+    const picker = document.getElementById('costMonthPicker');
+    if (picker) {
+        const year = dt.getFullYear();
+        const month = String(dt.getMonth() + 1).padStart(2, '0');
+        picker.value = `${year}-${month}`;
+    }
+
+    renderMonthlyCostData();
+
+    monthlyCostModal.classList.add("active");
+    document.body.classList.add("modal-open");
+});
+
+document.getElementById('costMonthPicker')?.addEventListener('change', (e) => {
+    if (!e.target.value) return;
+    
+    const [y, m] = e.target.value.split("-").map(Number);
+    dt.setFullYear(y);
+    dt.setMonth(m - 1);
+    
+    const activeTabBtn = document.querySelector('#costTabContainer .tab-btn.active');
+    const activeTabText = activeTabBtn ? activeTabBtn.innerText : '비용';
+    
+    if (activeTabText === '비용') {
+        renderMonthlyCostData();
+    } else {
+        renderCalcTab();
+    }
+});
+
+function renderMonthlyCostData() {
+    const year = dt.getFullYear();
+    const month = dt.getMonth() + 1;
+    
+    let totalCost = 0;
+    const monthlyItems = [];
+    const familyCosts = {};
+
+    supplements.forEach(sup => {
+        const supInputDate = sup.schedule?.[0] ?? "";
+        const [y, m] = supInputDate.split("-").map(x => parseInt(x));
+
+        if (y === year && m === month) {
+            const totalDays = sup.schedule.length;
+            const monthsCount = Math.ceil(totalDays / 30);
+            const monthlyPart = sup.price ? Math.round(sup.price / monthsCount) : 0;
+            
+            totalCost += monthlyPart;
+            monthlyItems.push({
+                name: sup.productName,
+                cost: monthlyPart,
+                color: sup.circleColor
+            });
+
+            if (sup.family && Array.isArray(sup.family) && sup.family.length > 0) {
+                const perPersonCost = Math.round(monthlyPart / sup.family.length);
+                sup.family.forEach(member => {
+                    if (!familyCosts[member]) familyCosts[member] = 0;
+                    familyCosts[member] += perPersonCost;
+                });
+            }
+        }
+    });
+
+    // --- HTML 생성 부분 ---
+    let itemsHtml = "";
+    if (monthlyItems.length > 0) {
+        monthlyItems.forEach(item => {
+            const ratio = totalCost > 0 ? Math.round((item.cost / totalCost) * 100) : 0;
+            itemsHtml += `
+                <div class="cost-item">
+                    <div class="cost-item-header">
+                        <span>${item.name}</span>
+                        <span>${item.cost.toLocaleString()}원</span>
+                    </div>
+                    <div class="cost-bar-bg">
+                        <div class="cost-bar-fill" style="width: ${ratio}%;"></div>
+                    </div>
+                </div>`;
+        });
+    }
+    
+    let costContentHtml = totalCost > 0 ? `
+        <div class="cost-summary-box">
+            <div class="summary-box-items">${itemsHtml}</div>
+            <div class="summary-box-divider"></div>
+            <div class="total-cost-row">
+                <span class="total-cost-label">합계</span>
+                <span class="total-cost-amount">${Math.round(totalCost).toLocaleString()}원</span>
+            </div>
+        </div>
+        <p class="cost-notice-text">구매한 영양제의 한 달 치 비용입니다. 각 구성원에 할당된 비용은 아래와 같습니다.</p>
+    ` : `<p style='text-align:center; font-size:20px; font-weight:bold; margin-top:230px; padding-bottom:80px;'>비용 없음</p>`;
+
+    let familySummaryHtml = "";
+    const names = Object.keys(familyCosts);
+    if (names.length > 0) {
+        familySummaryHtml += `<div class="family-cost-container">`;
+        names.forEach(name => {
+            familySummaryHtml += `
+                <div class="family-cost-card">
+                    <span class="family-cost-name">${name}</span>
+                    <span class="family-cost-amount">${familyCosts[name].toLocaleString()}원</span>
+                </div>`;
+        });
+        familySummaryHtml += `</div>`;
+    }
+
+    document.getElementById("monthlyCostContent").innerHTML = costContentHtml + familySummaryHtml;
+}
+
+document.getElementById("closeMonthlyCostModal").addEventListener("click", () => {
+    closeBottomSheet("monthlyCostModal");
+    switchCostTab('cost');
+});
+/*--------------------------------------월별 비용 끝-----------------------------------*/
 function initCostModalTabs() {
     const costDiv = document.getElementById('monthlyCostContent');
     const calcDiv = document.getElementById('calcTabContent');
@@ -2270,6 +2271,9 @@ function switchCostTab(tab) {
         btns[1].classList.remove('active');
         costContent.style.display = 'flex';
         calcContent.style.display = 'none';
+
+        renderMonthlyCostData();
+        
     } else {
         slider.style.transform = 'translateX(100%)';
         btns[0].classList.remove('active');

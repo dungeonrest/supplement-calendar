@@ -10,8 +10,20 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="영양제">
-  <link rel="apple-touch-icon" href="icons/192.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" id="apple-icon" href="icons/apple-touch-icon-light.png">
+  
+  <script>
+    (function() {
+      const iconLink = document.getElementById('apple-icon');
+      const themeColorMeta = document.getElementById('themeColorMeta');
+      
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        iconLink.href = 'icons/apple-touch-icon-dark.png';
+      } else {
+        iconLink.href = 'icons/apple-touch-icon-light.png';
+      }
+    })();
+  </script>
   <meta name="theme-color" id="themeColorMeta" content="#ffffff">
 </head>
 <body>
