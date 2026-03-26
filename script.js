@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.26";
+const APP_VERSION = "26.3.261";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -93,7 +93,8 @@ function openSupplementModal(sup) {
   if (deleteContainer) deleteContainer.style.display = "flex";
   modalOverlay.classList.add("active");
   document.body.classList.add("modal-open");
-  inputDate.value = selectedDateForList || (sup.schedule && sup.schedule[0]) || "";
+
+  inputDate.value = (sup.schedule && sup.schedule[0]) || selectedDateForList || "";
   inputProduct.value = sup.productName;
   inputTotal.value = sup.totalCapsules;
   
@@ -110,7 +111,6 @@ function openSupplementModal(sup) {
 
   const currentFamilyCheckboxes = document.querySelectorAll(".inputFamily");
   currentFamilyCheckboxes.forEach(cb => {
-  
     cb.checked = sup.family && sup.family.includes(cb.value);
   });
 
@@ -995,7 +995,12 @@ statsBtn.addEventListener("click", () => {
 
   renderFamilyUI();
 
-  statsContent.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:180px;'>이름을 길게 누르면 변경/삭제가 가능합니다.</p>";
+  statsContent.innerHTML = `
+  <div style="text-align:center; margin-top:180px; line-height: 1.2;">
+    <p style="font-size:20px; font-weight:bold; margin-bottom: 10px;">구성원 선택</p>
+    <p style="font-size:10px; opacity:0.5; margin: 0;">이름을 길게 누르면 변경/삭제가 가능합니다.</p>
+  </div>
+`;
   setTimeout(() => {
         applyIOSButtonEffect();
     }, 50);
@@ -1263,7 +1268,8 @@ function switchStatsTab(tab) {
     const btns = document.querySelectorAll('#statsTabContainer .tab-btn');
     const slider = document.querySelector('#statsTabContainer .tab-slider');
 
-    statsContent.innerHTML = ""; 
+    statsContent.innerHTML = "";
+    statsContent.style.display = "block";
 
     if (tab === 'stats') {
         statsContent.style.padding = "13px";
@@ -1279,7 +1285,12 @@ function switchStatsTab(tab) {
         if (selectedBtn) {
             showStatsForFamily(selectedBtn.dataset.name);
         } else {
-            statsContent.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.5; margin-top:180px;'>가족 구성원을 선택해주세요.</p>";
+            statsContent.innerHTML = `
+                <div style="width: 100%; text-align: center; margin-top: 180px; line-height: 1.2;">
+                    <p style="font-size: 20px; font-weight: bold; margin: 0 0 10px 0;">구성원 선택</p>
+                    <p style="font-size: 10px; opacity: 0.5; margin: 0;">이름을 길게 누르면 변경/삭제가 가능합니다.</p>
+                </div>
+            `;
         }
 
         setTimeout(() => {
@@ -2519,7 +2530,8 @@ async function processDiscount() {
 /*-----------------------------------비용 모달 계산 탭 끝--------------------------------*/
 function applyIOSButtonEffect() {
     const selectors = [
-        '.fab-today-btn', 
+        '.fab-today-btn',
+        '.back-btn',
         '.close-btn',
         '.check-btn',
         '.extend-btn',
@@ -2844,3 +2856,26 @@ function setupInputAlignment() {
 }
 
 window.addEventListener('DOMContentLoaded', setupInputAlignment);
+
+const helpBtn = document.getElementById("helpBtn");
+const helpModal = document.getElementById("helpModal");
+const backHelpModal = document.getElementById("backHelpModal");
+
+helpBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  helpModal.classList.add("active");
+
+  document.body.classList.add("modal-open");
+});
+
+backHelpModal.addEventListener("click", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  helpModal.classList.remove("active");
+
+  if (!document.getElementById("modalOverlay").classList.contains("active")) {
+    document.body.classList.remove("modal-open");
+  }
+});

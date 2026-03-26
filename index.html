@@ -127,7 +127,7 @@
 
       <!-- 하단 설명 텍스트 -->
       <p class="ios-footer-text">
-        앱을 장기간 열지 않으면 데이터 손실 우려가 있습니다. 주기적으로 저장하는 것을 권장합니다.
+        앱을 장기간 열지 않으면 데이터 손실 우려가 있습니다. 주기적으로 저장할 것을 권장합니다.
         백업 파일은 기기 내부 저장소에 저장됩니다.
       </p>
     </div>
@@ -163,7 +163,10 @@
         </div>
       </div>
 
-      <label class="input-label">기본 정보</label>
+      <div class="label-row-header">
+  <label class="input-label">기본 정보</label>
+  <button id="helpBtn" class="help-icon-btn">i</button>
+</div>
       <div class="memo-paper-group info-group">
         <div class="info-row">
           <span class="row-label">제품명</span>
@@ -404,6 +407,51 @@
   <button id="fabAddBtn" class="combined-btn-right">
     <span class="plus-icon-inner"></span>
   </button>
+</div>
+
+<div id="helpModal" class="modal-overlay hidden" style="z-index: 2000;">
+  <div class="modal help-modal">
+    <div class="modal-header">
+      <button id="backHelpModal" class="back-btn left"><span></span></button>
+      <h3>도움말</h3>
+    <div style="width:38px;"></div> </div>
+    
+    <div class="modal-body-scroll help-body">
+      <div class="help-section">
+        <h4>영양제 입력 예시</h4>
+        <p>철수는 공복에 1캡슐 먹는 30캡슐짜리 유산균을 2만 원에 샀다.</p>
+        <p><strong>날짜:</strong> 먹기 시작한 날짜<br>
+        <strong>색상:</strong> 자동으로 부여 직접 선택도 가능<br>
+        <strong>제품명:</strong> 유산균<br>
+        <strong>가격:</strong> 20,000원<br>
+        <strong>제공량:</strong> 30캡슐<br>
+        <strong>섭취량:</strong> 1캡슐<br>
+        <strong>대상:</strong> 철수<br>
+        <strong>시간:</strong> 공복<br>
+        <strong>메모:</strong> '유산균 먹고 1시간 공복 유지', '제품 브랜드명' 등</p>
+        <p> 영양제의 총 개수인 '제공량'과 한번에 먹는 양인 '섭취량'을 입력하면 자동으로 재고와 종료 날짜가 계산되어 달력에 표시됩니다.</p>
+        <p> 만약 매일 아침 1캡슐 점심 1캡슐 먹는 120캡슐짜리 종합비타민 4통을 5만 원에 샀고 가족 4명이 먹는다면,
+            제공량은 480캡슐 섭취량은 2캡슐 대상은 가족 4명 시간은 아침 점심을 입력하면 됩니다.</p>
+        <p> 그럼 이 영양제는 2달 분량이므로 달력에 미섭취 상태를 의미하는 반투명한 라벨이 표시되며 매일매일
+            날짜를 눌러 '섭취체크'를 하여 기록해나가면 됩니다.</p>
+      </div>
+      <div class="memo-divider"></div>
+      <div class="help-section">
+        <h4>정보 수정 및 삭제</h4>
+        <p>입력한 영양제의 정보를 수정하거나 삭제하고 싶으면 날짜에 표시된 라벨을 누르면 됩니다.
+           원하는 정보를 수정 후 왼쪽 위 저장 버튼을 누르면 수정이 완료되며 삭제를 원하면 하단의 영양제 삭제 버튼을 누르면 됩니다.
+        </p>
+      </div>
+      <div class="memo-divider"></div>
+      <div class="help-section">
+        <h4>연장 기능</h4>
+        <p>처음 입력한 영양제 정보에 의해 자동으로 종료 날짜가 표시되나 영양제를 중간중간 안 먹었다면
+           달력의 표시는 끝났어도 영양제는 남아있게 됩니다.</p>
+        <p>이런 경우를 위해 섭취체크에 연장 기능이 있습니다.
+           연장 버튼을 누른 날짜 이전의 미섭취한 영양제를 계산하여 종료 날짜를 연장해줍니다.</p>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="script.js"></script>
