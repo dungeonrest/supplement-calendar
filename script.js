@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.259";
+const APP_VERSION = "26.3.26";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1809,19 +1809,22 @@ const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
   if (isAnimating) return;
+  
   touchStartY = e.changedTouches[0].screenY;
   touchStartX = e.changedTouches[0].screenX;
+
 }, { passive: true });
 
 datesWrapper.addEventListener("touchmove", (e) => {
   if (isAnimating) return;
-  
+
   const currentX = e.changedTouches[0].screenX;
   const currentY = e.changedTouches[0].screenY;
+  
   const diffX = Math.abs(currentX - touchStartX);
   const diffY = Math.abs(currentY - touchStartY);
 
-  if (diffX > 5 && diffX > diffY) {
+  if (diffX > diffY && diffX > 5) {
     if (e.cancelable) e.preventDefault();
   }
 }, { passive: false });
@@ -2024,18 +2027,26 @@ async function updateSupplementFamilyName(oldName, newName) {
   });
 }
 
-window.addEventListener("popstate", () => {
+history.pushState({ page: 'calendar' }, null, location.href);
+
+window.addEventListener("popstate", (event) => {
+  history.pushState({ page: 'calendar' }, null, location.href);
+
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual';
   }
 
   const activeModals = document.querySelectorAll('.active');
-  activeModals.forEach(modal => {
-    modal.classList.remove("active");
-  });
-
+  if (activeModals.length > 0) {
+    activeModals.forEach(modal => {
+      modal.classList.remove("active");
+    });
     document.body.classList.remove("modal-open");
-  });
+    console.log("모달 닫기 완료");
+  } else {
+    console.log("뒤로가기 차단됨 (모달 없음)");
+  }
+});
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();

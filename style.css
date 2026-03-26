@@ -416,12 +416,18 @@ body.dark-mode .theme-icon::after {
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+  overscroll-behavior-x: none;
   scroll-behavior: smooth;
 }
 
 /* 애니메이션 중에는 스크롤을 일시적으로 막기 위한 클래스 */
 .is-animating {
   overflow-y: hidden !important;
+}
+
+/* 애니메이션 중에는 모든 터치 액션 차단 */
+.is-animating #dates-wrapper {
+  touch-action: none;
 }
 
 .dates-container {
