@@ -419,6 +419,11 @@ body.dark-mode .theme-icon::after {
   scroll-behavior: smooth;
 }
 
+/* 애니메이션 중에는 스크롤을 일시적으로 막기 위한 클래스 */
+.is-animating {
+  overflow-y: hidden !important;
+}
+
 .dates-container {
   width: 100%;
   display: grid;
@@ -426,7 +431,6 @@ body.dark-mode .theme-icon::after {
   will-change: transform;
   background-color: var(--bg-color);
   position: relative;
-  z-index: 2;
 }
 
 .dates-container, .calendar-animating-clone {
@@ -439,9 +443,7 @@ body.dark-mode .theme-icon::after {
   left: 0;
   width: 100%;
   pointer-events: none;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  z-index: 10;
   background-color: var(--bg-color);
 }
 
