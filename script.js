@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.261";
+const APP_VERSION = "26.3.262";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1114,7 +1114,6 @@ function showStatsForFamily(name) {
     content.innerHTML = "<p style='text-align:center; font-size:15px; opacity:0.6; margin-top:180px;'>해당 기간에 섭취 기록이 없습니다.</p>";
   } else {
     content.classList.add('grid-mode');
-    if (keys.length === 1) content.classList.remove('grid-mode');
 
     let html = "";
     keys.forEach(key => {
@@ -1122,18 +1121,21 @@ function showStatsForFamily(name) {
       let percent = info.target > 0 ? Math.round((info.taken / info.target) * 100) : 0;
       if (percent > 100) percent = 100;
 
-      html += `
-        <div class="stats-item" style="${keys.length === 1 ? 'width: 100%; max-width: 100%; padding: 20px 10px;' : ''}">
-          <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
-            <div class="pie-inner" style="background-color: ${innerBg}">
-              <span class="pie-percent">${percent}%</span>
-            </div>
-          </div>
-          <div class="stats-info" style="${keys.length === 1 ? 'align-items: center;' : ''}">
-            <span class="stats-product-name">${key}</span>
-            <span class="stats-count-text">${info.taken} / ${info.target}회</span>
-          </div>
-        </div>`;
+      const isSingle = keys.length === 1;
+            const itemStyle = isSingle ? 'grid-column: 1 / span 2; width: 100%; box-sizing: border-box;' : '';
+
+            html += `
+                <div class="stats-item" style="${itemStyle}">
+                    <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
+                        <div class="pie-inner" style="background-color: ${innerBg}">
+                            <span class="pie-percent">${percent}%</span>
+                        </div>
+                    </div>
+                    <div class="stats-info" style="${isSingle ? 'align-items: center;' : ''}">
+                        <span class="stats-product-name">${key}</span>
+                        <span class="stats-count-text">${info.taken} / ${info.target}회</span>
+                    </div>
+                </div>`;
     });
     content.innerHTML = html;
   }
@@ -1269,15 +1271,11 @@ function switchStatsTab(tab) {
     const slider = document.querySelector('#statsTabContainer .tab-slider');
 
     statsContent.innerHTML = "";
-    statsContent.style.display = "block";
 
     if (tab === 'stats') {
-        statsContent.style.padding = "13px";
-        statsContent.classList.add('grid-mode');
         slider.style.transform = 'translateX(0%)';
         btns[0].classList.add('active');
         btns[1].classList.remove('active');
-        
         familyWrapper.style.display = 'flex';
         periodWrapper.style.display = 'flex';
         
@@ -1285,6 +1283,7 @@ function switchStatsTab(tab) {
         if (selectedBtn) {
             showStatsForFamily(selectedBtn.dataset.name);
         } else {
+            statsContent.classList.remove('grid-mode');
             statsContent.innerHTML = `
                 <div style="width: 100%; text-align: center; margin-top: 180px; line-height: 1.2;">
                     <p style="font-size: 20px; font-weight: bold; margin: 0 0 10px 0;">구성원 선택</p>
@@ -1311,15 +1310,13 @@ function switchStatsTab(tab) {
         }, 50);
 
     } else {
-        statsContent.style.padding = "13px 0";
         statsContent.classList.remove('grid-mode');
+        statsContent.style.display = "";
         slider.style.transform = 'translateX(100%)';
         btns[0].classList.remove('active');
         btns[1].classList.add('active');
-        
         familyWrapper.style.display = 'none';
         periodWrapper.style.display = 'none';
-        
         renderAnalysisTab();
     }
 }
@@ -1434,13 +1431,13 @@ function renderAnalysisTab() {
 
     html += `
     <div class="analysis-accordion-section">
-        <div class="memo-paper-group" style="margin-top: 0px;">
+        <div class="analysis-card slim">
             <div class="status-row" onclick="${statusText === '부족' ? "this.closest('.analysis-accordion-section').classList.toggle('active')" : ""}">
                 <span class="row-label">영양제 재고 상황</span>
                 <span class="status-badge ${statusClass}">${statusText}</span>
             </div>
             <div class="analysis-accordion-content">
-                <div class="accordion-inner"><div style="padding: 0 12px 0 0;">
+                <div class="accordion-inner">
                     <div class="analysis-divider"></div>
                     <div class="refill-item-container">
                         ${refillList.sort((a, b) => a.days - b.days).map((item) => `
@@ -1458,8 +1455,8 @@ function renderAnalysisTab() {
     // [섹션 2] 소비 분석
     html += `
     <div>
-      <label class="input-label">${monthTitle} 소비 분석</label>
-      <div class="memo-paper-group" style="padding: 20px 0;">
+      <label class="analysis-label">${monthTitle} 소비 분석</label>
+      <div class="analysis-card standard">
         <div class="cost-result" style="padding: 0 16px 8px 16px;">${costAnalysisText}</div>
         <div style="padding: 0 16px;"><div class="analysis-divider"></div></div>
         <div class="analysis-cost-box" style="padding: 15px 16px 0 16px;">
@@ -1494,7 +1491,7 @@ function renderAnalysisTab() {
     </div>`;
 
     // [섹션 3] 영양제 리스트
-    html += `<div><label class="input-label">섭취 중인 영양제</label><div class="memo-paper-group supplement-list-wrapper">`;
+    html += `<div><label class="analysis-label">섭취 중인 영양제</label><div class="analysis-card supplement-list-wrapper" style="padding-bottom: 0;">`;
     const activeTimes = Object.keys(routine).filter(t => routine[t].length > 0);
     activeTimes.forEach((time, timeIdx) => {
         html += `<div class="routine-time-label"><span>${time}</span></div>`;
@@ -1526,7 +1523,7 @@ function renderAnalysisTab() {
             }
         }
         if (timeIdx !== activeTimes.length - 1) {
-            html += `<div style="margin-bottom: 8px;"></div>`;
+            html += `<div style="margin-bottom: 5px;"></div>`;
         }
     });
 

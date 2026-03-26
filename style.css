@@ -1030,9 +1030,9 @@ body.dark-mode .label-row-header .input-label {
   width: 18px;
   height: 18px;
   border-radius: 50%;
-  border: 2px solid #ff3b30;
+  border: 2px solid #0b89fe;
   background: transparent;
-  color: #ff3b30;
+  color: #0b89fe;
   font-family: "Times New Roman", serif;
   font-weight: bold;
   font-size: 16px;
@@ -1829,7 +1829,7 @@ body.dark-mode .back-btn::before {
 #monthlyCostContent {
   display: flex;
   flex-direction: column;
-  padding: 10px 20px 40px 20px !important;
+  padding: 10px 12px 40px 12px !important;
 }
 
 #monthlyCostContent::before,
@@ -1847,7 +1847,7 @@ body.dark-mode .back-btn::before {
     margin-top: 0px; /* 헤더와의 간격 */
     margin-bottom: -55px; /* 아래 컨텐츠와의 간격 */
     z-index: 10; /* 헤더보다 뒤에 있다면 앞으로 끌어올림 */
-    padding: 60px 20px 10px 20px;
+    padding: 60px 12px 10px 12px;
     box-sizing: border-box;
 }
 
@@ -1999,7 +1999,7 @@ body.dark-mode .family-cost-amount { color: #9E9EA4; }
 #calcTabContent {
     display: none;
     flex-direction: column;
-    padding: 0 20px 0px 20px !important;
+    padding: 0 12px 0px 12px !important;
     box-sizing: border-box;
     width: 100%;
 }
@@ -2159,9 +2159,7 @@ body.dark-mode input[type="checkbox"].calc-check::before {
 #takenCheckBody {
   display: block !important;
   width: 100%;
-  height: auto;
-  min-height: calc(100svh - 50px) !important;
-  padding: 10px 0 100px 0 !important;
+  padding: 10px 12px 100px 12px !important;
   overflow-y: visible;
   box-sizing: border-box;
 }
@@ -2186,13 +2184,12 @@ body.dark-mode input[type="checkbox"].calc-check::before {
 }
 
 .taken-sup-section {
-  width: 80%;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 5px 20px 5px 20px;
-  margin-bottom: 20px;
+  width: 100%;
+  margin: 0 0 25px 0;
+  padding: 8px;
   background: white;
   border-radius: 22px;
+  box-sizing: border-box;
 }
 
 body.dark-mode .taken-sup-section {
@@ -2208,10 +2205,10 @@ body.dark-mode .taken-sup-section {
   justify-content: space-between;
   align-items: center;
   color: black;
-  width: 80%;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 5px 25px 5px 25px;
+  width: auto;
+  margin: 15px 0 8px 0;
+  padding: 0 12px;
+  box-sizing: border-box;
 }
 
 body.dark-mode .taken-sup-title,
@@ -2878,7 +2875,7 @@ body.dark-mode .tab-slider {
 /*---------------------------------------통계 탭 시작-----------------------------------*/
 /* 기간 설정 레이아웃 */
 .period-select-container {
-  padding: 10px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   margin-bottom: 0px;
@@ -2889,7 +2886,7 @@ body.dark-mode .tab-slider {
   align-items: center;
   justify-content: space-between;
   background: white;
-  padding: 10px 15px;
+  padding: 10px 12px;
   border-radius: 20px;
 }
 
@@ -2929,14 +2926,15 @@ body.dark-mode .period-input-group {
   grid-template-columns: 1fr 1fr;
   align-content: start; /* 위에서부터 정렬 */
   gap: 10px;
-  padding: 15px;
+  padding: 12px;
 }
 
 /* 통계 컨텐츠 전체 컨테이너 */
 #statsContent {
   display: block; 
-  padding: 15px;
+  padding: 12px !important;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 #statsContent p {
@@ -2957,6 +2955,8 @@ body.dark-mode .period-input-group {
   text-align: center;
   text-align: center;
   gap: 8px;
+  box-sizing: border-box; /* 패딩이 너비에 포함되도록 추가 */
+  width: 100%;
 }
 
 body.dark-mode .stats-item {
@@ -3071,6 +3071,49 @@ body.dark-mode .family-slider {
   transform: translateZ(0);
 }
 /*---------------------------------------분석 탭 시작-----------------------------------*/
+/* 분석 탭 전용 상자*/
+.analysis-card {
+    background: white;
+    border-radius: 20px;
+    width: 100% !important;
+    box-sizing: border-box;
+    margin: 0 0 15px 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+body.dark-mode .analysis-card {
+    background: #2c2c2e;
+}
+
+/* 1. 스마트 알림용 (슬림한 스타일) */
+.analysis-card.slim {
+    padding: 0 !important;
+}
+
+/* 2. 소비 분석/리스트용 (여유 있는 스타일) */
+.analysis-card.standard {
+    padding: 15px 0 !important;
+}
+
+/* 분석 탭 전용 라벨 */
+.analysis-label {
+    display: block;
+    font-size: 15px;
+    font-weight: normal;
+    color: var(--text-color);
+    opacity: 0.6;
+    margin: 0px 0 8px 10px; /* 왼쪽 살짝 띄움 */
+    padding: 0;
+}
+
+/* 분석 탭 내부의 그리드 아이템 보정 */
+.analysis-card .supplement-grid {
+    width: 100%;
+    border-top: 1px solid rgba(128, 128, 128, 0.1);
+}
+
 /* 스마트 알림 아이폰 스타일 */
 .status-badge {
     font-size: 15px;
@@ -3087,7 +3130,7 @@ body.dark-mode .family-slider {
   align-items: center;
   cursor: pointer;
   height: 44px;
-  padding: 0 12px 0 0 !important;
+  padding: 0px 12px 0px 12px !important;
   box-sizing: border-box;
   width: 100%;
   transition: background-color 0.1s;
@@ -3110,7 +3153,7 @@ body.dark-mode .family-slider {
 }
 
 .analysis-accordion-section .analysis-divider {
-    padding: 0 12px 0 0 !important;
+    margin: 0 10px;
     width: auto !important;
     background-color: rgba(128, 128, 128, 0.15);
     height: 1px;
@@ -3125,9 +3168,9 @@ body.dark-mode .family-slider {
     justify-content: space-between;
     align-items: center;
     height: 44px;
+    padding: 0 12px;
+    box-sizing: border-box;
 }
-
-.refill-item-container { padding: 0px !important; }
 
 .refill-name {
     font-size: 15px;
@@ -3153,8 +3196,10 @@ body.dark-mode .family-slider {
     display: flex;
     flex-direction: column;
     gap: 8px; /* 섹션 간 간격 조절 */
-    padding-bottom: 50px;
+    padding: 0;
     margin-top: 50px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .supplement-list-wrapper {
@@ -3165,7 +3210,7 @@ body.dark-mode .family-slider {
 
 /* 소비 분석 박스 전체 레이아웃 */
 .analysis-cost-box {
-    padding: 20px 15px;
+    padding: 20px 12px;
     display: flex;
     flex-direction: column;
     gap: 8px;
