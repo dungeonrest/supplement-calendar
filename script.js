@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.251";
+const APP_VERSION = "26.3.252";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1766,7 +1766,7 @@ let isAnimating = false;
 let touchStartY = 0;
 let touchStartX = 0;
 
-const swipeThreshold = 100;
+const swipeThreshold = 200;
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
