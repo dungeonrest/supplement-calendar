@@ -425,6 +425,8 @@ body.dark-mode .theme-icon::after {
   grid-template-columns: repeat(7, 1fr);
   will-change: transform;
   background-color: var(--bg-color);
+  position: relative;
+  z-index: 2;
 }
 
 .dates-container, .calendar-animating-clone {
@@ -440,6 +442,7 @@ body.dark-mode .theme-icon::after {
   z-index: 1;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  background-color: var(--bg-color);
 }
 
 .slide-up { transform: translateY(-100%); opacity: 0; }

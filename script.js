@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.256";
+const APP_VERSION = "26.3.257";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1804,7 +1804,7 @@ let isAnimating = false;
 let touchStartY = 0;
 let touchStartX = 0;
 
-const swipeThreshold = 150;
+const swipeThreshold = 100;
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
@@ -1854,16 +1854,19 @@ function startVerticalSlide(direction) {
   isAnimating = true;
 
   const currentScroll = datesWrapper.scrollTop;
-  const wrapperHeight = datesWrapper.clientHeight;
+  const viewHeight = datesWrapper.clientHeight;
   const clone = datesContainer.cloneNode(true);
   clone.classList.add("calendar-animating-clone");
+  clone.style.position = 'absolute';
+  clone.style.top = '0';
   clone.style.transform = `translateY(${-currentScroll}px)`;
   datesWrapper.appendChild(clone);
 
   changeMonthWithDay(direction); 
-  datesWrapper.scrollTop = 0;
+  
+  datesWrapper.scrollTop = 0; 
   datesContainer.style.transition = 'none';
-  datesContainer.style.transform = direction > 0 ? 'translateY(100%)' : 'translateY(-100%)';
+  datesContainer.style.transform = direction > 0 ? `translateY(${viewHeight}px)` : `translateY(${-viewHeight}px)`;
 
   requestAnimationFrame(() => {
     setTimeout(() => {
@@ -1873,9 +1876,9 @@ function startVerticalSlide(direction) {
       datesContainer.style.transform = 'translateY(0)';
 
       if (direction > 0) {
-        clone.style.transform = `translateY(${-currentScroll - wrapperHeight}px)`;
+        clone.style.transform = `translateY(${-currentScroll - viewHeight}px)`;
       } else {
-        clone.style.transform = `translateY(${-currentScroll + wrapperHeight}px)`;
+        clone.style.transform = `translateY(${-currentScroll + viewHeight}px)`;
       }
     }, 20);
   });
