@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.25";
+const APP_VERSION = "26.3.251";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1766,6 +1766,7 @@ let isAnimating = false;
 let touchStartY = 0;
 let touchStartX = 0;
 
+const swipeThreshold = 100;
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
@@ -1790,14 +1791,17 @@ datesWrapper.addEventListener("touchmove", (e) => {
 datesWrapper.addEventListener("touchend", (e) => {
   if (isAnimating) return;
 
-  const diffY = e.changedTouches[0].screenY - touchStartY;
+  const touchEndY = e.changedTouches[0].screenY;
+  const diffY = touchEndY - touchStartY;
   const absDiffY = Math.abs(diffY);
-  const absDiffX = Math.abs(e.changedTouches[0].screenX - touchStartX);
+  const scrollTop = datesWrapper.scrollTop;
+  const scrollHeight = datesWrapper.scrollHeight;
+  const clientHeight = datesWrapper.clientHeight;
+  
+  const isAtTop = scrollTop <= 2;
+  const isAtBottom = scrollHeight - scrollTop <= clientHeight + 2;
 
-  if (absDiffY > 70 && absDiffY > absDiffX) {
-    const isAtTop = datesWrapper.scrollTop <= 0;
-    const isAtBottom = datesWrapper.scrollHeight - datesWrapper.scrollTop <= datesWrapper.clientHeight + 1;
-
+  if (absDiffY > swipeThreshold) {
     if (diffY > 0 && isAtTop) {
       startVerticalSlide(-1);
     } else if (diffY < 0 && isAtBottom) {
