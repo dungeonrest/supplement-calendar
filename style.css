@@ -164,7 +164,7 @@ button:not(.tab-btn).ios-release,
 .calendar-header, .day-labels {
   position: sticky;
   top: 0;
-  background-color: var(--bg-color); /* 배경색이 있어야 뒤의 달력이 안 비침 */
+  background-color: var(--bg-color);
   z-index: 100;
   flex-shrink: 0; /* 헤더가 찌그러지지 않게 함 */
 }
@@ -173,7 +173,7 @@ button:not(.tab-btn).ios-release,
 .calendar-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* 화면 전체 높이 사용 */
+  height: 100vh;
   overflow: hidden; /* 전체 스크롤 방지 */
 }
 
@@ -402,8 +402,6 @@ body.dark-mode .theme-icon::after {
   margin-top: 3px;
   padding: 0 5px;
   box-sizing: border-box;
-  top: 45px; /* 헤더 높이만큼 아래에 고정 (헤더 높이에 맞춰 조절) */
-  padding-bottom: 10px;
 }
 
 .day.sun { color: var(--sun-color); }
