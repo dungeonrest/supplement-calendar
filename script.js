@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.258";
+const APP_VERSION = "26.3.259";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1804,7 +1804,7 @@ let isAnimating = false;
 let touchStartY = 0;
 let touchStartX = 0;
 
-const swipeThreshold = 100;
+const swipeThreshold = 80;
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
@@ -1853,56 +1853,37 @@ function startVerticalSlide(direction) {
   if (isAnimating) return;
   isAnimating = true;
 
-  // 1. 현재 상태 저장
   const viewHeight = datesWrapper.clientHeight;
   const currentScroll = datesWrapper.scrollTop;
-
-  // 2. 클론 생성 (현재 보이는 모습 그대로 복제)
   const clone = datesContainer.cloneNode(true);
   clone.classList.add("calendar-animating-clone");
-  
-  // [중요] 클론을 요일 바 바로 아래(0)에 붙이고, 
-  // 사용자가 스크롤해서 보던 지점만큼 위로 올려서 '현재 모습' 유지
   clone.style.transform = `translateY(${-currentScroll}px)`;
   datesWrapper.appendChild(clone);
-
-  // 3. 실제 컨테이너 준비 (스크롤 간섭 차단)
   datesWrapper.classList.add('is-animating');
   
-  // 데이터 변경 및 렌더링
   changeMonthWithDay(direction);
   
-  // [핵심] 실제 컨테이너는 무조건 스크롤 0에서 시작 (여백 제거)
   datesWrapper.scrollTop = 0;
-
-  // 4. 새 달력의 진입 위치 설정 (픽셀 단위로 정확하게)
   datesContainer.style.transition = 'none';
   const startPos = direction > 0 ? viewHeight : -viewHeight;
   datesContainer.style.transform = `translateY(${startPos}px)`;
-  datesContainer.style.zIndex = "5"; // 클론 아래에서 대기
+  datesContainer.style.zIndex = "5";
 
-  // 5. 애니메이션 실행
   requestAnimationFrame(() => {
-    // 렌더링 동기화를 위해 두 번의 프레임 대기
     requestAnimationFrame(() => {
       const transitionStyle = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
       datesContainer.style.transition = transitionStyle;
       clone.style.transition = transitionStyle;
-
-      // 새 달력은 0(요일 바 바로 아래)으로 들어옴
       datesContainer.style.transform = 'translateY(0)';
-      
-      // 클론은 방향에 따라 화면 밖으로 밀려남
       const endPos = direction > 0 ? -viewHeight : viewHeight;
       clone.style.transform = `translateY(${endPos - currentScroll}px)`;
     });
   });
 
-  // 6. 뒷정리
   setTimeout(() => {
     if (clone.parentNode) clone.remove();
     datesContainer.style.transition = 'none';
-    datesWrapper.classList.remove('is-animating'); // 스크롤 다시 허용
+    datesWrapper.classList.remove('is-animating');
     isAnimating = false;
   }, 550);
 }
