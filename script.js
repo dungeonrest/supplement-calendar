@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.255";
+const APP_VERSION = "26.3.256";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -692,29 +692,53 @@ function changeFamilyMemberName(index, newName) {
 if (todayBtn) {
   todayBtn.addEventListener("click", () => {
     const now = new Date();
-    const y = now.getFullYear();
-    const m = now.getMonth();
-    const d = now.getDate();
-    const todayStr = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-    const currentYear = dt.getFullYear();
-    const currentMonth = dt.getMonth();
+    const targetY = now.getFullYear();
+    const targetM = now.getMonth();
+    const targetD = now.getDate();
 
-    if (currentYear !== y || currentMonth !== m) {
-      const direction = (new Date(y, m) > new Date(currentYear, currentMonth)) ? 1 : -1;
-      
-      selectedDateForList = todayStr;
-      startVerticalSlide(direction); 
+    const currentY = dt.getFullYear();
+    const currentM = dt.getMonth();
 
-      dt = new Date(y, m, d);
-    } 
-    else {
-      selectedDateForList = todayStr;
+    if (currentY === targetY && currentM === targetM) {
+      selectedDateForList = `${targetY}-${String(targetM + 1).padStart(2, "0")}-${String(targetD).padStart(2, "0")}`;
       renderCalendar();
-      datesWrapper.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
+      datesWrapper.scrollTo({ top: 0, behavior: "smooth" });
+      return;
     }
+
+    if (isAnimating) return;
+    isAnimating = true;
+
+    const currentScroll = datesWrapper.scrollTop;
+    const clone = datesContainer.cloneNode(true);
+    clone.classList.add("calendar-animating-clone");
+    clone.style.transform = `translateY(${-currentScroll}px)`;
+    datesWrapper.appendChild(clone);
+
+    dt = new Date(targetY, targetM, 1); 
+    selectedDateForList = `${targetY}-${String(targetM + 1).padStart(2, "0")}-${String(targetD).padStart(2, "0")}`;
+    renderCalendar();
+    datesWrapper.scrollTop = 0;
+    const isFuture = new Date(targetY, targetM) > new Date(currentY, currentM);
+    datesContainer.style.transition = 'none';
+    datesContainer.style.transform = isFuture ? 'translateY(100%)' : 'translateY(-100%)';
+
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        const transitionStyle = 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)';
+        datesContainer.style.transition = transitionStyle;
+        clone.style.transition = transitionStyle;
+
+        datesContainer.style.transform = 'translateY(0)';
+        clone.style.transform = isFuture ? `translateY(${-currentScroll - datesWrapper.clientHeight}px)` : `translateY(${-currentScroll + datesWrapper.clientHeight}px)`;
+      }, 20);
+    });
+
+    setTimeout(() => {
+      if (clone.parentNode) clone.remove();
+      datesContainer.style.transition = 'none';
+      isAnimating = false;
+    }, 650);
   });
 }
 
@@ -1780,7 +1804,7 @@ let isAnimating = false;
 let touchStartY = 0;
 let touchStartX = 0;
 
-const swipeThreshold = 200;
+const swipeThreshold = 150;
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
