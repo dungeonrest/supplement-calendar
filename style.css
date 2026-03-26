@@ -423,8 +423,8 @@ body.dark-mode .theme-icon::after {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  /* transition은 자바스크립트에서 제어하는 것이 더 정확합니다 */
   will-change: transform;
+  background-color: var(--bg-color);
 }
 
 .dates-container, .calendar-animating-clone {
@@ -436,8 +436,10 @@ body.dark-mode .theme-icon::after {
   top: 0;
   left: 0;
   width: 100%;
-  pointer-events: none; /* 중요: 애니메이션 중인 복제본은 터치를 무시함 */
+  pointer-events: none;
   z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
 }
 
 .slide-up { transform: translateY(-100%); opacity: 0; }

@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.254";
+const APP_VERSION = "26.3.255";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -695,12 +695,26 @@ if (todayBtn) {
     const y = now.getFullYear();
     const m = now.getMonth();
     const d = now.getDate();
+    const todayStr = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+    const currentYear = dt.getFullYear();
+    const currentMonth = dt.getMonth();
 
-    selectedDateForList = `${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
-    dt = new Date(y, m, d, 0, 0, 0);
+    if (currentYear !== y || currentMonth !== m) {
+      const direction = (new Date(y, m) > new Date(currentYear, currentMonth)) ? 1 : -1;
+      
+      selectedDateForList = todayStr;
+      startVerticalSlide(direction); 
 
-    renderCalendar();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+      dt = new Date(y, m, d);
+    } 
+    else {
+      selectedDateForList = todayStr;
+      renderCalendar();
+      datesWrapper.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
   });
 }
 
@@ -1815,28 +1829,33 @@ function startVerticalSlide(direction) {
   if (isAnimating) return;
   isAnimating = true;
 
+  const currentScroll = datesWrapper.scrollTop;
+  const wrapperHeight = datesWrapper.clientHeight;
   const clone = datesContainer.cloneNode(true);
   clone.classList.add("calendar-animating-clone");
+  clone.style.transform = `translateY(${-currentScroll}px)`;
   datesWrapper.appendChild(clone);
+
   changeMonthWithDay(direction); 
   datesWrapper.scrollTop = 0;
   datesContainer.style.transition = 'none';
   datesContainer.style.transform = direction > 0 ? 'translateY(100%)' : 'translateY(-100%)';
 
-  // 애니메이션 실행
   requestAnimationFrame(() => {
     setTimeout(() => {
       const transitionStyle = 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)';
-      
       datesContainer.style.transition = transitionStyle;
       clone.style.transition = transitionStyle;
-      
       datesContainer.style.transform = 'translateY(0)';
-      clone.style.transform = direction > 0 ? 'translateY(-100%)' : 'translateY(100%)';
+
+      if (direction > 0) {
+        clone.style.transform = `translateY(${-currentScroll - wrapperHeight}px)`;
+      } else {
+        clone.style.transform = `translateY(${-currentScroll + wrapperHeight}px)`;
+      }
     }, 20);
   });
 
-  // 뒷정리
   setTimeout(() => {
     if (clone.parentNode) clone.remove();
     datesContainer.style.transition = 'none';
