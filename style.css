@@ -1,6 +1,11 @@
 html, body {
   /* 브라우저의 뒤로가기/앞으로가기 스와이프 동작을 막으려는 시도 */
+  touch-action: pan-y;
   overscroll-behavior-x: none;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* 기본 색상 변수*/
@@ -24,6 +29,8 @@ body.dark-mode {
 
 body {
   margin: 0;
+  height: 100vh;
+  overflow: hidden;
   font-family: "Pretendard", "Noto Sans KR", system-ui, sans-serif;
   background: var(--bg-color);
   color: var(--text-color);
@@ -151,6 +158,23 @@ button:not(.tab-btn).ios-release,
   margin-left: auto;
   margin-right: auto;
   padding: 4px 10px 10px 10px;
+}
+
+/* 헤더와 요일 라벨 고정 */
+.calendar-header, .day-labels {
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-color); /* 배경색이 있어야 뒤의 달력이 안 비침 */
+  z-index: 100;
+  flex-shrink: 0; /* 헤더가 찌그러지지 않게 함 */
+}
+
+/* 달력 전체를 감싸는 컨테이너 */
+.calendar-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* 화면 전체 높이 사용 */
+  overflow: hidden; /* 전체 스크롤 방지 */
 }
 
 .month-display {
@@ -378,29 +402,45 @@ body.dark-mode .theme-icon::after {
   margin-top: 3px;
   padding: 0 5px;
   box-sizing: border-box;
+  top: 45px; /* 헤더 높이만큼 아래에 고정 (헤더 높이에 맞춰 조절) */
 }
 
 .day.sun { color: var(--sun-color); }
 .day.sat { color: var(--sat-color); }
 
-/* 달력 */
-.dates-container {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  margin-top: 4px;
-  padding: 0 5px;
-  box-sizing: border-box;
-  column-gap: 0;
-  row-gap: 0px;
-  gap: 0;
-}
-
+/* 달력 날짜 영역만 스크롤 가능하게 */
 #dates-wrapper {
+  flex: 1; /* 남은 화면 공간을 모두 차지 */
+  position: relative;
+  overflow-y: auto; /* 내용이 많으면 내부에서만 스크롤 */
+  overflow-x: hidden;
   touch-action: pan-y;
-  overscroll-behavior-x: none;
-  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
+
+.dates-container {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  /* transition은 자바스크립트에서 제어하는 것이 더 정확합니다 */
+  will-change: transform;
+}
+
+.dates-container, .calendar-animating-clone {
+  will-change: transform;
+}
+
+.calendar-animating-clone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none; /* 중요: 애니메이션 중인 복제본은 터치를 무시함 */
+  z-index: 1;
+}
+
+.slide-up { transform: translateY(-100%); opacity: 0; }
+.slide-down { transform: translateY(100%); opacity: 0; }
 
 .date {
   position: relative;
@@ -474,7 +514,7 @@ body.dark-mode .date.selected .number {
   align-items: center;
   justify-content: flex-start;
   width: 100%;
-  min-height: 120px;
+  min-height: 100px;
   box-sizing: border-box;
   padding: 5px 0px;
   overflow: hidden; /* 내용이 넘쳐도 밖으로 나오지 않게 */

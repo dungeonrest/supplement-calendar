@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.24";
+const APP_VERSION = "26.3.25";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -465,7 +465,6 @@ const slotsPerDay = (sup.times?.length || 0) * (sup.family?.length || 0);
 const dosePerSlot = dailyDosePerPerson / (sup.times?.length || 1);
 const totalDosePerDay = slotsPerDay * dosePerSlot;
 const capsAvailableToday = Math.max(0, totalCaps - (dateIndex * totalDosePerDay));
-
 
 let actualTotalSlotsToday = slotsPerDay;
 if (dosePerSlot > 0) {
@@ -1763,57 +1762,83 @@ function hexToRgb(hex) {
   return `${r}, ${g}, ${b}`;
 }
 
-let touchStartX = 0;
+let isAnimating = false;
 let touchStartY = 0;
-let touchEndX = 0;
-let touchEndY = 0;
+let touchStartX = 0;
 
-const minSwipeDistance = 70;
-const swipeRatio = 1.5;
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
-  touchStartX = e.changedTouches[0].screenX;
+  if (isAnimating) return;
   touchStartY = e.changedTouches[0].screenY;
-
-  touchEndX = touchStartX;
-  touchEndY = touchStartY;
+  touchStartX = e.changedTouches[0].screenX;
 }, { passive: true });
 
 datesWrapper.addEventListener("touchmove", (e) => {
-  if (e.touches.length > 1) return;
+  if (isAnimating) return;
+  
+  const currentX = e.changedTouches[0].screenX;
+  const currentY = e.changedTouches[0].screenY;
+  const diffX = Math.abs(currentX - touchStartX);
+  const diffY = Math.abs(currentY - touchStartY);
 
-  touchEndX = e.changedTouches[0].screenX;
-  touchEndY = e.changedTouches[0].screenY;
-
-  const diffX = touchEndX - touchStartX;
-  const absDiffX = Math.abs(diffX);
-  const absDiffY = Math.abs(touchEndY - touchStartY);
-
-  if (absDiffX > 5 && absDiffX > absDiffY) { 
+  if (diffX > 5 && diffX > diffY) {
     if (e.cancelable) e.preventDefault();
   }
 }, { passive: false });
 
 datesWrapper.addEventListener("touchend", (e) => {
-  const diffX = touchEndX - touchStartX;
-  const diffY = touchEndY - touchStartY;
-  const absDiffX = Math.abs(diffX);
-  const absDiffY = Math.abs(diffY);
+  if (isAnimating) return;
 
-  if (absDiffX > minSwipeDistance && absDiffX > absDiffY * swipeRatio) {
-    if (diffX < 0) {
-      changeMonthWithDay(1);
-    } else if (diffX > 0) {
-      changeMonthWithDay(-1);
+  const diffY = e.changedTouches[0].screenY - touchStartY;
+  const absDiffY = Math.abs(diffY);
+  const absDiffX = Math.abs(e.changedTouches[0].screenX - touchStartX);
+
+  if (absDiffY > 70 && absDiffY > absDiffX) {
+    const isAtTop = datesWrapper.scrollTop <= 0;
+    const isAtBottom = datesWrapper.scrollHeight - datesWrapper.scrollTop <= datesWrapper.clientHeight + 1;
+
+    if (diffY > 0 && isAtTop) {
+      startVerticalSlide(-1);
+    } else if (diffY < 0 && isAtBottom) {
+      startVerticalSlide(1);
     }
   }
-
-  touchStartX = 0;
-  touchStartY = 0;
-  touchEndX = 0;
-  touchEndY = 0;
 });
+
+// 슬라이드 애니메이션 함수
+function startVerticalSlide(direction) {
+  if (isAnimating) return;
+  isAnimating = true;
+
+  const clone = datesContainer.cloneNode(true);
+  clone.classList.add("calendar-animating-clone");
+  datesWrapper.appendChild(clone);
+  changeMonthWithDay(direction); 
+  datesWrapper.scrollTop = 0;
+  datesContainer.style.transition = 'none';
+  datesContainer.style.transform = direction > 0 ? 'translateY(100%)' : 'translateY(-100%)';
+
+  // 애니메이션 실행
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      const transitionStyle = 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)';
+      
+      datesContainer.style.transition = transitionStyle;
+      clone.style.transition = transitionStyle;
+      
+      datesContainer.style.transform = 'translateY(0)';
+      clone.style.transform = direction > 0 ? 'translateY(-100%)' : 'translateY(100%)';
+    }, 20);
+  });
+
+  // 뒷정리
+  setTimeout(() => {
+    if (clone.parentNode) clone.remove();
+    datesContainer.style.transition = 'none';
+    isAnimating = false;
+  }, 650);
+}
 
 function changeMonthWithDay(direction) {
 
