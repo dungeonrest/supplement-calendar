@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.262";
+const APP_VERSION = "26.3.27";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -827,48 +827,52 @@ function openTakenCheckUI(date) {
       extendBtn.classList.add("extend-btn");
       extendBtn.innerText = "연장";
       attachIOSStyle(extendBtn);
+
       extendBtn.addEventListener("click", async () => {
-        const baseDate = date;
-        const leftUnTakenSlots = calculateLeftUnTakenSlotsBefore(sup, baseDate);
-        const additionalDays = calculateAdditionalDays(sup, leftUnTakenSlots);
-        const formattedDate = baseDate.replaceAll('-', '.');
+    const baseDate = date;
+    const leftUnTakenSlots = calculateLeftUnTakenSlotsBefore(sup, baseDate);
+    const additionalDays = calculateAdditionalDays(sup, leftUnTakenSlots);
 
-        if (additionalDays === 0) {
-          alert("📍 연장할 일정이 없습니다.");
-          return;
-        }
+    if (additionalDays === 0) {
+        openCustomActionSheet(null, "연장할 일정이 없습니다.", true);
+        return;
+    }
 
-        let confirmMsg = `📍 ${formattedDate}\n\n` +
+    let confirmMsg = `${sup.productName}\n\n` +
           `미섭취 체크 슬롯: ${leftUnTakenSlots}개\n` +
           `예상 추가 일정: ${additionalDays}일\n\n` +
           `이대로 연장할까요?`;
 
-        if (confirm(confirmMsg)) {
-          extendScheduleFromDate(sup, baseDate, additionalDays);
-          const takenStatus = sup.takenStatus || {};
-          sup.schedule.forEach(dateStr => {
-        if (dateStr < baseDate) {
-        if (!takenStatus[dateStr]) takenStatus[dateStr] = {};
+    openCustomActionSheet(null, confirmMsg, false, async () => {
+        extendScheduleFromDate(sup, baseDate, additionalDays);
+        const takenStatus = sup.takenStatus || {};
         
-          sup.times.forEach((_, tIdx) => {
-          sup.family.forEach(member => {
-            const key = `${tIdx}_${member}`;
-          
-            if (!takenStatus[dateStr][key]) {
-              takenStatus[dateStr][key + "_extended"] = true;
+        sup.schedule.forEach(dateStr => {
+            if (dateStr < baseDate) {
+                if (!takenStatus[dateStr]) takenStatus[dateStr] = {};
+                sup.times.forEach((_, tIdx) => {
+                    sup.family.forEach(member => {
+                        const key = `${tIdx}_${member}`;
+                        if (!takenStatus[dateStr][key]) {
+                            takenStatus[dateStr][key + "_extended"] = true;
+                        }
+                    });
+                });
             }
-          });
         });
-      }
-    });    
 
-          await saveAllSupplements(sup); 
-          renderCalendar();
-          alert("일정이 연장되었습니다!");
-          modal.classList.remove("active");
-          document.body.classList.remove("modal-open");
-        }
-      });
+        await saveAllSupplements(sup);
+        
+        if (typeof renderCalendar === 'function') renderCalendar();
+
+        setTimeout(() => {
+            openCustomActionSheet(null, "일정이 연장되었습니다!", true);
+            const modal = document.getElementById("takenCheckModal");
+            if (modal) modal.classList.remove("active");
+            document.body.classList.remove("modal-open");
+        }, 300);
+    });
+});
 
       titleContainer.appendChild(extendBtn);
       wrapper.appendChild(titleContainer);
@@ -1519,7 +1523,7 @@ function renderAnalysisTab() {
             } else { html += `<div></div>`; }
             html += `</div>`;
             if (i + 2 < items.length) {
-                html += `<div style="padding: 0 16px;"><div class="analysis-divider"></div></div>`;
+                html += `<div style="padding: 0 16px;"></div>`;
             }
         }
         if (timeIdx !== activeTimes.length - 1) {
@@ -1602,10 +1606,9 @@ async function deleteFamilyMemberFromDB(targetName) {
 function calculateLeftUnTakenSlotsBefore(sup, baseDate) {
   const takenStatus = sup.takenStatus || {};
   let totalLeftSlots = 0;
-  const today = getTodayKST();
 
   sup.schedule.forEach(dateStr => {
-    if (dateStr < baseDate && dateStr < today) { 
+    if (dateStr < baseDate) { 
       const dayStatus = takenStatus[dateStr] || {};
       
       sup.times.forEach((_, tIdx) => {
@@ -2457,14 +2460,14 @@ function renderCalcTab() {
 
                     <div class="input-wrapper" style="flex: 1; position: relative;">
                     <input type="text" id="actualPaidInput" class="actual-paid-input" 
-                           placeholder="할인 적용된 결제 금액 입력" inputmode="numeric" oninput="formatCurrencyInput(this)">
+                           placeholder="할인이 적용된 결제 금액 입력" inputmode="numeric" oninput="formatCurrencyInput(this)">
                     <button type="button" class="clear-btn" id="clearActualPaid"><span></span></button>
                   </div>
                 </div>
             </div>
 
             <div class="delete-btn-container">
-                <button onclick="processDiscount()" class="delete-glass-btn">
+                <button onclick="processDiscount(event)" class="delete-glass-btn">
                     할인율 적용
                 </button>
             </div>
@@ -2478,10 +2481,8 @@ function renderCalcTab() {
 
 // 입력 시 실시간으로 쉼표를 넣어주는 함수
 function formatCurrencyInput(input) {
-    // 1. 숫자만 남기기
     let value = input.value.replace(/[^0-9]/g, '');
     
-    // 2. 숫자가 있으면 천 단위 쉼표 추가
     if (value) {
         input.value = Number(value).toLocaleString();
     } else {
@@ -2489,7 +2490,6 @@ function formatCurrencyInput(input) {
     }
 }
 
-// 나중에 계산(processDiscount)할 때 쉼표를 제거하고 숫자로 가져오는 법
 function getActualPaidValue() {
     const input = document.getElementById('actualPaidInput');
     // 쉼표를 제거하고 숫자로 변환
@@ -2503,26 +2503,57 @@ function toggleCalcRow(rowEl) {
     updateCalcSum();
 }
 
-async function processDiscount() {
-    const actualPaid = parseInt(document.getElementById('actualPaidInput').value);
-    if (!actualPaid || actualPaid <= 0) return alert("금액을 입력하세요.");
-
-    const checkboxes = document.querySelectorAll('.calc-check:checked');
-    const selectedIds = Array.from(checkboxes).map(cb => Number(cb.dataset.id));
-    const selectedSups = supplements.filter(s => selectedIds.includes(s.id));
-    const originalSum = selectedSups.reduce((acc, cur) => acc + (cur.price || 0), 0);
-
-    if (originalSum === 0) return;
-    const rate = actualPaid / originalSum;
-
-    for (let sup of selectedSups) {
-        sup.price = Math.round(sup.price * rate);
-        await saveSupplementToDB(sup);
+async function processDiscount(event) {
+    const targetBtn = event.currentTarget;
+    const actualPaid = getActualPaidValue(); 
+    
+    if (!actualPaid || actualPaid <= 0) {
+        return openCustomActionSheet(targetBtn, "금액을 입력하세요.", true);
     }
 
-    document.getElementById('calcStatusMsg').innerText = "저장 완료! 잠시 후 업데이트됩니다.";
-    renderCalendar();
-    setTimeout(() => { monthlyCostBtn.click(); }, 1200);
+    const checkboxes = document.querySelectorAll('.calc-check:checked');
+    if (checkboxes.length === 0) {
+        return openCustomActionSheet(targetBtn, "제품을 선택하주세요.", true);
+    }
+
+    let originalSum = 0;
+    checkboxes.forEach(cb => {
+        originalSum += parseInt(cb.dataset.price || 0);
+    });
+
+    if (originalSum === 0) {
+        return openCustomActionSheet(targetBtn, "선택된 제품의 가격 합계가 0원입니다.", true);
+    }
+    
+    const rate = actualPaid / originalSum;
+    let allocatedTotal = 0;
+    const checkedBoxes = Array.from(checkboxes);
+
+    for (let i = 0; i < checkedBoxes.length; i++) {
+        const cb = checkedBoxes[i];
+        const id = Number(cb.dataset.id);
+        const originalPrice = parseInt(cb.dataset.price || 0);
+        const targetSup = supplements.find(s => s.id === id);
+
+        if (targetSup) {
+            let newPrice;
+            if (i === checkedBoxes.length - 1) {
+                newPrice = actualPaid - allocatedTotal;
+            } else {
+                newPrice = Math.round(originalPrice * rate);
+                allocatedTotal += newPrice;
+            }
+            targetSup.price = newPrice;
+            await saveSupplementToDB(targetSup);
+        }
+    }
+
+    openCustomActionSheet(targetBtn, "할인이 적용되었습니다!", true);
+    
+    setTimeout(() => {
+        renderCalcTab();
+        if (typeof renderCalendar === 'function') renderCalendar();
+    }, 1000);
 }
 /*-----------------------------------비용 모달 계산 탭 끝--------------------------------*/
 function applyIOSButtonEffect() {
@@ -2669,10 +2700,9 @@ const deleteBtnInModal = document.getElementById('deleteInfoBtn');
 if (deleteBtnInModal) {
     deleteBtnInModal.onclick = function() {
         if (typeof currentEditId !== 'undefined' && currentEditId) {
-            // 클릭된 버튼 요소(this)를 넘겨줍니다.
-            openActionSheet(this); 
+            openCustomActionSheet(this, "이 영양제를 삭제하겠습니까?", false); 
         } else {
-            alert("삭제할 항목을 선택할 수 없습니다.");
+            openCustomActionSheet(this, "삭제할 항목을 선택할 수 없습니다.", true);
         }
     };
 }
@@ -2730,6 +2760,67 @@ document.getElementById('confirmDeleteBtn').onclick = async function() {
         }
     }
 };
+
+window.originalDeleteHandler = document.getElementById('confirmDeleteBtn').onclick;
+
+/**
+ * @param {HTMLElement} targetBtn
+ * @param {String} message
+ * @param {Boolean} isAlertOnly
+ */
+function openCustomActionSheet(targetBtn, message, isAlertOnly = false, confirmCallback = null) {
+    const overlay = document.getElementById('actionSheetOverlay');
+    const container = overlay.querySelector('.action-sheet-container');
+    const title = document.getElementById('actionSheetTitle');
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+    if (!overlay || !container) return; 
+
+    title.innerHTML = message.replace(/\n/g, '<br>');
+    title.style.textAlign = "left";
+    title.style.fontSize = "15px";
+    title.style.whiteSpace = "normal";
+
+    if (isAlertOnly || confirmCallback) {
+        title.style.margin = "3px 10px 13px 10px"; 
+    } else {
+        title.style.margin = "3px 50px 13px 10px";
+    }
+
+    confirmBtn.className = 'action-sheet-btn'; 
+
+    if (isAlertOnly) {
+        confirmBtn.innerText = "확인";
+        confirmBtn.style.color = "#ff3b30"; 
+        confirmBtn.onclick = function() { closeActionSheet(); };
+    } else if (confirmCallback) {
+        confirmBtn.innerText = "확인";
+        confirmBtn.style.color = "#007AFF"; 
+        confirmBtn.onclick = async function() {
+            await confirmCallback(); 
+            closeActionSheet();
+        };
+    } else {
+        confirmBtn.innerText = "영양제 삭제";
+        confirmBtn.classList.add('delete-text');
+        confirmBtn.style.color = ""; 
+        confirmBtn.onclick = window.originalDeleteHandler; 
+    }
+
+    if (targetBtn) {
+        const rect = targetBtn.getBoundingClientRect();
+        container.style.left = `${rect.left + (rect.width / 2)}px`;
+        container.style.top = `${rect.top - 87}px`;
+        container.style.transform = "translate(-50%, 0)";
+    } else {
+        container.style.left = "50%";
+        container.style.top = "50%";
+        container.style.transform = "translate(-50%, -50%)";
+    }
+
+    overlay.style.visibility = 'visible';
+    overlay.classList.add('active');
+}
 
 function validateInputs() {
     const product = document.getElementById('inputProduct').value.trim();

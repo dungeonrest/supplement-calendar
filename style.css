@@ -1545,23 +1545,25 @@ body.dark-mode .action-sheet-container::before {
 }
 
 /* 정보 삭제 버튼 (내부 상자 형태) */
-.action-sheet-btn.delete-text {
+.action-sheet-btn {
     width: 100%;
     background-color: #c9c9c9;
     border: none;
     padding: 10px 0;
-    color: #ff3b30;
+    color: var(--text-color);
     font-size: 15px;
     font-weight: normal;
     border-radius: 30px;
     cursor: pointer;
-    filter: brightness(1.15)
+    filter: brightness(1.15);
 }
 
-body.dark-mode .action-sheet-btn.delete-text {
-  background-color: #2c2c2e;
-  color: #ff3b30;
-  filter: brightness(1.15)
+body.dark-mode .action-sheet-btn {
+    background-color: #2c2c2e;
+}
+
+.action-sheet-btn.delete-text {
+    color: #ff3b30 !important;
 }
 /*---------------------------------저장 버튼 시작----------------------------*/
 /* 저장(체크) 버튼 */
@@ -2114,14 +2116,6 @@ body.dark-mode .selected-sum-amount { color: #b0b0b4; }
     outline: none;
 }
 
-.calc-status-msg {
-    margin-top: 10px;
-    font-size: 12px;
-    text-align: center;
-    color: #0084ff;
-    font-weight: 600;
-}
-
 input[type="checkbox"].calc-check {
   border: none !important;      /* 동그란 테두리 제거 */
   background-color: transparent !important; /* 배경색 제거 */
@@ -2159,7 +2153,7 @@ body.dark-mode input[type="checkbox"].calc-check::before {
 #takenCheckBody {
   display: block !important;
   width: 100%;
-  padding: 10px 12px 100px 12px !important;
+  padding: 10px 12px 80px 12px !important;
   overflow-y: visible;
   box-sizing: border-box;
 }
@@ -2186,7 +2180,7 @@ body.dark-mode input[type="checkbox"].calc-check::before {
 .taken-sup-section {
   width: 100%;
   margin: 0 0 25px 0;
-  padding: 8px;
+  padding: 0px 12px 0px 12px;
   background: white;
   border-radius: 22px;
   box-sizing: border-box;
