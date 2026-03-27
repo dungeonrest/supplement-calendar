@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.28";
+const APP_VERSION = "26.3.279";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1148,11 +1148,9 @@ function showStatsForFamily(name) {
 
 function renderFamilyUI() {
   const statsFamilyContainer = document.querySelector(".family-buttons");
-  
   if (!statsFamilyContainer) return;
 
   statsFamilyContainer.innerHTML = ""; 
-
   const slider = document.createElement("div");
   slider.className = "family-slider";
   statsFamilyContainer.appendChild(slider);
@@ -1165,27 +1163,34 @@ function renderFamilyUI() {
     
     let timer;
     let isLongPress = false;
+
     const startPress = () => {
       isLongPress = false;
-      timer = setTimeout(async () => {
+      timer = setTimeout(() => {
         isLongPress = true; 
-        const newName = prompt(`'${name}' 님의 이름을 변경하세요.\n(빈칸으로 두면 삭제됩니다.)`, name);
-        if (newName === null) return;
-        const trimmed = newName.trim();
-        if (trimmed === "") {
-          if (confirm(`'${name}' 님을 삭제할까요?\n섭취 데이터도 사라집니다.`)) {
-            await deleteFamilyMemberFromDB(name);
-            familyMembers.splice(index, 1);
+        
+        openCustomActionSheet(null, `'${name}' 님의 이름 변경\n빈칸으로 두면 삭제`, false, async (newName) => {
+          if (newName === null) return;
+          const trimmed = newName.trim();
+
+          if (trimmed === "") {
+            setTimeout(() => {
+              openCustomActionSheet(null, `'${name}'님을 삭제할까요?\n섭취 기록도 사라집니다.`, false, async () => {
+                await deleteFamilyMemberFromDB(name);
+                familyMembers.splice(index, 1);
+                localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+                renderFamilyUI();
+              });
+            }, 300);
+          } else if (trimmed !== name) {
+            await updateSupplementFamilyName(name, trimmed);
+            familyMembers[index] = trimmed;
             localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
-            location.reload();
-          }
-        } else if (trimmed !== name) {
-          await updateSupplementFamilyName(name, trimmed);
-          familyMembers[index] = trimmed;
-          localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
-          alert(`'${name}' 님이 '${trimmed}' 님으로 변경되었습니다.`);
-          location.reload();
-        }
+            renderFamilyUI();
+            openCustomActionSheet(null, `'${trimmed}'님으로 변경되었습니다.`, true, () => {
+            });
+    }
+        }, 87, true, name);
       }, 900);
     };
     const endPress = () => clearTimeout(timer);
@@ -1211,15 +1216,16 @@ function renderFamilyUI() {
     const addBtn = document.createElement("button");
     addBtn.className = "family-btn";
     addBtn.innerText = "추가";
-    addBtn.addEventListener("click", async () => {
-      const n = prompt("새로운 이름을 입력하세요.");
-      if (n && n.trim()) {
-        const newName = n.trim();
-        familyMembers.push(newName);
-        localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
-        alert(`'${newName}' 님이 추가되었습니다.`);
-        location.reload(); 
-      }
+    addBtn.addEventListener("click", () => {
+      openCustomActionSheet(null, "새로운 이름을 입력하세요.", false, async (newName) => {
+        if (newName && newName.trim()) {
+          const trimmed = newName.trim();
+          familyMembers.push(trimmed);
+          localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+          renderFamilyUI();
+          openCustomActionSheet(null, `'${trimmed}'님이 추가되었습니다.`, true);
+        }
+      }, 87, true);
     });
     statsFamilyContainer.appendChild(addBtn);
   }
@@ -1740,49 +1746,63 @@ triggerImportBtn.addEventListener("click", () => {
 
 // 복원 파일 선택
 importFileInput.addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const text = await file.text();
+    const text = await file.text();
 
-  try {
-    const data = JSON.parse(text);
+    try {
+        const data = JSON.parse(text);
 
-    if (!Array.isArray(data)) {
-      alert("올바른 백업 파일이 아닙니다.");
-      return;
-    }
-
-    if (!confirm("기존 기록이 삭제되고\n백업 내용으로 덮어씌워집니다.\n계속할까요?")) {
-      return;
-    }
-    const deleteDatabaseAsync = () => {
-      return new Promise((resolve, reject) => {
-        if (db) {
-          db.close();
-          db = null;
+        if (!Array.isArray(data)) {
+            openCustomActionSheet(null, "올바른 백업 파일이 아닙니다.", true);
+            return;
         }
-        const deleteReq = indexedDB.deleteDatabase(DB_NAME);
-        deleteReq.onsuccess = () => resolve();
-        deleteReq.onerror = (e) => reject(new Error("DB 삭제 실패"));
-        deleteReq.onblocked = () => {
-          alert("기존 데이터 연결이 남아있습니다. 앱을 완전히 껐다 켜주세요.");
-          resolve();
-        };
-      });
+
+        openCustomActionSheet(
+            null, 
+            "기존 기록이 삭제되고\n백업 내용으로 덮어씌워집니다. 계속할까요?", 
+            false, 
+            async () => {
+                await proceedRestore(data);
+            }
+        );
+
+    } catch (err) {
+        console.error("복원 에러 상세:", err);
+        openCustomActionSheet(null, "복원 중 오류가 발생했습니다.\n(사유: " + err.message + ")", true);
+    }
+    e.target.value = "";
+});
+
+async function proceedRestore(data) {
+    const deleteDatabaseAsync = () => {
+        return new Promise((resolve, reject) => {
+            if (db) {
+                db.close();
+                db = null;
+            }
+            const deleteReq = indexedDB.deleteDatabase(DB_NAME);
+            deleteReq.onsuccess = () => resolve();
+            deleteReq.onerror = (e) => reject(new Error("DB 삭제 실패"));
+            deleteReq.onblocked = () => {
+                openCustomActionSheet(null, "기존 데이터 연결이 남아있습니다.\n앱을 완전히 껐다 켜주세요.", true);
+                resolve();
+            };
+        });
     };
 
     const newFamilySet = new Set();
     data.forEach(sup => {
-      if (sup.family && Array.isArray(sup.family)) {
-        sup.family.forEach(name => newFamilySet.add(name));
-      }
+        if (sup.family && Array.isArray(sup.family)) {
+            sup.family.forEach(name => newFamilySet.add(name));
+        }
     });
 
     if (newFamilySet.size > 0) {
-      const newFamilyList = Array.from(newFamilySet);
-      localStorage.setItem("familyMembers", JSON.stringify(newFamilyList));
-      familyMembers = newFamilyList;
+        const newFamilyList = Array.from(newFamilySet);
+        localStorage.setItem("familyMembers", JSON.stringify(newFamilyList));
+        familyMembers = newFamilyList;
     }
 
     await deleteDatabaseAsync();
@@ -1790,17 +1810,14 @@ importFileInput.addEventListener("change", async (e) => {
     await openDatabase();
     await saveAllSupplements();
 
+    if (typeof renderFamilyUI === 'function') renderFamilyUI();
+    if (typeof renderCalendar === 'function') renderCalendar();
+    if (typeof renderCalcTab === 'function') renderCalcTab();
+
     closeBottomSheet("backupMenuModal");
-    alert("백업 데이터를 성공적으로 불러왔습니다!");
-    location.reload();
-
-  } catch (err) {
-
-    console.error("복원 에러 상세:", err);
-    alert("복원 중 오류가 발생했습니다. (사유: " + err.message + ")");
-  }
-  e.target.value = "";
-});
+    
+    openCustomActionSheet(null, "백업 데이터를 성공적으로 불러왔습니다!", true);
+}
 
 function hexToRgb(hex) {
   hex = hex.replace("#", "");
@@ -2471,8 +2488,6 @@ function renderCalcTab() {
                     할인율 적용
                 </button>
             </div>
-            
-            <div id="calcStatusMsg" class="calc-status-msg"></div>
         </div>
     `;
     initClearButtons(calcDiv);
@@ -2508,12 +2523,12 @@ async function processDiscount(event) {
     const actualPaid = getActualPaidValue(); 
     
     if (!actualPaid || actualPaid <= 0) {
-        return openCustomActionSheet(targetBtn, "금액을 입력하세요.", true);
+        return openCustomActionSheet(targetBtn, "금액을 입력하세요.", true, null, 65);
     }
 
     const checkboxes = document.querySelectorAll('.calc-check:checked');
     if (checkboxes.length === 0) {
-        return openCustomActionSheet(targetBtn, "제품을 선택하주세요.", true);
+        return openCustomActionSheet(targetBtn, "제품을 선택하주세요.", true, null, 65);
     }
 
     let originalSum = 0;
@@ -2522,7 +2537,7 @@ async function processDiscount(event) {
     });
 
     if (originalSum === 0) {
-        return openCustomActionSheet(targetBtn, "선택된 제품의 가격 합계가 0원입니다.", true);
+        return openCustomActionSheet(targetBtn, "선택된 제품의 가격 합계가 0원입니다.", true, null, 65);
     }
     
     const rate = actualPaid / originalSum;
@@ -2548,7 +2563,7 @@ async function processDiscount(event) {
         }
     }
 
-    openCustomActionSheet(targetBtn, "할인이 적용되었습니다!", true);
+    openCustomActionSheet(targetBtn, "할인이 적용되었습니다!", true, null, 65);
     
     setTimeout(() => {
         renderCalcTab();
@@ -2768,18 +2783,38 @@ window.originalDeleteHandler = document.getElementById('confirmDeleteBtn').oncli
  * @param {String} message
  * @param {Boolean} isAlertOnly
  */
-function openCustomActionSheet(targetBtn, message, isAlertOnly = false, confirmCallback = null) {
+function openCustomActionSheet(targetBtn, message, isAlertOnly = false, confirmCallback = null, offset = 87, isInputMode = false, defaultValue = "") {
     const overlay = document.getElementById('actionSheetOverlay');
     const container = overlay.querySelector('.action-sheet-container');
     const title = document.getElementById('actionSheetTitle');
     const confirmBtn = document.getElementById('confirmDeleteBtn');
 
-    if (!overlay || !container) return; 
+    if (!overlay || !container) return;
+
+    const oldInput = container.querySelector('.action-sheet-input');
+    if (oldInput) oldInput.remove();
 
     title.innerHTML = message.replace(/\n/g, '<br>');
+
+    let inputEl = null;
+    if (isInputMode) {
+        inputEl = document.createElement('input');
+        inputEl.type = 'text';
+        inputEl.className = 'action-sheet-input';
+        inputEl.value = defaultValue;
+        inputEl.placeholder = "이름을 입력하세요";
+        title.after(inputEl);
+        
+        setTimeout(() => {
+            inputEl.focus();
+            inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
+        }, 300);
+    }
+
     title.style.textAlign = "left";
     title.style.fontSize = "15px";
     title.style.whiteSpace = "normal";
+    confirmBtn.className = 'action-sheet-btn';
 
     if (isAlertOnly || confirmCallback) {
         title.style.margin = "3px 10px 13px 10px"; 
@@ -2787,30 +2822,40 @@ function openCustomActionSheet(targetBtn, message, isAlertOnly = false, confirmC
         title.style.margin = "3px 50px 13px 10px";
     }
 
-    confirmBtn.className = 'action-sheet-btn'; 
+    confirmBtn.onclick = null;
+    confirmBtn.onclick = async function(e) {
+        if(e) { e.preventDefault(); e.stopPropagation(); }
+
+        const finalValue = inputEl ? inputEl.value.trim() : null;
+
+        if (isAlertOnly) {
+            closeActionSheet();
+            if (confirmCallback) await confirmCallback();
+        } else if (confirmCallback) {
+            await confirmCallback(finalValue);
+            closeActionSheet();
+        } else {
+            if (window.originalDeleteHandler) await window.originalDeleteHandler();
+            closeActionSheet();
+        }
+    };
 
     if (isAlertOnly) {
         confirmBtn.innerText = "확인";
         confirmBtn.style.color = "#ff3b30"; 
-        confirmBtn.onclick = function() { closeActionSheet(); };
     } else if (confirmCallback) {
         confirmBtn.innerText = "확인";
         confirmBtn.style.color = "#007AFF"; 
-        confirmBtn.onclick = async function() {
-            await confirmCallback(); 
-            closeActionSheet();
-        };
     } else {
         confirmBtn.innerText = "영양제 삭제";
         confirmBtn.classList.add('delete-text');
         confirmBtn.style.color = ""; 
-        confirmBtn.onclick = window.originalDeleteHandler; 
     }
 
     if (targetBtn) {
         const rect = targetBtn.getBoundingClientRect();
         container.style.left = `${rect.left + (rect.width / 2)}px`;
-        container.style.top = `${rect.top - 65}px`;
+        container.style.top = `${rect.top - offset}px`;
         container.style.transform = "translate(-50%, 0)";
     } else {
         container.style.left = "50%";

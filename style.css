@@ -171,6 +171,8 @@ button:not(.tab-btn).ios-release,
   background-color: var(--bg-color);
   z-index: 100;
   flex-shrink: 0; /* 헤더가 찌그러지지 않게 함 */
+  outline: 1px solid var(--bg-color);
+  box-shadow: 0 1px 0 var(--bg-color);
 }
 
 /* 달력 전체를 감싸는 컨테이너 */
@@ -403,8 +405,8 @@ body.dark-mode .theme-icon::after {
   text-align: center;
   font-size: 11px;
   font-weight: 700;
-  margin-top: 3px;
-  padding: 0 5px;
+  top: -1px;
+  padding: 3px 5px 0 5px;
   box-sizing: border-box;
 }
 
@@ -648,7 +650,7 @@ body.dark-mode .last-week-bar {
     transparent 8px
   ) !important;
 }
-
+/*--------------------------------------------모달 시작-----------------------------*/
 /* 모달 오픈 시 배경 스크롤 잠금 */
 body.modal-open {
   position: fixed; /* 배경을 화면에 박아버림 */
@@ -1565,6 +1567,32 @@ body.dark-mode .action-sheet-btn {
 .action-sheet-btn.delete-text {
     color: #ff3b30 !important;
 }
+
+.action-sheet-container:has(.action-sheet-input) {
+    top: 40% !important;
+}
+
+.action-sheet-input {
+    width: 100%;
+    margin: 0 0 5px 0;
+    padding: 10px;
+    border-radius: 22px;
+    background-color: #F7F7F9;
+    border: none;
+    font-size: 15px;
+    box-sizing: border-box;
+    text-align: center;
+    outline: none; 
+    -webkit-appearance: none; 
+    appearance: none;
+    box-shadow: none;
+}
+
+body.dark-mode .action-sheet-input {
+    background-color: #69696F;
+    border: none;
+    color: white;
+}
 /*---------------------------------저장 버튼 시작----------------------------*/
 /* 저장(체크) 버튼 */
 .check-btn {
@@ -2049,6 +2077,8 @@ body.dark-mode .calc-row:active { background-color: rgba(255, 255, 255, 0.158); 
     height: 1px;
     background-color: #f3f3f5;
 }
+
+body.dark-mode .calc-row:not(:last-child)::after { background-color: #404043; }
 
 /* 입력 박스 (실제 결제 금액 입력 구간) */
 .calc-input-box {
