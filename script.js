@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.27";
+const APP_VERSION = "26.3.28";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -2810,7 +2810,7 @@ function openCustomActionSheet(targetBtn, message, isAlertOnly = false, confirmC
     if (targetBtn) {
         const rect = targetBtn.getBoundingClientRect();
         container.style.left = `${rect.left + (rect.width / 2)}px`;
-        container.style.top = `${rect.top - 87}px`;
+        container.style.top = `${rect.top - 65}px`;
         container.style.transform = "translate(-50%, 0)";
     } else {
         container.style.left = "50%";

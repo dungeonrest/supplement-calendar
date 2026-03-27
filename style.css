@@ -1912,7 +1912,7 @@ body.dark-mode .cost-summary-box {
 
 .summary-box-divider {
     height: 0.8px;
-    background-color: #e5e5ea;
+    background-color: #f3f3f5;
     margin: 10px 0;
     border: none;
 }
@@ -2047,7 +2047,7 @@ body.dark-mode .calc-row:active { background-color: rgba(255, 255, 255, 0.158); 
     left: 45px; /* 체크박스(약 20px) + 간격 고려하여 조절 */
     right: 11px;
     height: 1px;
-    background-color: #80808033;
+    background-color: #f3f3f5;
 }
 
 /* 입력 박스 (실제 결제 금액 입력 구간) */
