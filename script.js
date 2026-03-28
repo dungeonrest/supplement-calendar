@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.281";
+const APP_VERSION = "26.3.282";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1689,13 +1689,16 @@ if (fabSettingsBtn) {
       if (res.ok) {
         const data = await res.json();
         if (data.version !== APP_VERSION) {
-          if (confirm(`새로운 버전(${data.version})이 있습니다!\n업데이트하시겠습니까?`)) {
-            location.reload();
+          openCustomActionSheet(
+            null, `새로운 버전(${data.version})이 있습니다!\n업데이트하시겠습니까?`, false,
+            () => { location.reload(); }
+          );
             return;
-          }
         }
       }
-    } catch (err) { console.log("버전 확인 불가"); }
+    } catch (err) { 
+      console.log("버전 확인 불가"); 
+    }
 
     backupMenuModal.classList.add("active");
     document.body.classList.add("modal-open");
