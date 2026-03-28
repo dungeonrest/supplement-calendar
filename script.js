@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.28";
+const APP_VERSION = "26.3.281";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -205,14 +205,15 @@ function openDatabase() {
       db = request.result; 
       db.onversionchange = () => {
         db.close();
-        alert("데이터베이스 버전이 변경되었습니다. 앱을 재실행합니다.");
+        openCustomActionSheet(null, "데이터베이스 버전이 변경되었습니다. 앱을 재실행합니다.", true);
         location.reload();
       };
       resolve(db); 
     };
     request.onerror = (e) => {
   console.error("DB 오픈 실패:", e.target.error);
-  alert("데이터베이스를 열 수 없습니다.\nSafari 설정에서 '모든 쿠키 차단'이 켜져 있거나\n개인정보 보호 모드인지 확인해주세요.");
+  openCustomActionSheet(
+    null, "데이터베이스를 열 수 없습니다.\nSafari 설정이나 개인정보 보호 모드를 확인해주세요.", true);
   reject(request.error);
 };
   });
@@ -237,7 +238,7 @@ function saveSupplementToDB(sup) {
     req.onsuccess = () => resolve();
        req.onerror = (event) => {
       console.error("[DB 저장 에러]", event.target.error);
-      alert("💾 저장 중 오류가 발생했습니다. 콘솔을 확인하세요.");
+      openCustomActionSheet(null, "저장 중 오류가 발생했습니다. 콘솔을 확인하세요.", true);
       reject(event.target.error);
     };
   });
@@ -657,36 +658,6 @@ async function loadSupplements() {
   selectedDateForList = getTodayKST();
   renderCalendar();
   renderFamilyUI();
-}
-
-// 이름 변경 처리 함수
-function changeFamilyMemberName(index, newName) {
-  const oldName = familyMembers[index];
-  familyMembers[index] = newName;
-  localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
-
-  supplements.forEach(sup => {
-
-    if (sup.family.includes(oldName)) {
-      sup.family = sup.family.map(f => f === oldName ? newName : f);
-    }
-    if (sup.takenStatus) {
-      for (let date in sup.takenStatus) {
-        for (let key in sup.takenStatus[date]) {
-          if (key.includes(`_${oldName}`)) {
-            const newKey = key.replace(`_${oldName}`, `_${newName}`);
-            sup.takenStatus[date][newKey] = sup.takenStatus[date][key];
-            delete sup.takenStatus[date][key];
-          }
-        }
-      }
-    }
-    saveSupplementToDB(sup);
-  });
-
-  alert(`이름이 '${oldName}'에서 '${newName}'으로 변경되었습니다.`);
-  renderCalendar()
-  renderFamilyUI()
 }
 
 if (todayBtn) {
@@ -1742,7 +1713,7 @@ exportBtn.addEventListener("click", (e) => {
   e.stopPropagation();
 
   if (supplements.length === 0) {
-    alert("백업할 데이터가 없습니다.");
+    openCustomActionSheet(null, "백업할 데이터가 없습니다.", true);
     return;
   }
 
@@ -1756,14 +1727,14 @@ exportBtn.addEventListener("click", (e) => {
   a.download = `supplements-backup.json`;
   a.click();
 
+  document.body.removeChild(a);
+
   setTimeout(() => {
-    document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    closeBottomSheet("backupMenuModal");
+  }, 500); 
 
-  closeBottomSheet("backupMenuModal");
-  }, 100);
-
-  updateLastBackupDate();
+  updateLastBackupDate(); 
 });
 
 // 복원 트리거
@@ -2021,25 +1992,6 @@ function updateColorBar(color) {
   }
 }
 
-const saveFamilyConfigBtn = document.getElementById("saveFamilyConfig");
-if (saveFamilyConfigBtn) {
-  saveFamilyConfigBtn.addEventListener("click", () => {
-    const input = document.getElementById("familyInput");
-    const value = input.value.trim();
-    if (!value) return alert("이름을 입력해주세요.");
-
-    const names = value.split(",").map(n => n.trim()).filter(n => n !== "").slice(0, 4);
-    familyMembers = names;
-    localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
-  
-    document.getElementById("familyConfigModal").classList.add("hidden");
-    document.body.classList.remove("modal-open");
-
-    renderFamilyUI();
-    location.reload(); 
-  });
-}
-
 async function updateSupplementFamilyName(oldName, newName) {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(["supplements"], "readwrite");
@@ -2116,7 +2068,7 @@ async function triggerInstall() {
     if (outcome === 'accepted') console.log('설치 완료');
     deferredPrompt = null;
   } else {
-    alert("이미 설치되어 있거나 지원하지 않는 환경입니다.");
+    openCustomActionSheet(null, "이미 설치되어 있거나 지원하지 않는 환경입니다.", true);
   }
 }
 
@@ -2798,7 +2750,7 @@ document.getElementById('confirmDeleteBtn').onclick = async function() {
             
         } catch (error) {
             console.error("삭제 중 오류 발생:", error);
-            alert("삭제에 실패했습니다. 다시 시도해주세요.");
+            openCustomActionSheet(null, "삭제에 실패했습니다. 다시 시도해주세요.", true);
         }
     }
 };
