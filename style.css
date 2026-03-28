@@ -2500,11 +2500,6 @@ body.dark-mode .extend-btn {
   overflow-y: auto;
 }
 
-.modal-overlay, .backup-menu-modal {
-    padding-top: env(safe-area-inset-top);
-    background-clip: padding-box; 
-}
-
 .ios-container {
   padding: 20px 16px;
 }
