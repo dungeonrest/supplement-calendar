@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.285";
+const APP_VERSION = "26.3.286";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1728,20 +1728,14 @@ exportBtn.addEventListener("click", (e) => {
   document.body.appendChild(a);
   a.href = url;
   a.download = `supplements-backup.json`;
-
   a.click();
-  document.body.removeChild(a);
 
-  const handleReturn = () => {
-    setTimeout(() => {
-      closeBottomSheet("backupMenuModal");
-      URL.revokeObjectURL(url);
-    }, 200);
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
-    window.removeEventListener("focus", handleReturn);
-  };
-
-  window.addEventListener("focus", handleReturn);
+  closeBottomSheet("backupMenuModal");
+  }, 400);
 });
 
 // 복원 트리거
