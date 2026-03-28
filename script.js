@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.279";
+const APP_VERSION = "26.3.28";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -841,7 +841,7 @@ function openTakenCheckUI(date) {
     let confirmMsg = `${sup.productName}\n\n` +
           `미섭취 체크 슬롯: ${leftUnTakenSlots}개\n` +
           `예상 추가 일정: ${additionalDays}일\n\n` +
-          `이대로 연장할까요?`;
+          `이대로 연장하겠습니까?`;
 
     openCustomActionSheet(null, confirmMsg, false, async () => {
         extendScheduleFromDate(sup, baseDate, additionalDays);
@@ -1169,13 +1169,13 @@ function renderFamilyUI() {
       timer = setTimeout(() => {
         isLongPress = true; 
         
-        openCustomActionSheet(null, `'${name}' 님의 이름 변경\n빈칸으로 두면 삭제`, false, async (newName) => {
+        openCustomActionSheet(null, `${name} 님의 이름을 변경하겠습니까?<br><span style="font-size: 10px; opacity: 0.5; display: block; margin-top: 2px;">(빈칸으로 두면 삭제됩니다.)</span>`, false, async (newName) => {
           if (newName === null) return;
           const trimmed = newName.trim();
 
           if (trimmed === "") {
             setTimeout(() => {
-              openCustomActionSheet(null, `'${name}'님을 삭제할까요?\n섭취 기록도 사라집니다.`, false, async () => {
+              openCustomActionSheet(null, `${name} 님을 삭제합니다.<br><span style="font-size: 10px; opacity: 0.5; display: block; margin-top: 5px;">(데이터가 모두 사라지며 확인을 누르면 되돌릴 수 없습니다.)`, false, async () => {
                 await deleteFamilyMemberFromDB(name);
                 familyMembers.splice(index, 1);
                 localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
@@ -1184,10 +1184,33 @@ function renderFamilyUI() {
             }, 300);
           } else if (trimmed !== name) {
             await updateSupplementFamilyName(name, trimmed);
+
+            supplements.forEach(sup => {
+        if (sup.family && Array.isArray(sup.family)) {
+            const familyIndex = sup.family.indexOf(name);
+            if (familyIndex !== -1) {
+                sup.family[familyIndex] = trimmed;
+            }
+        }
+        
+        if (sup.takenStatus) {
+            Object.keys(sup.takenStatus).forEach(dateKey => {
+                const dayStatus = sup.takenStatus[dateKey];
+                Object.keys(dayStatus).forEach(statusKey => {
+                    if (statusKey.includes(`_${name}`)) {
+                        const newStatusKey = statusKey.replace(`_${name}`, `_${trimmed}`);
+                        dayStatus[newStatusKey] = dayStatus[statusKey];
+                        delete dayStatus[statusKey];
+                    }
+                });
+            });
+        }
+    });
+
             familyMembers[index] = trimmed;
             localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
             renderFamilyUI();
-            openCustomActionSheet(null, `'${trimmed}'님으로 변경되었습니다.`, true, () => {
+            openCustomActionSheet(null, `${trimmed} 님으로 변경되었습니다.`, true, () => {
             });
     }
         }, 87, true, name);
@@ -1217,14 +1240,18 @@ function renderFamilyUI() {
     addBtn.className = "family-btn";
     addBtn.innerText = "추가";
     addBtn.addEventListener("click", () => {
-      openCustomActionSheet(null, "새로운 이름을 입력하세요.", false, async (newName) => {
+      openCustomActionSheet(null, "새로운 이름을 입력 하십시오.", false, async (newName) => {
         if (newName && newName.trim()) {
           const trimmed = newName.trim();
           familyMembers.push(trimmed);
           localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
           renderFamilyUI();
-          openCustomActionSheet(null, `'${trimmed}'님이 추가되었습니다.`, true);
         }
+        else {
+        setTimeout(() => {
+          openCustomActionSheet(null, "입력하지 않았습니다.", true, null, 87);
+        }, 300);
+      }
       }, 87, true);
     });
     statsFamilyContainer.appendChild(addBtn);
@@ -1761,7 +1788,7 @@ importFileInput.addEventListener("change", async (e) => {
 
         openCustomActionSheet(
             null, 
-            "기존 기록이 삭제되고\n백업 내용으로 덮어씌워집니다. 계속할까요?", 
+            "기존 기록이 삭제되고\n백업 내용으로 덮어 씌워집니다.", 
             false, 
             async () => {
                 await proceedRestore(data);
@@ -2523,12 +2550,12 @@ async function processDiscount(event) {
     const actualPaid = getActualPaidValue(); 
     
     if (!actualPaid || actualPaid <= 0) {
-        return openCustomActionSheet(targetBtn, "금액을 입력하세요.", true, null, 65);
+        return openCustomActionSheet(targetBtn, "금액을 입력하십시오.", true, null, 65);
     }
 
     const checkboxes = document.querySelectorAll('.calc-check:checked');
     if (checkboxes.length === 0) {
-        return openCustomActionSheet(targetBtn, "제품을 선택하주세요.", true, null, 65);
+        return openCustomActionSheet(targetBtn, "제품을 선택하십시오.", true, null, 65);
     }
 
     let originalSum = 0;
@@ -2715,7 +2742,7 @@ const deleteBtnInModal = document.getElementById('deleteInfoBtn');
 if (deleteBtnInModal) {
     deleteBtnInModal.onclick = function() {
         if (typeof currentEditId !== 'undefined' && currentEditId) {
-            openCustomActionSheet(this, "이 영양제를 삭제하겠습니까?", false); 
+            openCustomActionSheet(this, "이 영양제를 삭제 하겠습니까?", false); 
         } else {
             openCustomActionSheet(this, "삭제할 항목을 선택할 수 없습니다.", true);
         }
@@ -2802,7 +2829,7 @@ function openCustomActionSheet(targetBtn, message, isAlertOnly = false, confirmC
         inputEl.type = 'text';
         inputEl.className = 'action-sheet-input';
         inputEl.value = defaultValue;
-        inputEl.placeholder = "이름을 입력하세요";
+        inputEl.placeholder = "";
         title.after(inputEl);
         
         setTimeout(() => {
@@ -2814,13 +2841,9 @@ function openCustomActionSheet(targetBtn, message, isAlertOnly = false, confirmC
     title.style.textAlign = "left";
     title.style.fontSize = "15px";
     title.style.whiteSpace = "normal";
+    title.style.wordBreak = "keep-all";
     confirmBtn.className = 'action-sheet-btn';
-
-    if (isAlertOnly || confirmCallback) {
-        title.style.margin = "3px 10px 13px 10px"; 
-    } else {
-        title.style.margin = "3px 50px 13px 10px";
-    }
+    title.style.margin = "3px 10px 13px 10px";
 
     confirmBtn.onclick = null;
     confirmBtn.onclick = async function(e) {

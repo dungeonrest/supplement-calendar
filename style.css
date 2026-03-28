@@ -1578,7 +1578,7 @@ body.dark-mode .action-sheet-btn {
     padding: 10px;
     border-radius: 22px;
     background-color: #F7F7F9;
-    border: none;
+    border: 1px solid #E4E4E7;
     font-size: 15px;
     box-sizing: border-box;
     text-align: center;
