@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.283";
+const APP_VERSION = "26.3.284";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -42,13 +42,12 @@ const closeBottomSheet = (modalId) => {
   const modalElement = document.getElementById(modalId);
   if (!modalElement) return;
   modalElement.classList.remove("active");
+  setTimeout(() => {
+    modalElement.classList.add("hidden");
   const scrollableElements = modalElement.querySelectorAll('div'); 
   scrollableElements.forEach(el => {
     if (el.scrollTop > 0) el.scrollTop = 0;
   });
-  setTimeout(() => {
-    modalElement.classList.add("hidden"); 
-    
     const anyActive = document.querySelector('.modal-overlay.active, .modal.active');
     if (!anyActive) {
       document.body.classList.remove("modal-open", "stop-scroll");
@@ -1734,10 +1733,11 @@ exportBtn.addEventListener("click", (e) => {
 
   document.body.removeChild(a);
 
+  closeBottomSheet("backupMenuModal");
+  
   setTimeout(() => {
-    closeBottomSheet("backupMenuModal");
     URL.revokeObjectURL(url);
-  }, 600);
+  }, 1000);
 });
 
 // 복원 트리거
