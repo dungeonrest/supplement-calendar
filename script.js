@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.284";
+const APP_VERSION = "26.3.285";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1689,7 +1689,7 @@ if (fabSettingsBtn) {
         const data = await res.json();
         if (data.version !== APP_VERSION) {
           openCustomActionSheet(
-            null, `새로운 버전(${data.version})이 있습니다!\n업데이트하시겠습니까?`, false,
+            null, `새로운 버전이 있습니다!\n업데이트하겠습니까?`, false,
             () => { location.reload(); }
           );
             return;
@@ -1723,21 +1723,25 @@ exportBtn.addEventListener("click", (e) => {
 
   const blob = new Blob([JSON.stringify(supplements, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-
   const a = document.createElement("a");
   a.style.display = "none";
   document.body.appendChild(a);
   a.href = url;
   a.download = `supplements-backup.json`;
-  a.click();
 
+  a.click();
   document.body.removeChild(a);
 
-  closeBottomSheet("backupMenuModal");
-  
-  setTimeout(() => {
-    URL.revokeObjectURL(url);
-  }, 1000);
+  const handleReturn = () => {
+    setTimeout(() => {
+      closeBottomSheet("backupMenuModal");
+      URL.revokeObjectURL(url);
+    }, 200);
+
+    window.removeEventListener("focus", handleReturn);
+  };
+
+  window.addEventListener("focus", handleReturn);
 });
 
 // 복원 트리거
