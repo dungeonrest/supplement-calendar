@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.2893";
+const APP_VERSION = "26.3.29";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1347,24 +1347,34 @@ function renderAnalysisTab() {
     const targetYear = baseDate.getFullYear();
     const monthTitle = `${targetMonth + 1}월`;
 
-    // 1. 최근 5개월 데이터 계산
-    const monthlyData = [];
-    for (let i = 4; i >= 0; i--) {
-        const d = new Date(targetYear, targetMonth - i, 1);
-        const m = d.getMonth();
-        const y = d.getFullYear();
+    // 최근 5개월 데이터 계산
+const startDate = new Date(targetYear, targetMonth - 4, 1);
+const monthlyTotals = {};
+
+supplements.forEach(sup => {
+    if (sup.schedule && sup.schedule[0]) {
+        const pDate = new Date(sup.schedule[0]);
         
-        let total = 0;
-        supplements.forEach(sup => {
-            if (sup.schedule && sup.schedule.length > 0) {
-                const purchaseDate = new Date(sup.schedule[0]);
-                if (purchaseDate.getFullYear() === y && purchaseDate.getMonth() === m) {
-                    total += (parseInt(sup.price) || 0);
-                }
-            }
-        });
-        monthlyData.push({ month: (m + 1) + '월', cost: total });
+        if (pDate >= startDate) {
+            const key = `${pDate.getFullYear()}-${pDate.getMonth()}`;
+            const price = parseInt(sup.price) || 0;
+            monthlyTotals[key] = (monthlyTotals[key] || 0) + price;
+        }
     }
+});
+
+const monthlyData = [];
+for (let i = 4; i >= 0; i--) {
+    const d = new Date(targetYear, targetMonth - i, 1);
+    const m = d.getMonth();
+    const y = d.getFullYear();
+    const key = `${y}-${m}`;
+    
+    monthlyData.push({ 
+        month: (m + 1) + '월', 
+        cost: monthlyTotals[key] || 0 
+    });
+}
 
     const prevMonthCost = monthlyData[monthlyData.length - 2].cost;
     const targetMonthCost = monthlyData[monthlyData.length - 1].cost;
@@ -1481,16 +1491,16 @@ function renderAnalysisTab() {
                 <div class="bar-chart-container">
                     ${monthlyData.map((data, idx) => {
                         const isCurrent = (idx === monthlyData.length - 1);
-                        const isPrev = (idx === monthlyData.length - 2);
                         const barHeight = data.cost > 0 ? (data.cost / maxCost * 100) : 0;
+                        const barClass = isCurrent ? 'current-month' : (data.cost > 0 ? 'prev-month' : '');
                         return `
-                            <div class="bar-group">
-                                <div class="bar-wrapper">
-                                    <div class="bar-fill ${isCurrent ? 'current-month' : (isPrev ? 'prev-month' : '')}" style="height: ${barHeight}%;"></div>
-                                </div>
-                                <span class="bar-label ${isCurrent ? 'current-month-text' : ''}">${data.month}</span>
-                            </div>`;
-                    }).join('')}
+        <div class="bar-group">
+            <div class="bar-wrapper">
+                <div class="bar-fill ${barClass}" style="height: ${barHeight}%;"></div>
+            </div>
+            <span class="bar-label ${isCurrent ? 'current-month-text' : ''}">${data.month}</span>
+        </div>`;
+}).join('')}
                 </div>
             ` : ` <div style="text-align: center; opacity: 0.5; font-size: 14px; padding: 20px 0;">데이터 부족</div> `}
         </div>
@@ -1719,24 +1729,21 @@ exportBtn.addEventListener("click", (e) => {
     return;
   }
 
-  updateLastBackupDate();
-
-  const fileName = `supplements-backup.json`;
-  const dataString = JSON.stringify(supplements, null, 2);
-  const blob = new Blob([dataString], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(supplements, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-
   const a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-
+  a.style.display = "none";
   document.body.appendChild(a);
+  a.href = url;
+  a.download = `supplements-backup.json`;
   a.click();
 
   setTimeout(() => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, 500);
+  closeBottomSheet("backupMenuModal");
+  }, 100);
+  updateLastBackupDate();
 });
 
 // 복원 트리거
