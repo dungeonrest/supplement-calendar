@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.2892";
+const APP_VERSION = "26.3.2893";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1710,7 +1710,7 @@ closeBackupMenu.addEventListener("click", () => {
 });
 
 // 백업 동작
-exportBtn.addEventListener("click", async (e) => { 
+exportBtn.addEventListener("click", (e) => {
   e.preventDefault();
   e.stopPropagation();
 
@@ -1719,36 +1719,24 @@ exportBtn.addEventListener("click", async (e) => {
     return;
   }
 
+  updateLastBackupDate();
+
   const fileName = `supplements-backup.json`;
   const dataString = JSON.stringify(supplements, null, 2);
   const blob = new Blob([dataString], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
 
-  if (navigator.canShare && navigator.share) {
-    try {
-      const file = new File([blob], fileName, { type: "application/json" });
-      await navigator.share({
-        files: [file],
-        title: '데이터 백업',
-      });
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
 
-      updateLastBackupDate();
-      
-    } catch (err) {
-      console.log("공유 취소 또는 에러:", err);
-    }
-  } else {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    a.click();
-    
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 1000);
+  document.body.appendChild(a);
+  a.click();
 
-    updateLastBackupDate();
-  }
+  setTimeout(() => {
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 500);
 });
 
 // 복원 트리거
