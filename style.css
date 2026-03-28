@@ -46,6 +46,15 @@ body {
   overscroll-behavior-y: contain; /* 위로 당겨서 새로고침 되는 동작 방지 */
 }
 
+body, #app-container {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-perspective: 1000;
+  perspective: 1000;
+}
+
 input, textarea {
   user-select: auto !important;
   -webkit-user-select: auto !important;
