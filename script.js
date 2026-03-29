@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.291";
+const APP_VERSION = "26.3.292";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -2020,6 +2020,13 @@ if (saveFamilyConfigBtn) {
   });
 }
 
+window.addEventListener('load', () => {
+    const isOnboarding = !localStorage.getItem("familyMembers");
+    if (!isOnboarding) {
+        checkAttendance();
+    }
+});
+
 async function updateSupplementFamilyName(oldName, newName) {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(["supplements"], "readwrite");
@@ -3015,3 +3022,70 @@ backHelpModal.addEventListener("click", (e) => {
     document.body.classList.remove("modal-open");
   }
 });
+
+function checkAttendance() {
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
+    const currentMonth = (now.getMonth() + 1) + "월";
+    
+    let lastVisit = localStorage.getItem('lastVisitDate');
+    let streak = parseInt(localStorage.getItem('attendanceStreak') || '0');
+    let monthlyBadges = JSON.parse(localStorage.getItem('monthlyBadges') || '{}');
+    const monthKey = `${now.getFullYear()}-${now.getMonth() + 1}`;
+
+    if (lastVisit === todayStr) return;
+    if (!monthlyBadges[monthKey]) monthlyBadges[monthKey] = 0;
+
+    let message = "";
+    const iconPath = "icons/icon-192.png"; 
+
+    if (lastVisit) {
+        const lastDate = new Date(lastVisit);
+        const diffTime = now - lastDate;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 1) {
+            streak += 1;
+            monthlyBadges[monthKey] += 1;
+            message = streak === 30 ? `30일 연속 방문!<br><br>한 달 동안 성실히 건강을 챙겼습니다.` : `${streak}일 연속 방문!<br>꾸준한 영양제 섭취를 시작합니다.`;
+        } else {
+            streak = 1;
+            monthlyBadges[monthKey] += 1;
+            if (diffDays === 2) message = `2일 만에 재방문!<br><br>다시 영양제 섭취를 이어갑니다.`;
+            else if (diffDays >= 10 && diffDays < 30) message = `${diffDays}일 만에 재방문!<br><br>여행을 다녀왔습니까?`;
+            else if (diffDays >= 30) message = `${diffDays}일 만에 재방문!<br><br>건강을 위해 자주 찾아주십시오.`;
+            else message = `${diffDays}일 만에 재방문!<br><br>반갑습니다! 다시 시작해 보겠습니까?`;
+        }
+    } else {
+        streak = 1;
+        monthlyBadges[monthKey] = 1;
+        message = `첫 방문을 환영합니다!<br><br>더하기 표시를 눌러 영양제를 입력하십시오.`;
+    }
+
+    localStorage.setItem('lastVisitDate', todayStr);
+    localStorage.setItem('attendanceStreak', streak);
+    localStorage.setItem('monthlyBadges', JSON.stringify(monthlyBadges));
+
+    const fullContent = `
+        <div style="text-align:center; padding: 0;">
+            <strong style="font-size:17px; display:block; margin-bottom:5px; color:var(--text-color);">${currentMonth} 출석체크</strong>
+            <div style="display:flex; align-items:center; justify-content:center; gap:3px; margin-bottom:5px;">
+                <img src="${iconPath}" style="width:15px; height:15px; object-fit:contain;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/833/833472.png'">
+                <span style="color:#ff3b30; font-weight:bold; font-size:15px;">건강 배지 ${monthlyBadges[monthKey]}개 획득!</span>
+            </div>
+            <div style="font-size:14px; line-height:1.5; color:var(--text-color); opacity:0.9;">${message}</div>
+        </div>
+    `;
+
+    openCustomActionSheet(null, fullContent, true);
+    
+    const overlay = document.getElementById('actionSheetOverlay');
+overlay.classList.add('attendance-mode'); // 전용 스타일 적용
+
+// 닫을 때 클래스 제거 (나중에 영양제 삭제 시 영향 안 주게)
+document.getElementById('actionSheetOverlay').onclick = function(e) {
+    if (e.target === this) {
+        closeActionSheet();
+        this.classList.remove('attendance-mode'); // 초기화
+    }
+};}

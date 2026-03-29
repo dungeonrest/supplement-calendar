@@ -136,6 +136,25 @@
   </div>
 </div>
 
+<div id="attendanceModal" class="modal-overlay hidden" style="z-index: 3000;">
+  <div class="action-sheet-container attendance-container" style="width: 280px; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <div class="action-sheet-group">
+      <div id="attendanceMonth" class="action-sheet-header" style="text-align: center; margin: 10px 0; font-weight: bold; font-size: 18px;">
+        </div>
+      <div style="display: flex; flex-direction: column; align-items: center; padding: 20px 0;">
+        <img id="attendanceIcon" src="icons/icon-512.png" style="width: 80px; height: 80px; margin-bottom: 15px;" alt="Heart Icon">
+        <div id="badgeCount" style="font-size: 16px; margin-bottom: 10px; color: #ff3b30; font-weight: 600;">
+          </div>
+        <div id="attendanceMessage" style="font-size: 14px; text-align: center; line-height: 1.5; color: var(--text-color);">
+          </div>
+      </div>
+    </div>
+    <div class="action-sheet-group">
+      <button id="closeAttendanceBtn" class="action-sheet-btn" style="background-color: #ff3b30; color: white !important; margin-top: 10px;">확인</button>
+    </div>
+  </div>
+</div>
+
 <div id="modalOverlay" class="modal-overlay hidden">
   <div class="modal">
     <div class="modal-header">

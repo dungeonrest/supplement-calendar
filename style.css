@@ -1593,6 +1593,21 @@ body.dark-mode .action-sheet-input {
     border: none;
     color: white;
 }
+
+/* 출석체크 모드일 때 액션시트 압축 */
+.attendance-mode .action-sheet-container {
+    width: 230px !important;
+    height: 270px !important;
+    padding: 0px !important;
+}
+
+.attendance-mode #actionSheetTitle {
+    margin: 0px !important;
+}
+
+.attendance-mode #actionSheetBtnGroup {
+    display: none !important;
+}
 /*---------------------------------저장 버튼 시작----------------------------*/
 /* 저장(체크) 버튼 */
 .check-btn {
