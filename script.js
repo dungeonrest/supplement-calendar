@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.29";
+const APP_VERSION = "26.3.291";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1999,6 +1999,25 @@ function updateColorBar(color) {
   if (colorHexText) {
     colorHexText.innerText = isAuto ? "자동 색상" : displayColor.toUpperCase();
   }
+}
+
+const saveFamilyConfigBtn = document.getElementById("saveFamilyConfig");
+if (saveFamilyConfigBtn) {
+  saveFamilyConfigBtn.addEventListener("click", () => {
+    const input = document.getElementById("familyInput");
+    const value = input.value.trim();
+    if (!value) return openCustomActionSheet(null, "이름을 입력해주세요.", true);
+
+    const names = value.split(",").map(n => n.trim()).filter(n => n !== "").slice(0, 4);
+    familyMembers = names;
+    localStorage.setItem("familyMembers", JSON.stringify(familyMembers));
+
+    document.getElementById("familyConfigModal").classList.add("hidden");
+    document.body.classList.remove("modal-open");
+
+    renderFamilyUI();
+    location.reload(); 
+  });
 }
 
 async function updateSupplementFamilyName(oldName, newName) {
