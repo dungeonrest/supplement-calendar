@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.292";
+const APP_VERSION = "26.3.30";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -3047,7 +3047,14 @@ function checkAttendance() {
         if (diffDays === 1) {
             streak += 1;
             monthlyBadges[monthKey] += 1;
-            message = streak === 30 ? `30일 연속 방문!<br><br>한 달 동안 성실히 건강을 챙겼습니다.` : `${streak}일 연속 방문!<br>꾸준한 영양제 섭취를 시작합니다.`;
+            if (streak > 0 && streak % 30 === 0) {
+            const months = Math.floor(streak / 30);
+            const monthText = ["", "한", "두", "세", "네", "다섯", "여섯"][months] || months;
+            
+            message = `${streak}일 연속 방문!<br><br>${monthText} 달 동안 성실히 건강을 챙겼습니다.`;
+        } else {
+            message = `${streak}일 연속 방문!<br><br>꾸준하게 영양제를 섭취하고 있습니다.`;
+        }
         } else {
             streak = 1;
             monthlyBadges[monthKey] += 1;
@@ -3068,8 +3075,8 @@ function checkAttendance() {
 
     const fullContent = `
         <div style="text-align:center; padding: 0;">
-            <strong style="font-size:17px; display:block; margin-bottom:5px; color:var(--text-color);">${currentMonth} 출석체크</strong>
-            <div style="display:flex; align-items:center; justify-content:center; gap:3px; margin-bottom:5px;">
+            <strong style="font-size:17px; display:block; margin-bottom:0px; color:var(--text-color);">${currentMonth} 출석체크</strong>
+            <div style="display:flex; align-items:center; justify-content:center; gap:3px; margin-bottom:0px;">
                 <img src="${iconPath}" style="width:15px; height:15px; object-fit:contain;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/833/833472.png'">
                 <span style="color:#ff3b30; font-weight:bold; font-size:15px;">건강 배지 ${monthlyBadges[monthKey]}개 획득!</span>
             </div>
@@ -3080,12 +3087,11 @@ function checkAttendance() {
     openCustomActionSheet(null, fullContent, true);
     
     const overlay = document.getElementById('actionSheetOverlay');
-overlay.classList.add('attendance-mode'); // 전용 스타일 적용
+    overlay.classList.add('attendance-mode');
 
-// 닫을 때 클래스 제거 (나중에 영양제 삭제 시 영향 안 주게)
-document.getElementById('actionSheetOverlay').onclick = function(e) {
+    document.getElementById('actionSheetOverlay').onclick = function(e) {
     if (e.target === this) {
         closeActionSheet();
-        this.classList.remove('attendance-mode'); // 초기화
+        this.classList.remove('attendance-mode');
     }
 };}
