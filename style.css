@@ -1597,19 +1597,19 @@ body.dark-mode .action-sheet-input {
 /* 출석체크 모드일 때 액션시트 압축 */
 .attendance-mode .action-sheet-container {
     width: 230px !important;
-    padding: 0px 10px 10px 10px !important; /* 위/옆/아래 여백을 적절히 부여 */
+    padding: 0px 10px 10px 10px !important;
 }
 
 /* 텍스트(타이틀) 하단 여백 제거 */
 .attendance-mode #actionSheetTitle {
     margin: 0 !important;
-    padding-bottom: 0px !important; /* 버튼과의 최소 간격만 유지 */
+    padding-bottom: 0px !important;
 }
 
 /* 확인 버튼 상단 여백 및 크기 조정 */
 .attendance-mode .action-sheet-btn {
-    margin-top: 0px !important; /* 버튼 위쪽 간격을 확 줄임 */
-    padding: 15px 0 !important;  /* 버튼 자체의 높이 조절 */
+    margin-top: 0px !important;
+    padding: 15px 0 !important;
     width: 100%;
 }
 /*---------------------------------저장 버튼 시작----------------------------*/

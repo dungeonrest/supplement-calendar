@@ -867,7 +867,7 @@ function openTakenCheckUI(date) {
       const totalCaps = Number(sup.totalCapsules) || 0;
       const dose = Number(sup.dose) || 0;
       const timesCount = currentSupTimes.length || 1;
-      const dosagePerTime = dose / timesCount; // 한 칸당 소모량 (예: 2알 / 2회 = 1알)
+      const dosagePerTime = dose / timesCount;
 
   // [핵심] 실시간 비활성화 함수
   const refreshCheckboxes = () => {
@@ -879,7 +879,6 @@ function openTakenCheckUI(date) {
 
   allCheckboxes.forEach(chk => {
     if (!chk.checked) {
-      // 남은 양이 '한 번 먹을 분량'보다 적으면 비활성화
       if (totalCaps > 0 && remaining < dosagePerTime) {
         chk.disabled = true;
         chk.parentElement.style.opacity = "0.2";
