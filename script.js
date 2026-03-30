@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.311";
+const APP_VERSION = "26.3.312";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1842,22 +1842,24 @@ const swipeThreshold = 80;
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
-  if (isAnimating) return;
+  const x = e.touches[0].clientX;
   
+  if (x < 30) {
+  }
+
+  if (isAnimating) return;
   touchStartY = e.changedTouches[0].screenY;
   touchStartX = e.changedTouches[0].screenX;
-}, { passive: true });
+}, { passive: false });
 
 datesWrapper.addEventListener("touchmove", (e) => {
   if (isAnimating) return;
 
   const currentX = e.changedTouches[0].screenX;
-  const currentY = e.changedTouches[0].screenY;
+  const diffX = currentX - touchStartX;
+  const diffY = Math.abs(e.changedTouches[0].screenY - touchStartY);
   
-  const diffX = Math.abs(currentX - touchStartX);
-  const diffY = Math.abs(currentY - touchStartY);
-
-  if (diffX > diffY && diffX > 1) { 
+  if (touchStartX < 40 && diffX > 0 && Math.abs(diffX) > diffY) {
     if (e.cancelable) {
       e.preventDefault();
     }
