@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.312";
+const APP_VERSION = "26.3.313";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1842,14 +1842,15 @@ const swipeThreshold = 80;
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
-  const x = e.touches[0].clientX;
-  
-  if (x < 30) {
-  }
+  const touch = e.touches[0];
+  touchStartX = touch.screenX;
+  touchStartY = touch.screenY;
 
-  if (isAnimating) return;
-  touchStartY = e.changedTouches[0].screenY;
-  touchStartX = e.changedTouches[0].screenX;
+  if (touchStartX < 40) {
+    datesWrapper.style.touchAction = 'none';
+  } else {
+    datesWrapper.style.touchAction = 'pan-y';
+  }
 }, { passive: false });
 
 datesWrapper.addEventListener("touchmove", (e) => {
@@ -1886,6 +1887,7 @@ datesWrapper.addEventListener("touchend", (e) => {
       startVerticalSlide(1);
     }
   }
+  datesWrapper.style.touchAction = 'pan-y';
 });
 
 // 슬라이드 애니메이션 함수
