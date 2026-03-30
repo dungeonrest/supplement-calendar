@@ -3031,9 +3031,16 @@ function checkAttendance() {
 
     let message = "";
     const iconPath = "icons/icon-192.png"; 
-    const badgeText = (currentMonthCount === lastDayOfMonth) 
-        ? `${currentMonth} 건강 배지를 다 모았습니다!` 
-        : `건강 배지 ${currentMonthCount}개 획득!`;
+    if (currentMonthCount === lastDayOfMonth) {
+    confetti({
+        particleCount: 150, // 폭죽 개수
+        spread: 70,         // 퍼지는 정도
+        origin: { y: 0.6 }  // 화면 어디에서 터질지 (0.6은 화면 중간보다 약간 아래)
+    });
+    badgeText = `${currentMonth} 건강 배지를 다 모았습니다!`;
+} else {
+    badgeText = `건강 배지 ${currentMonthCount}개 획득!`;
+}
 
     if (lastVisit) {
         const lastDate = new Date(lastVisit);
