@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.313";
+const APP_VERSION = "26.3.314";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1842,25 +1842,22 @@ const swipeThreshold = 80;
 const datesWrapper = document.getElementById("dates-wrapper");
 
 datesWrapper.addEventListener("touchstart", (e) => {
-  const touch = e.touches[0];
-  touchStartX = touch.screenX;
-  touchStartY = touch.screenY;
-
-  if (touchStartX < 40) {
-    datesWrapper.style.touchAction = 'none';
-  } else {
-    datesWrapper.style.touchAction = 'pan-y';
-  }
-}, { passive: false });
+  if (isAnimating) return;
+  
+  touchStartY = e.changedTouches[0].screenY;
+  touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
 
 datesWrapper.addEventListener("touchmove", (e) => {
   if (isAnimating) return;
 
   const currentX = e.changedTouches[0].screenX;
-  const diffX = currentX - touchStartX;
-  const diffY = Math.abs(e.changedTouches[0].screenY - touchStartY);
+  const currentY = e.changedTouches[0].screenY;
   
-  if (touchStartX < 40 && diffX > 0 && Math.abs(diffX) > diffY) {
+  const diffX = Math.abs(currentX - touchStartX);
+  const diffY = Math.abs(currentY - touchStartY);
+
+  if (diffX > diffY && diffX > 1) { 
     if (e.cancelable) {
       e.preventDefault();
     }
@@ -1887,7 +1884,6 @@ datesWrapper.addEventListener("touchend", (e) => {
       startVerticalSlide(1);
     }
   }
-  datesWrapper.style.touchAction = 'pan-y';
 });
 
 // 슬라이드 애니메이션 함수

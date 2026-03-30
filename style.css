@@ -4,7 +4,8 @@ html, body {
   overscroll-behavior-x: none;
   position: fixed;
   overflow: hidden;
-  width: 100%;
+  width: calc(100% + 4px); 
+  margin-left: -2px;
   height: 100%;
 }
 
