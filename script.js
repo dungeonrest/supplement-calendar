@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.30";
+const APP_VERSION = "26.3.31";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -1940,24 +1940,12 @@ function changeMonthWithDay(direction) {
     day   = today.getDate();
   }
 
-  const newDate = new Date(year, month + direction, day);
-  const lastDayOfNewMonth = new Date(
-    newDate.getFullYear(),
-    newDate.getMonth() + 1,
-    0
-  ).getDate();
-
+  const tempDate = new Date(year, month, 1); 
+  tempDate.setMonth(tempDate.getMonth() + direction);
+  const lastDayOfNewMonth = new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate();
   const adjustedDay = day > lastDayOfNewMonth ? lastDayOfNewMonth : day;
-
-  selectedDateForList = `${newDate.getFullYear()}-${String(
-    newDate.getMonth() + 1
-  ).padStart(2, "0")}-${String(adjustedDay).padStart(2, "0")}`;
-
-  dt = new Date(
-    newDate.getFullYear(),
-    newDate.getMonth(),
-    adjustedDay
-  );
+  dt = new Date(tempDate.getFullYear(), tempDate.getMonth(), adjustedDay);
+  selectedDateForList = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(adjustedDay).padStart(2, "0")}`;
 
   renderCalendar();
 }
@@ -3025,18 +3013,27 @@ backHelpModal.addEventListener("click", (e) => {
 function checkAttendance() {
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
-    const currentMonth = (now.getMonth() + 1) + "월";
-    
+    const currentYear = now.getFullYear();
+    const currentMonthNum = now.getMonth() + 1;
+    const currentMonth = currentMonthNum + "월";
+    const lastDayOfMonth = new Date(currentYear, currentMonthNum, 0).getDate();
+
     let lastVisit = localStorage.getItem('lastVisitDate');
     let streak = parseInt(localStorage.getItem('attendanceStreak') || '0');
     let monthlyBadges = JSON.parse(localStorage.getItem('monthlyBadges') || '{}');
-    const monthKey = `${now.getFullYear()}-${now.getMonth() + 1}`;
+    const monthKey = `${currentYear}-${currentMonthNum}`;
 
     if (lastVisit === todayStr) return;
     if (!monthlyBadges[monthKey]) monthlyBadges[monthKey] = 0;
 
+    monthlyBadges[monthKey] += 1;
+    const currentMonthCount = monthlyBadges[monthKey];
+
     let message = "";
     const iconPath = "icons/icon-192.png"; 
+    const badgeText = (currentMonthCount === lastDayOfMonth) 
+        ? `${currentMonth} 건강 배지를 다 모았습니다!` 
+        : `건강 배지 ${currentMonthCount}개 획득!`;
 
     if (lastVisit) {
         const lastDate = new Date(lastVisit);
@@ -3045,18 +3042,15 @@ function checkAttendance() {
 
         if (diffDays === 1) {
             streak += 1;
-            monthlyBadges[monthKey] += 1;
             if (streak > 0 && streak % 30 === 0) {
-            const months = Math.floor(streak / 30);
-            const monthText = ["", "한", "두", "세", "네", "다섯", "여섯"][months] || months;
-            
-            message = `${streak}일 연속 방문!<br><br>${monthText} 달 동안 성실히 건강을 챙겼습니다.`;
-        } else {
-            message = `${streak}일 연속 방문!<br><br>꾸준하게 영양제를 섭취하고 있습니다.`;
-        }
+                const months = Math.floor(streak / 30);
+                const monthText = ["", "한", "두", "세", "네", "다섯", "여섯"][months] || months;
+                message = `${streak}일 연속 방문!<br><br>${monthText} 달 동안 성실히 건강을 챙겼습니다.`;
+            } else {
+                message = `${streak}일 연속 방문!<br><br>꾸준한 영양제 섭취를 응원합니다.`;
+            }
         } else {
             streak = 1;
-            monthlyBadges[monthKey] += 1;
             if (diffDays === 2) message = `2일 만에 재방문!<br><br>다시 영양제 섭취를 이어갑니다.`;
             else if (diffDays >= 10 && diffDays < 30) message = `${diffDays}일 만에 재방문!<br><br>여행을 다녀왔습니까?`;
             else if (diffDays >= 30) message = `${diffDays}일 만에 재방문!<br><br>건강을 위해 자주 찾아주십시오.`;
@@ -3064,7 +3058,6 @@ function checkAttendance() {
         }
     } else {
         streak = 1;
-        monthlyBadges[monthKey] = 1;
         message = `첫 방문을 환영합니다!<br><br>더하기 표시를 눌러 영양제를 입력하십시오.`;
     }
 
@@ -3077,7 +3070,7 @@ function checkAttendance() {
             <strong style="font-size:17px; display:block; margin-bottom:0px; color:var(--text-color);">${currentMonth} 출석체크</strong>
             <div style="display:flex; align-items:center; justify-content:center; gap:3px; margin-bottom:0px;">
                 <img src="${iconPath}" style="width:15px; height:15px; object-fit:contain;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/833/833472.png'">
-                <span style="color:#ff3b30; font-weight:bold; font-size:15px;">건강 배지 ${monthlyBadges[monthKey]}개 획득!</span>
+                <span style="color:#ff3b30; font-weight:bold; font-size:15px;">${badgeText}</span>
             </div>
             <div style="font-size:14px; line-height:1.5; color:var(--text-color); opacity:0.9;">${message}</div>
         </div>
