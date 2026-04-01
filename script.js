@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.315";
+const APP_VERSION = "26.3.316";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -3013,6 +3013,7 @@ backHelpModal.addEventListener("click", (e) => {
 
 function checkAttendance() {
     const now = new Date();
+    const todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayStr = now.toISOString().split('T')[0];
     const currentYear = now.getFullYear();
     const currentMonthNum = now.getMonth() + 1;
@@ -3044,9 +3045,11 @@ function checkAttendance() {
 }
 
     if (lastVisit) {
-        const lastDate = new Date(lastVisit);
-        const diffTime = now - lastDate;
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const lv = lastVisit.split('-');
+        const lastDate = new Date(lv[0], lv[1] - 1, lv[2]);
+        
+        const diffTime = todayDate - lastDate;
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
         if (diffDays === 1) {
             streak += 1;
@@ -3057,6 +3060,8 @@ function checkAttendance() {
             } else {
                 message = `${streak}일 연속 방문!<br><br>꾸준한 영양제 섭취를 응원합니다.`;
             }
+            } else if (diffDays === 0) {
+            return;
         } else {
             streak = 1;
             if (diffDays === 2) message = `2일 만에 재방문!<br><br>다시 영양제 섭취를 이어갑니다.`;
