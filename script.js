@@ -1,4 +1,4 @@
-const APP_VERSION = "26.3.316";
+const APP_VERSION = "26.4.1";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -8,7 +8,7 @@ const koreaHolidays2026 = [
   "2026-01-01",
   "2026-02-16","2026-02-17","2026-02-18",
   "2026-03-01", "2026-03-02",
-  "2026-05-05",
+  "2026-05-01", "2026-05-05",
   "2026-05-24","2026-05-25",
   "2026-06-03","2026-06-06",
   "2026-07-17",
