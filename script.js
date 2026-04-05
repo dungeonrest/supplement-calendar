@@ -1,4 +1,4 @@
-const APP_VERSION = "26.4.1";
+const APP_VERSION = "26.4.2";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -500,17 +500,49 @@ if (actualTotalSlotsToday > 0) {
           bar.appendChild(labelInBar);
         }
 
-// 클릭 이벤트 유지
-bar.addEventListener("click", (e) => {
-  e.stopPropagation();
-  selectedDateForList = fullDate;
-  openSupplementModal(sup);
+        let timer = null;
+        let isLongPress = false;
+        let startX = 0;
+        let startY = 0;
+
+        bar.addEventListener("touchstart", (e) => {
+            e.stopPropagation(); 
+            
+            isLongPress = false;
+            const touch = e.touches[0];
+            startX = touch.clientX;
+            startY = touch.clientY;
+
+            timer = setTimeout(() => {
+                isLongPress = true;
+                if (navigator.vibrate) navigator.vibrate(60);
+                showReorderSheet(sup.id, sup.productName);
+            }, 700);
+        }, { passive: false });
+
+        bar.addEventListener("touchmove", (e) => {
+            const touch = e.touches[0];
+            if (Math.abs(touch.clientX - startX) > 10 || Math.abs(touch.clientY - startY) > 10) {
+                clearTimeout(timer);
+            }
+        }, { passive: true });
+
+        bar.addEventListener("touchend", (e) => {
+            e.stopPropagation();
+            clearTimeout(timer);
+
+            if (isLongPress) {
+                e.preventDefault(); 
+            } else {
+                selectedDateForList = fullDate;
+                openSupplementModal(sup);
+            }
+        });
+
+        bar.addEventListener("touchcancel", () => clearTimeout(timer));
+        listArea.appendChild(bar);
+    }
 });
-
-listArea.appendChild(bar);
-
-      }
-    });
 
     datesContainer.appendChild(div);
   }
@@ -541,6 +573,73 @@ listArea.appendChild(bar);
   if (typeof applyIOSButtonEffect === 'function') {
       applyIOSButtonEffect();
   }
+}
+
+/*영양제 순서 변경 액션시트 */
+function showReorderSheet(id, name) {
+    const overlay = document.getElementById('actionSheetOverlay');
+    overlay.classList.add('reorder-mode');
+    const content = `
+        <div style="text-align:center;">
+            <strong style="display:block;">${name} 이동</strong>
+            <div id="reorderBtnGroup" style="display: flex; flex-direction: column;">
+                <button data-dir="top" class="action-sheet-btn" style="background:#007AFF; color:white;">맨 위로</button>
+                <button data-dir="up" class="action-sheet-btn">위로 ↑</button>
+                <button data-dir="down" class="action-sheet-btn">아래로 ↓</button>
+                <button data-dir="bottom" class="action-sheet-btn">맨 아래로</button>
+            </div>
+        </div>
+    `;
+
+    openCustomActionSheet(null, content, true);
+
+    setTimeout(() => {
+        const btnGroup = document.getElementById('reorderBtnGroup');
+        if (btnGroup) {
+            btnGroup.querySelectorAll('button').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const dir = btn.getAttribute('data-dir');
+                    overlay.classList.remove('reorder-mode');
+                    reorderSupplement(id, dir);
+                };
+            });
+        }
+    }, 50);
+}
+
+async function reorderSupplement(id, direction) {
+    const targetId = isNaN(id) ? id : Number(id);
+    const index = supplements.findIndex(s => s.id === targetId);
+    
+    if (index === -1) {
+        console.error("항목을 찾을 수 없음:", id);
+        return;
+    }
+
+    const target = supplements.splice(index, 1)[0]; 
+
+    if (direction === 'top') supplements.unshift(target);
+    else if (direction === 'up') supplements.splice(Math.max(0, index - 1), 0, target);
+    else if (direction === 'down') supplements.splice(Math.min(supplements.length, index + 1), 0, target);
+    else if (direction === 'bottom') supplements.push(target);
+
+    supplements.forEach((s, i) => s.order = i);
+
+    try {
+        await saveAllSupplements(); 
+        closeActionSheet();
+        
+        requestAnimationFrame(() => {
+            renderCalendar();
+            if (typeof renderFamilyUI === 'function') renderFamilyUI();
+        });
+
+        console.log("순서 변경 성공:", target.productName);
+    } catch (e) {
+        alert("저장 실패: " + e.message);
+    }
 }
 
 // 저장
@@ -607,8 +706,33 @@ saveInfoBtn.addEventListener("click", async (e) => {
   }
 }
 
+if (currentEditId) {
+    const found = supplements.find(s => s.id === currentEditId);
+    if (found && found.takenStatus) {
+        const familyNames = family;
+        const timeIndices = times.map((_, i) => i.toString());
+
+        Object.keys(found.takenStatus).forEach(dateKey => {
+            const dayStatus = found.takenStatus[dateKey];
+            Object.keys(dayStatus).forEach(slotKey => {
+                const parts = slotKey.split('_');
+                const tIdx = parts[0];
+                const name = parts[1];
+
+                if (!timeIndices.includes(tIdx) || !familyNames.includes(name)) {
+                    delete found.takenStatus[dateKey][slotKey];
+                }
+            });
+            if (Object.keys(found.takenStatus[dateKey]).length === 0) {
+                delete found.takenStatus[dateKey];
+            }
+        });
+    }
+}
+
     const newSup = {
       id: Date.now(),
+      order: supplements.length,
       productName: product,
       totalCapsules: totalCaps,
       unit: unit,
@@ -653,6 +777,7 @@ async function saveAllSupplements(targetSup) {
 
 async function loadSupplements() {
   supplements = await getAllSupplements();
+  supplements.sort((a, b) => (a.order || 0) - (b.order || 0));
   checkInitialSetup();
   selectedDateForList = getTodayKST();
   renderCalendar();
@@ -874,7 +999,6 @@ function openTakenCheckUI(date) {
   const currentTotalChecked = getTotalCheckedCount(sup);
   const totalConsumed = currentTotalChecked * dosagePerTime;
   const remaining = totalCaps - totalConsumed;
-  
   const allCheckboxes = table.querySelectorAll('input[type="checkbox"]');
 
   allCheckboxes.forEach(chk => {
@@ -892,43 +1016,72 @@ function openTakenCheckUI(date) {
   });
 };
 
-      // 행(Row) 생성
-      currentSupTimes.forEach(time => {
-        const row = document.createElement("tr");
-        const tdTime = document.createElement("td");
-        tdTime.innerText = time;
-        row.appendChild(tdTime);
+      // 행(Row) 생성 루프
+  currentSupTimes.forEach(time => {
+  const row = document.createElement("tr");
+  
+  const tdTime = document.createElement("td");
+  tdTime.innerText = time;
+  tdTime.style.cursor = "pointer";
+  tdTime.style.fontWeight = "bold";
+  tdTime.title = "클릭 시 전체 선택/해제";
 
-        sup.family.forEach((member) => {
-          const td = document.createElement("td");
-          const chk = document.createElement("input");
-          chk.type = "checkbox";
-          const timeIndex = currentSupTimes.indexOf(time);
-          const statusKey = `${timeIndex}_${member}`;
+  tdTime.addEventListener("click", async () => {
+    const checkboxes = row.querySelectorAll('input[type="checkbox"]:not(:disabled)');
+    const allChecked = Array.from(checkboxes).every(chk => chk.checked);
+    
+    if (!sup.takenStatus[date]) sup.takenStatus[date] = {};
 
-          chk.checked = (sup.takenStatus[date] && sup.takenStatus[date][statusKey]) || false;
+    checkboxes.forEach(chk => {
+      chk.checked = !allChecked;
+      const statusKey = chk.dataset.statusKey;
+      sup.takenStatus[date][statusKey] = chk.checked;
+      
+      chk.parentElement.style.backgroundColor = chk.checked 
+        ? "rgba(78, 205, 196, 0.2)" 
+        : "rgba(128, 128, 128, 0.05)";
+    });
 
-          chk.addEventListener("change", async () => {
-            if (!sup.takenStatus[date]) sup.takenStatus[date] = {};
-            sup.takenStatus[date][statusKey] = chk.checked;
+    await saveSupplementToDB(sup);
+    renderCalendar();
+    refreshCheckboxes();
+  });
 
-            if (!chk.checked) {
-              delete sup.takenStatus[date][statusKey + "_extended"];
-            }
+  row.appendChild(tdTime);
 
-            await saveSupplementToDB(sup);
-            renderCalendar();
-            refreshCheckboxes();
+  sup.family.forEach((member) => {
+    const td = document.createElement("td");
+    const chk = document.createElement("input");
+    chk.type = "checkbox";
+    const timeIndex = currentSupTimes.indexOf(time);
+    const statusKey = `${timeIndex}_${member}`;
+    
+    chk.dataset.statusKey = statusKey;
 
-            td.style.backgroundColor = chk.checked ? "rgba(78, 205, 196, 0.2)" : "rgba(128, 128, 128, 0.05)";
-          });
+    chk.checked = (sup.takenStatus[date] && sup.takenStatus[date][statusKey]) || false;
 
-          td.style.backgroundColor = chk.checked ? "rgba(78, 205, 196, 0.2)" : "rgba(128, 128, 128, 0.05)";
-          td.appendChild(chk);
-          row.appendChild(td);
-        });
-        table.appendChild(row);
-      });
+    chk.addEventListener("change", async () => {
+      if (!sup.takenStatus[date]) sup.takenStatus[date] = {};
+      sup.takenStatus[date][statusKey] = chk.checked;
+
+      if (!chk.checked) {
+        delete sup.takenStatus[date][statusKey + "_extended"];
+      }
+
+      await saveSupplementToDB(sup);
+      renderCalendar();
+      refreshCheckboxes();
+
+      td.style.backgroundColor = chk.checked ? "rgba(78, 205, 196, 0.2)" : "rgba(128, 128, 128, 0.05)";
+    });
+
+    td.style.backgroundColor = chk.checked ? "rgba(78, 205, 196, 0.2)" : "rgba(128, 128, 128, 0.05)";
+    td.appendChild(chk);
+    row.appendChild(td);
+  });
+  
+  table.appendChild(row);
+});
 
       refreshCheckboxes();
 
@@ -1821,8 +1974,6 @@ async function proceedRestore(data) {
     if (typeof renderCalcTab === 'function') renderCalcTab();
 
     closeBottomSheet("backupMenuModal");
-    
-    openCustomActionSheet(null, "백업 데이터를 성공적으로 불러왔습니다!", true);
 }
 
 function hexToRgb(hex) {
@@ -2745,6 +2896,7 @@ function closeActionSheet() {
     const overlay = document.getElementById('actionSheetOverlay');
     if (overlay) {
         overlay.classList.remove('active');
+        overlay.classList.remove('reorder-mode', 'attendance-mode');
         setTimeout(() => {
             overlay.style.visibility = 'hidden';
         }, 150);
@@ -2850,19 +3002,27 @@ function openCustomActionSheet(targetBtn, message, isAlertOnly = false, confirmC
         confirmBtn.style.color = ""; 
     }
 
-    if (targetBtn) {
-        const rect = targetBtn.getBoundingClientRect();
-        container.style.left = `${rect.left + (rect.width / 2)}px`;
-        container.style.top = `${rect.top - offset}px`;
-        container.style.transform = "translate(-50%, 0)";
+    if (isAlertOnly && message.includes("출석체크")) {
+        overlay.classList.add('attendance-mode');
     } else {
-        container.style.left = "50%";
-        container.style.top = "50%";
-        container.style.transform = "translate(-50%, -50%)";
+        overlay.classList.remove('attendance-mode');
     }
 
-    overlay.style.visibility = 'visible';
-    overlay.classList.add('active');
+    requestAnimationFrame(() => {
+        if (targetBtn) {
+            const rect = targetBtn.getBoundingClientRect();
+            container.style.left = `${rect.left + (rect.width / 2)}px`;
+            container.style.top = `${rect.top - offset}px`;
+            container.style.transform = "translate(-50%, 0)";
+        } else {
+            container.style.left = "50%";
+            container.style.top = "50%";
+            container.style.transform = "translate(-50%, -50%)";
+        }
+
+        overlay.style.visibility = 'visible';
+        overlay.classList.add('active');
+    });
 }
 
 function validateInputs() {

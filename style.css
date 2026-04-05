@@ -1612,6 +1612,32 @@ body.dark-mode .action-sheet-input {
     padding: 15px 0 !important;
     width: 100%;
 }
+
+/* 순서 변경 모드 전용 스타일 */
+.reorder-mode .action-sheet-container {
+    width: 160px !important; /* 너비를 조금 더 슬림하게 */
+    padding: 0 10px !important;
+}
+
+.reorder-mode #reorderBtnGroup {
+    gap: 1px !important; /* 버튼 사이 간격 축소 */
+}
+
+.reorder-mode .action-sheet-btn {
+    padding: 8px 0 !important; /* 버튼 높이 축소 */
+    font-size: 14px !important;
+    margin: 0 !important;
+}
+
+.reorder-mode strong {
+    font-size: 14px !important;
+    margin-bottom: 1px !important;
+}
+
+/* 하단 기본 확인/취소 버튼 숨기기 (순서변경시엔 필요없음) */
+.reorder-mode #confirmDeleteBtn {
+    display: none !important;
+}
 /*---------------------------------저장 버튼 시작----------------------------*/
 /* 저장(체크) 버튼 */
 .check-btn {
