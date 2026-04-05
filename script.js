@@ -1,4 +1,4 @@
-const APP_VERSION = "26.4.2";
+const APP_VERSION = "26.4.3";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -501,45 +501,53 @@ if (actualTotalSlotsToday > 0) {
         }
 
         let timer = null;
-        let isLongPress = false;
-        let startX = 0;
-        let startY = 0;
+let isLongPress = false;
+let isMoved = false;
+let startX = 0;
+let startY = 0;
 
-        bar.addEventListener("touchstart", (e) => {
-            e.stopPropagation(); 
-            
-            isLongPress = false;
-            const touch = e.touches[0];
-            startX = touch.clientX;
-            startY = touch.clientY;
+bar.addEventListener("touchstart", (e) => {
+    
+    isLongPress = false;
+    isMoved = false;
+    const touch = e.touches[0];
+    startX = touch.clientX;
+    startY = touch.clientY;
 
-            timer = setTimeout(() => {
-                isLongPress = true;
-                if (navigator.vibrate) navigator.vibrate(60);
-                showReorderSheet(sup.id, sup.productName);
-            }, 700);
-        }, { passive: false });
+    timer = setTimeout(() => {
+        if (!isMoved) {
+            isLongPress = true;
+            if (navigator.vibrate) navigator.vibrate(60);
+            showReorderSheet(sup.id, sup.productName);
+        }
+    }, 700);
+}, { passive: true });
 
-        bar.addEventListener("touchmove", (e) => {
-            const touch = e.touches[0];
-            if (Math.abs(touch.clientX - startX) > 10 || Math.abs(touch.clientY - startY) > 10) {
-                clearTimeout(timer);
-            }
-        }, { passive: true });
+bar.addEventListener("touchmove", (e) => {
+    const touch = e.touches[0];
+    const diffX = Math.abs(touch.clientX - startX);
+    const diffY = Math.abs(touch.clientY - startY);
 
-        bar.addEventListener("touchend", (e) => {
-            e.stopPropagation();
-            clearTimeout(timer);
+    if (diffX > 10 || diffY > 10) {
+        isMoved = true; 
+        clearTimeout(timer);
+    }
+}, { passive: true });
 
-            if (isLongPress) {
-                e.preventDefault(); 
-            } else {
-                selectedDateForList = fullDate;
-                openSupplementModal(sup);
-            }
-        });
+bar.addEventListener("touchend", (e) => {
+    clearTimeout(timer);
 
-        bar.addEventListener("touchcancel", () => clearTimeout(timer));
+    if (isLongPress) {
+        e.preventDefault();
+    } else if (!isMoved) {
+        selectedDateForList = fullDate;
+        openSupplementModal(sup);
+    }
+});
+
+bar.addEventListener("touchcancel", () => {
+    clearTimeout(timer);
+});
         listArea.appendChild(bar);
     }
 });
