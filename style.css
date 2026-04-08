@@ -406,7 +406,7 @@ body.dark-mode .theme-icon::after {
   font-size: 11px;
   font-weight: 700;
   top: -1px;
-  padding: 3px 5px 0 5px;
+  padding: 3px 0px 0px 0px;
   box-sizing: border-box;
 }
 
@@ -474,7 +474,7 @@ body.dark-mode .theme-icon::after {
 
 .date .number {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -489,7 +489,7 @@ body.dark-mode .theme-icon::after {
   box-sizing: border-box;
   font-size: 15px;
   font-weight: 600;
-  line-height: 1;
+  line-height: normal;
   z-index: 1;
   margin: 0 auto 4px auto;
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s;
@@ -662,9 +662,9 @@ body.modal-open {
 
 .modal {
   width: 100% !important; 
-  height: calc(100svh - env(safe-area-inset-top)) !important;
-  max-height: calc(100svh - env(safe-area-inset-top)) !important;
-  margin-top: env(safe-area-inset-top) !important;
+  height: calc(100svh - env(safe-area-inset-top, 20px)) !important;
+  max-height: calc(100svh - env(safe-area-inset-top, 20px)) !important;
+  margin-top: env(safe-area-inset-top, 20px) !important;
   
   background-color: #F2F2F6 !important;
   border-radius: 30px 30px 0 0;
@@ -942,6 +942,22 @@ body.dark-mode .info-row.split::before { background: #6a6a6e; }
   border: none;
   margin: 0 !important;
   padding: 0 !important;
+
+  display: flex;
+  justify-content: center; /* 내부 요소 가운데 정렬 */
+  align-items: center;
+  text-align: center;
+  /* 안드로이드 크롬의 기본 스타일 초기화 보강 */
+  -webkit-justify-content: center;
+}
+
+/* 안드로이드 크롬의 날짜 입력란 내부 여백 제거 */
+input[type="date"]::-webkit-inner-spin-button,
+input[type="date"]::-webkit-calendar-picker-indicator {
+  margin: 0;
+  padding: 0;
+  /* 만약 아이콘을 아예 없애고 싶다면 아래 주석 해제 */
+  /* display: none; -webkit-appearance: none; */
 }
 
 .info-col {

@@ -1,4 +1,4 @@
-const APP_VERSION = "26.4.3";
+const APP_VERSION = "26.4.4";
 let deferredPrompt;
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
@@ -274,7 +274,6 @@ document.addEventListener("DOMContentLoaded", () => {
     metaThemeColor.setAttribute("content", "#ffffff");
   }
 });
-
 
 // + 버튼 클릭 //
 addBtn.addEventListener("click", () => {
@@ -1255,22 +1254,26 @@ function showStatsForFamily(name) {
       let percent = info.target > 0 ? Math.round((info.taken / info.target) * 100) : 0;
       if (percent > 100) percent = 100;
 
-      const isSingle = keys.length === 1;
-            const itemStyle = isSingle ? 'grid-column: 1 / span 2; width: 100%; box-sizing: border-box;' : '';
+      const chartStyle = percent >= 100 
+    ? `background: ${info.color};` 
+    : `background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0);`;
 
-            html += `
-                <div class="stats-item" style="${itemStyle}">
-                    <div class="pie-chart" style="background: conic-gradient(${info.color} ${percent}%, ${trackColor} 0)">
-                        <div class="pie-inner" style="background-color: ${innerBg}">
-                            <span class="pie-percent">${percent}%</span>
-                        </div>
-                    </div>
-                    <div class="stats-info" style="${isSingle ? 'align-items: center;' : ''}">
-                        <span class="stats-product-name">${key}</span>
-                        <span class="stats-count-text">${info.taken} / ${info.target}회</span>
-                    </div>
-                </div>`;
-    });
+      const isSingle = keys.length === 1;
+      const itemStyle = isSingle ? 'grid-column: 1 / span 2; width: 100%; box-sizing: border-box;' : '';
+
+  html += `
+    <div class="stats-item" style="${itemStyle}">
+        <div class="pie-chart" style="${chartStyle}">
+            <div class="pie-inner" style="background-color: ${innerBg}">
+                <span class="pie-percent">${percent}%</span>
+            </div>
+        </div>
+        <div class="stats-info" style="${isSingle ? 'align-items: center;' : ''}">
+            <span class="stats-product-name">${key}</span>
+            <span class="stats-count-text">${info.taken} / ${info.target}회</span>
+        </div>
+    </div>`;
+});
     content.innerHTML = html;
   }
   content.scrollTop = 0;
